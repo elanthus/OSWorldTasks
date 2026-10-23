@@ -1,0 +1,24 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "tests.support.d59_offline_guard",
+    "tests/unit/test_grounding_v5_d59_extraction_report.py",
+    "tests/unit/test_grounding_v5_d59_replication_report.py",
+    "tests/unit/test_grounding_v5_action_extraction.py",
+    "tests/unit/test_grounding_v5_extraction_successor.py",
+    "tests/unit/test_scripts_readme_inventory.py"
+  ],
+  "command": ".venv/bin/python -m pytest -q -p tests.support.d59_offline_guard tests/unit/test_grounding_v5_d59_extraction_report.py tests/unit/test_grounding_v5_d59_replication_report.py tests/unit/test_grounding_v5_action_extraction.py tests/unit/test_grounding_v5_extraction_successor.py tests/unit/test_scripts_readme_inventory.py",
+  "cwd": "<repository>",
+  "duration_seconds": 2.836937,
+  "ended_at_utc": "2026-10-23T20:22:23.811375+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "........................................................................ [ 66%]\n.....................................                                    [100%]\n109 passed in 2.00s\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T20:22:20.974123+00:00"
+}

@@ -1,0 +1,1033 @@
+{
+  "checklist_items": [
+    {
+      "artifacts": [
+        "docs/v5-benchmark-design.md",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/00-git-revision.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/01-worktree-status.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/52-worktree-status-after-verifiers.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/82-worktree-status-after-integration.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/84-public-wording-inventory.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/85-worktree-status-before-redaction-scan.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/86-redaction-scan-collected-records.json",
+        "artifacts/grounding-v5-d59-replication-results/review-guide.md",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/REPORT.md",
+        "docs/v5-policy-sandbox.md",
+        "docs/d59-subscription-verification.md",
+        "scripts/README.md",
+        "artifacts/grounding-v5-d59-action-extraction-results/review-guide.md",
+        "artifacts/grounding-v5-d59-action-extraction-results/report.json",
+        "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.md",
+        "artifacts/grounding-v5-d59-action-extraction-results/pilot-report.json",
+        "artifacts/grounding-v5-d59-action-extraction-results/preserved-inputs.json",
+        "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.json",
+        "scripts/report_grounding_v5_d59_extraction.py",
+        "tests/unit/test_grounding_v5_d59_extraction_report.py",
+        "docs/d59-action-extraction-successor.md"
+      ],
+      "checklist_text": "Review raw commands, outputs, evidence integrity, limitations, benchmark verdict, and any public wording",
+      "id": "d5.10-delivery-row",
+      "kind": "delivery_row",
+      "linked_records": [
+        "docs/v5-benchmark-design.md",
+        "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+        "docs/evidence-index.md",
+        "artifacts/grounding-v5-d59-haiku-results/report.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md"
+      ],
+      "number": 1,
+      "records": [
+        "commands/00-git-revision.json",
+        "commands/01-audit-retained-campaign.json",
+        "commands/02-evidence-branch.json",
+        "commands/03-checklist-source.json",
+        "commands/04-verify-frozen-candidate.json",
+        "commands/05-frozen-sensitivity-analysis.json",
+        "commands/06-reproduce-sensitivity-analysis.json",
+        "commands/07-targeted-offline-tests.json",
+        "commands/08-targeted-offline-tests.json",
+        "commands/09-lint.json",
+        "commands/10-preserved-inputs.json",
+        "commands/11-public-wording-inventory.json",
+        "commands/12-worktree-status.json",
+        "commands/13-redaction-scan.json",
+        "commands/14-original-replication-analysis.json",
+        "commands/15-historical-analysis.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:658",
+      "stored_raw_observation": "`00-git-revision`: exit 0<br>`01-audit-retained-campaign`: exit 0<br>`02-evidence-branch`: exit 0<br>`03-checklist-source`: exit 0<br>`04-verify-frozen-candidate`: exit 0<br>`05-frozen-sensitivity-analysis`: exit 0<br>`06-reproduce-sensitivity-analysis`: exit 0<br>`07-targeted-offline-tests`: exit 4; pytest {\"no_tests_ran\": true, \"runtime\": 0.0}<br>`08-targeted-offline-tests`: exit 0; pytest {\"passed\": 109, \"runtime\": 2.0}<br>`09-lint`: exit 0<br>`10-preserved-inputs`: exit 0<br>`11-public-wording-inventory`: exit 0<br>`12-worktree-status`: exit 0<br>`13-redaction-scan`: exit 0<br>`14-original-replication-analysis`: exit 0<br>`15-historical-analysis`: exit 0"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d56-calibration-approval.md",
+        "artifacts/decisions/d4.12.json"
+      ],
+      "checklist_text": "The human explicitly approves D5.1 and sequencing relative to the separate D4.12 gate.",
+      "id": "done-when-01",
+      "kind": "done_when",
+      "linked_records": [
+        "artifacts/grounding-v5-d56-calibration-approval.md"
+      ],
+      "number": 2,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:785",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-contracts.md",
+        "artifacts/grounding-v5-manifests/development.json",
+        "artifacts/grounding-v5-manifests/calibration.json",
+        "artifacts/grounding-v5-manifests/calibration-d56.json",
+        "artifacts/grounding-v5-manifests/confirmatory.json",
+        "pixelgym/grounding/v5/seeds.py",
+        "pixelgym/grounding/v5/schemas/task.schema.json",
+        "pixelgym/grounding/v5/schemas/policy.schema.json",
+        "pixelgym/grounding/v5/schemas/attempt-event.schema.json",
+        "pixelgym/grounding/v5/schemas/memory-task.schema.json",
+        "pixelgym/grounding/v5/schemas/memory-task-v3.schema.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/53-v5-group-generator-partitions-admission.json"
+      ],
+      "checklist_text": "Versioned schemas and disjoint development, calibration, and confirmatory seed lists are committed before task capture or model calls.",
+      "id": "done-when-02",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 3,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:786",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-development-admission.json",
+        "artifacts/grounding-v5-d59-freeze/admission.json",
+        "artifacts/grounding-v5-d59-freeze/task-manifest.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/53-v5-group-generator-partitions-admission.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/43-verify-d59-freeze.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/48-verify-v5-at-historical-revisions.json"
+      ],
+      "checklist_text": "Six generator families produce the frozen allocations and satisfy every admission rule.",
+      "id": "done-when-03",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 4,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:788",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-development-admission.json",
+        "artifacts/grounding-v5-development-sample/manifest.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/59-browser-integration.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/53-v5-group-generator-partitions-admission.json"
+      ],
+      "checklist_text": "Every declared valid and adversarial trace replays twice with identical semantic state and bitwise-identical corresponding screenshots.",
+      "id": "done-when-04",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 5,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:789",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-development-admission.json",
+        "artifacts/grounding-v5-d59-freeze/admission.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/53-v5-group-generator-partitions-admission.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/15-golden-trajectory-check.json"
+      ],
+      "checklist_text": "Golden policies reach reward `1.0` exactly once; all declared near-miss and reward-hacking mutations remain at `0.0`.",
+      "id": "done-when-05",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 6,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:791",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-contracts.md",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/54-v5-group-stateful-harness-journal-resume-dispatch-restore.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/55-v5-group-credential-secret-redaction-integrity.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/57-v5-group-call-cap-planning.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/70-osworld-v5-integration-without-guest-image.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/74-osworld-v5-integration-linked-guest-image.json"
+      ],
+      "checklist_text": "Stateful policy reset, policy-egress isolation, pre-send attempt persistence, unknown-attempt reconciliation, bounded deadline/cancellation settlement, post-attempt and post-dispatch state reconstruction, canonical parser-input recovery, atomic candidate/checkpoint persistence, sealed parser failure, exact backend-state restore or reconnect, durable dispatch ordering, invalid output, call caps, resume, authoritative replay, credential-free policy inputs, secret exclusion, redaction binding, and evidence integrity have no-cost failure-path tests.",
+      "id": "done-when-06",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 7,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:793",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/58-v5-sandbox-integration.json"
+      ],
+      "checklist_text": "No-cost OS-level integration evidence denies unauthorized policy egress and preserves required provider-fake, backend, application, and controller traffic without internet or real-provider calls.",
+      "id": "done-when-07",
+      "kind": "done_when",
+      "linked_records": [
+        "artifacts/grounding-v5-d56-calibration-approval.md",
+        "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+        "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+        "docs/v5-benchmark-design.md"
+      ],
+      "number": 8,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:799",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/10-boundary-inventory.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/06-create-dev-venv.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/07-install-dev.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/80-fast-suite-ci-invocation.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/81-unit-suite-serial.json"
+      ],
+      "checklist_text": "The documented fast suite passes without browser, network, OSWorld, provider credentials, or model calls.",
+      "id": "done-when-08",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 9,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:801",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-scripted-call-cap-plan.json",
+        "artifacts/grounding-v5-d59-freeze/execution-plan.json",
+        "artifacts/grounding-v5-d59-haiku-freeze/execution-plan.json",
+        "artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json",
+        "artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/57-v5-group-call-cap-planning.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/42-d59-recorded-source-revisions.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/43-verify-d59-freeze.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/45-verify-d59-haiku-freeze.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/46-verify-d59-haiku-retry-successor.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/47-verify-d59-haiku-network-retry.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/48-verify-v5-at-historical-revisions.json"
+      ],
+      "checklist_text": "A free plan-only command reports exact environment-action, model-attempt, provider-control, and total wire-request caps for each approved phase.",
+      "id": "done-when-09",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 10,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:803",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d56-calibration-approval.md",
+        "artifacts/grounding-v5-d58-final-design/decision.json",
+        "artifacts/grounding-v5-d59-haiku-selection/owner-selection.json",
+        "artifacts/grounding-v5-d59-haiku-execution/owner-approval.json",
+        "artifacts/grounding-v5-d59-haiku-api-retry-execution/owner-approval.json",
+        "artifacts/grounding-v5-d59-haiku-results/authorization-history.json"
+      ],
+      "checklist_text": "The agent stops for explicit calibration approval and again for explicit confirmatory approval.",
+      "id": "done-when-10",
+      "kind": "done_when",
+      "linked_records": [
+        "artifacts/grounding-v5-d59-haiku-results/report.md"
+      ],
+      "number": 11,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:805",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d59-haiku-results/report.md",
+        "artifacts/grounding-v5-d59-haiku-results/report.json",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.json",
+        "artifacts/grounding-v5-d59-haiku-results/publication-relation.json",
+        "artifacts/grounding-v5-d59-haiku-results/authorization-history.json",
+        "artifacts/grounding-v5-d59-freeze/analysis-plan.md",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/50-check-d59-confirmatory-analysis.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/49-report-d59-haiku-help.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/51-d59-private-run-directories-present.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/56-v5-group-metrics-statistics.json",
+        "artifacts/grounding-v5-d59-replication-results/report.json",
+        "artifacts/grounding-v5-d59-replication-results/pilot-report.json",
+        "artifacts/grounding-v5-d59-replication-results/confirmatory-analysis.json",
+        "artifacts/grounding-v5-d59-replication-results/confirmatory-analysis.md"
+      ],
+      "checklist_text": "The confirmatory report is generated only from sealed evidence, retains every failure, and separates primary, diagnostic, ablation, reliability, and exploratory results.",
+      "id": "done-when-11",
+      "kind": "done_when",
+      "linked_records": [
+        "docs/evidence-index.md",
+        "artifacts/grounding-v5-d59-haiku-results/report.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md"
+      ],
+      "number": 12,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:807",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [],
+      "checklist_text": "The agent reports raw milestone-gate commands, exit statuses, counts, runtimes, and full output without declaring the human gate passed or approving public wording.",
+      "id": "done-when-12",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 13,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:809",
+      "stored_raw_observation": "no stored observation"
+    }
+  ],
+  "checklist_source": {
+    "path": "plans/grounding-v5-agent-benchmark.md",
+    "record": "commands/03-checklist-source.json",
+    "revision": "f0bcbd6f3e379f880baeca233d4b7e05528bcfc5"
+  },
+  "command_records": [
+    {
+      "command": "git rev-parse HEAD",
+      "duration_seconds": 0.015805,
+      "ended_at_utc": "2026-10-23T20:24:12.516832+00:00",
+      "exit_status": 0,
+      "path": "commands/00-git-revision.json",
+      "sha256": "2826aac0df21a2c77d3beaaf58f47078ff23249e7c4fcca3ec45fec14b903a97",
+      "size": 415,
+      "started_at_utc": "2026-10-23T20:24:12.500697+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.report_grounding_v5_d59_extraction audit --input <private-run> --archive <private-archive> --backup <private-backup>",
+      "duration_seconds": 46.252012,
+      "ended_at_utc": "2026-10-23T20:20:29.647105+00:00",
+      "exit_status": 0,
+      "path": "commands/01-audit-retained-campaign.json",
+      "sha256": "7392aa2e9f4129085e3618762377ed90f12dcf5e951c9c8aaaf95d4c5620677c",
+      "size": 1397,
+      "started_at_utc": "2026-10-23T20:19:43.394535+00:00"
+    },
+    {
+      "command": "git branch --show-current",
+      "duration_seconds": 0.017062,
+      "ended_at_utc": "2026-10-23T20:24:14.462804+00:00",
+      "exit_status": 0,
+      "path": "commands/02-evidence-branch.json",
+      "sha256": "828c2493ecd718674d8c261c8a5b9ebbbd91116cc27a3132cacc66eb36954aac",
+      "size": 420,
+      "started_at_utc": "2026-10-23T20:24:14.445463+00:00"
+    },
+    {
+      "command": "git show f0bcbd6f3e379f880baeca233d4b7e05528bcfc5:plans/grounding-v5-agent-benchmark.md",
+      "duration_seconds": 0.020232,
+      "ended_at_utc": "2026-10-23T20:24:14.465931+00:00",
+      "exit_status": 0,
+      "path": "commands/03-checklist-source.json",
+      "sha256": "5d8485311880a7e38c12c7a018bc6e62e88c1489c632ba16bcd627bf50bee39e",
+      "size": 55735,
+      "started_at_utc": "2026-10-23T20:24:14.445411+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.prepare_grounding_v5_d59_extraction --source-revision 67b28a4073a8e26e4bd873f748929ccba11ded54 --verify",
+      "duration_seconds": 9.555637,
+      "ended_at_utc": "2026-10-23T20:22:30.800939+00:00",
+      "exit_status": 0,
+      "path": "commands/04-verify-frozen-candidate.json",
+      "sha256": "c6b2064bc28b893121ed4e561530dcbd0cc5c1f93a7c8c22253cbe851e758041",
+      "size": 926,
+      "started_at_utc": "2026-10-23T20:22:21.244956+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.report_grounding_v5_d59_extraction analyze",
+      "duration_seconds": 0.721932,
+      "ended_at_utc": "2026-10-23T20:21:03.893147+00:00",
+      "exit_status": 0,
+      "path": "commands/05-frozen-sensitivity-analysis.json",
+      "sha256": "6f6c2f96adea2071d4dfd89c80b4f5e1de0caa3121d75a9bde507d3beb88d1f2",
+      "size": 1203,
+      "started_at_utc": "2026-10-23T20:21:03.170872+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.report_grounding_v5_d59_extraction analyze --check",
+      "duration_seconds": 0.769021,
+      "ended_at_utc": "2026-10-23T20:22:22.898499+00:00",
+      "exit_status": 0,
+      "path": "commands/06-reproduce-sensitivity-analysis.json",
+      "sha256": "7d00d01404fe82e283a04480a393b3a6a8563c22537d5b9a86669eb36ca7f2b1",
+      "size": 1226,
+      "started_at_utc": "2026-10-23T20:22:22.129196+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q -p tests.support.d59_offline_guard tests/unit/test_grounding_v5_d59_extraction_report.py tests/unit/test_grounding_v5_d59_replication_report.py tests/unit/test_grounding_v5_action_extraction.py tests/unit/test_grounding_v5_extraction_successor.py tests/unit/test_scripts_inventory.py",
+      "duration_seconds": 0.794386,
+      "ended_at_utc": "2026-10-23T20:21:58.089737+00:00",
+      "exit_status": 4,
+      "observed_test_summary": {
+        "no_tests_ran": true,
+        "runtime": 0.0
+      },
+      "path": "commands/07-targeted-offline-tests.json",
+      "sha256": "c010b1c83bea31c4e9ea4d2534f8b95d0a91255e914c691be8be06f6ac84a0d9",
+      "size": 1120,
+      "started_at_utc": "2026-10-23T20:21:57.295088+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q -p tests.support.d59_offline_guard tests/unit/test_grounding_v5_d59_extraction_report.py tests/unit/test_grounding_v5_d59_replication_report.py tests/unit/test_grounding_v5_action_extraction.py tests/unit/test_grounding_v5_extraction_successor.py tests/unit/test_scripts_readme_inventory.py",
+      "duration_seconds": 2.836937,
+      "ended_at_utc": "2026-10-23T20:22:23.811375+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 109,
+        "runtime": 2.0
+      },
+      "path": "commands/08-targeted-offline-tests.json",
+      "sha256": "dbc5f393ae9e4c4b95145f129159d29183d606fed54074e54fb3859e227b08db",
+      "size": 1216,
+      "started_at_utc": "2026-10-23T20:22:20.974123+00:00"
+    },
+    {
+      "command": ".venv/bin/ruff check .",
+      "duration_seconds": 0.020548,
+      "ended_at_utc": "2026-10-23T20:24:14.975285+00:00",
+      "exit_status": 0,
+      "path": "commands/09-lint.json",
+      "sha256": "e66860a2aa0ee998c8c0448b55b17614392d204a7e861d9250f6fdd0932ab09c",
+      "size": 401,
+      "started_at_utc": "2026-10-23T20:24:14.954443+00:00"
+    },
+    {
+      "command": ".venv/bin/python .cache/d59-extraction-analysis/package.py preservation",
+      "duration_seconds": 0.04883,
+      "ended_at_utc": "2026-10-23T20:24:14.597020+00:00",
+      "exit_status": 0,
+      "path": "commands/10-preserved-inputs.json",
+      "sha256": "5a0153cc8d66a9b8de112bd8e6a251e49aa0c518461fc07ae37cfa6c0925a6ae",
+      "size": 559,
+      "started_at_utc": "2026-10-23T20:24:14.547941+00:00"
+    },
+    {
+      "command": "rg -n 'D5.10|parser.sensitivity|post.hoc|model ranking' README.md docs/v5-benchmark-design.md docs/evidence-index.md docs/d59-action-extraction-successor.md",
+      "duration_seconds": 0.010266,
+      "ended_at_utc": "2026-10-23T20:24:14.721111+00:00",
+      "exit_status": 0,
+      "path": "commands/11-public-wording-inventory.json",
+      "sha256": "d7e15e0e599a1a4809563eaffcf21caf85af707720be32dcaae21b46b4063213",
+      "size": 7538,
+      "started_at_utc": "2026-10-23T20:24:14.710487+00:00"
+    },
+    {
+      "command": "git status --short",
+      "duration_seconds": 0.038466,
+      "ended_at_utc": "2026-10-23T20:24:14.719255+00:00",
+      "exit_status": 0,
+      "path": "commands/12-worktree-status.json",
+      "sha256": "b520274c88420ff9577fb4f39ef1ecc96bf14aa160a1e184031571fb74c993cf",
+      "size": 757,
+      "started_at_utc": "2026-10-23T20:24:14.680484+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.generate_d510_evidence_report scan --path artifacts/grounding-v5-d59-action-extraction-results",
+      "duration_seconds": 0.073239,
+      "ended_at_utc": "2026-10-23T20:25:28.484316+00:00",
+      "exit_status": 0,
+      "path": "commands/13-redaction-scan.json",
+      "sha256": "79f647cf3610ff5cb5d2962da7f3dde86d7c3aa9043b46cfe10fbb0f4086a2ce",
+      "size": 1093,
+      "started_at_utc": "2026-10-23T20:25:28.410754+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.analyze_grounding_v5_d59_replication --check",
+      "duration_seconds": 1.019113,
+      "ended_at_utc": "2026-10-23T20:25:30.634314+00:00",
+      "exit_status": 0,
+      "path": "commands/14-original-replication-analysis.json",
+      "sha256": "05f5b2df27f2f934a581481b44cfecc2d758786a5388f42e0984d3d14d67261c",
+      "size": 2066,
+      "started_at_utc": "2026-10-23T20:25:29.614828+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.analyze_grounding_v5_d59 --check",
+      "duration_seconds": 0.681798,
+      "ended_at_utc": "2026-10-23T20:25:30.661491+00:00",
+      "exit_status": 0,
+      "path": "commands/15-historical-analysis.json",
+      "sha256": "70fe5b77386d5a4a885011cb6ac2747155ec6bf3c97fdddfbd06a47ea7de4d03",
+      "size": 464,
+      "started_at_utc": "2026-10-23T20:25:29.979386+00:00"
+    }
+  ],
+  "evidence_branch": "evidence/d59-extraction-results",
+  "evidence_revision": "8327aac872715febe05d7c8e5534e68c2f39c2c2",
+  "gate": "D5.10",
+  "not_run": [
+    {
+      "item": "Full gate refresh and integration",
+      "reason": "No fresh whole-suite, browser, OSWorld or live sandbox integration execution. Earlier observations remain historical at their recorded revisions."
+    },
+    {
+      "item": "Restore drill and independent off-host backup",
+      "reason": "Not performed; both existing local copies verified, no evidence deleted."
+    },
+    {
+      "item": "Undefined trace estimators and complete provider usage",
+      "reason": "No post-result estimator or usage imputation invented. Five timeouts retain unknown completion/usage."
+    }
+  ],
+  "package_files": [
+    {
+      "path": "REPORT.md",
+      "sha256": "4afbce800cee089c2cd98404079daa92d601083b2c5ebb46c4499233f375e565",
+      "size": 32755
+    },
+    {
+      "path": "checklist-map.json",
+      "sha256": "c11401d5f3be71ea985a9826a6beaeea09e3b7d9391bd2c802f9c26c3af3660b",
+      "size": 26867
+    },
+    {
+      "path": "commands/00-git-revision.json",
+      "sha256": "2826aac0df21a2c77d3beaaf58f47078ff23249e7c4fcca3ec45fec14b903a97",
+      "size": 415
+    },
+    {
+      "path": "commands/01-audit-retained-campaign.json",
+      "sha256": "7392aa2e9f4129085e3618762377ed90f12dcf5e951c9c8aaaf95d4c5620677c",
+      "size": 1397
+    },
+    {
+      "path": "commands/02-evidence-branch.json",
+      "sha256": "828c2493ecd718674d8c261c8a5b9ebbbd91116cc27a3132cacc66eb36954aac",
+      "size": 420
+    },
+    {
+      "path": "commands/03-checklist-source.json",
+      "sha256": "5d8485311880a7e38c12c7a018bc6e62e88c1489c632ba16bcd627bf50bee39e",
+      "size": 55735
+    },
+    {
+      "path": "commands/04-verify-frozen-candidate.json",
+      "sha256": "c6b2064bc28b893121ed4e561530dcbd0cc5c1f93a7c8c22253cbe851e758041",
+      "size": 926
+    },
+    {
+      "path": "commands/05-frozen-sensitivity-analysis.json",
+      "sha256": "6f6c2f96adea2071d4dfd89c80b4f5e1de0caa3121d75a9bde507d3beb88d1f2",
+      "size": 1203
+    },
+    {
+      "path": "commands/06-reproduce-sensitivity-analysis.json",
+      "sha256": "7d00d01404fe82e283a04480a393b3a6a8563c22537d5b9a86669eb36ca7f2b1",
+      "size": 1226
+    },
+    {
+      "path": "commands/07-targeted-offline-tests.json",
+      "sha256": "c010b1c83bea31c4e9ea4d2534f8b95d0a91255e914c691be8be06f6ac84a0d9",
+      "size": 1120
+    },
+    {
+      "path": "commands/08-targeted-offline-tests.json",
+      "sha256": "dbc5f393ae9e4c4b95145f129159d29183d606fed54074e54fb3859e227b08db",
+      "size": 1216
+    },
+    {
+      "path": "commands/09-lint.json",
+      "sha256": "e66860a2aa0ee998c8c0448b55b17614392d204a7e861d9250f6fdd0932ab09c",
+      "size": 401
+    },
+    {
+      "path": "commands/10-preserved-inputs.json",
+      "sha256": "5a0153cc8d66a9b8de112bd8e6a251e49aa0c518461fc07ae37cfa6c0925a6ae",
+      "size": 559
+    },
+    {
+      "path": "commands/11-public-wording-inventory.json",
+      "sha256": "d7e15e0e599a1a4809563eaffcf21caf85af707720be32dcaae21b46b4063213",
+      "size": 7538
+    },
+    {
+      "path": "commands/12-worktree-status.json",
+      "sha256": "b520274c88420ff9577fb4f39ef1ecc96bf14aa160a1e184031571fb74c993cf",
+      "size": 757
+    },
+    {
+      "path": "commands/13-redaction-scan.json",
+      "sha256": "79f647cf3610ff5cb5d2962da7f3dde86d7c3aa9043b46cfe10fbb0f4086a2ce",
+      "size": 1093
+    },
+    {
+      "path": "commands/14-original-replication-analysis.json",
+      "sha256": "05f5b2df27f2f934a581481b44cfecc2d758786a5388f42e0984d3d14d67261c",
+      "size": 2066
+    },
+    {
+      "path": "commands/15-historical-analysis.json",
+      "sha256": "70fe5b77386d5a4a885011cb6ac2747155ec6bf3c97fdddfbd06a47ea7de4d03",
+      "size": 464
+    },
+    {
+      "path": "redaction-scan.json",
+      "sha256": "582376ddf5c2c7248093c9f68b9e15a53ca78fa1cd209d204e1a1abb074006e1",
+      "size": 445
+    }
+  ],
+  "redaction_scan": {
+    "files_scanned": 19,
+    "files_with_findings": {},
+    "finding_counts": {
+      "aws_access_keys": 0,
+      "bearer_tokens": 0,
+      "host_identity_paths_or_emails": 0,
+      "local_absolute_paths": 0,
+      "local_demo_credentials": 0,
+      "private_key_markers": 0,
+      "privileged_json_fields": 0,
+      "provider_api_keys": 0,
+      "system_temp_paths": 0,
+      "unredacted_image_payloads": 0
+    },
+    "schema_version": "pixelgym-d510-redaction-scan-v1"
+  },
+  "referenced_artifacts": [
+    {
+      "path": "artifacts/decisions/d4.12.json",
+      "sha256": "dcf6e4bd83e58d0d051ebb24c0bb385500c6a136e4b7491e376f8080fa3c2a01",
+      "size": 396
+    },
+    {
+      "path": "artifacts/grounding-v5-contracts.md",
+      "sha256": "fddc9be787b4dd80b218fbfdb3289e8f8cb0bdabb43b0bd1a7a2435618c19710",
+      "size": 7862
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/REPORT.md",
+      "sha256": "45d7456481423cfb532975bebee3cf5ee5d2ad1d7af64aaa02f89f477ac4d4be",
+      "size": 49809
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/00-git-revision.json",
+      "sha256": "7f68b51d65e8b5e323c68bd3fc6b2c83613a085b026cb1d71ec2cb1e58b1bd1d",
+      "size": 449
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/01-worktree-status.json",
+      "sha256": "ccdc213872b9867ef5c1bd1be2229a29d01801dabca2ee8ffa452176a43f2b3c",
+      "size": 466
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/06-create-dev-venv.json",
+      "sha256": "b8b2137365b03e63c12d32db37e17d42ec2e27a92bc40be4a2edd44817a0b68d",
+      "size": 388
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/07-install-dev.json",
+      "sha256": "5849030152b8247a8b91bedfeba311921c42deeff47ac7bcb9114b148d186f85",
+      "size": 20748
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/10-boundary-inventory.json",
+      "sha256": "8bae6d77d699af1eab85c02f35cc20e4cab22caded551e90a3872bc4971884b7",
+      "size": 2010
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/15-golden-trajectory-check.json",
+      "sha256": "5bf24572face7ca681bd83789cc8bc9f9925e974fca9b6ce150a5afe5e5ef920",
+      "size": 837
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/42-d59-recorded-source-revisions.json",
+      "sha256": "c615af3402753e320bf5ee5a956d11d9210af9ef90ac5e754e5a5d7e1f519fdc",
+      "size": 2009
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/43-verify-d59-freeze.json",
+      "sha256": "f82f931777df24587ce93a27026e8d8cc0e0ad4fcab9406df6ee2f4ed2034254",
+      "size": 703
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/45-verify-d59-haiku-freeze.json",
+      "sha256": "0252f81775cb50859e3222c58a32eabce93931099063def6d3d9ce728c49f04b",
+      "size": 725
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/46-verify-d59-haiku-retry-successor.json",
+      "sha256": "d2b4fff6542396d2f98a48c971c6e4fa4b8d3015bc2376f69d7973c609ccb50e",
+      "size": 1778
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/47-verify-d59-haiku-network-retry.json",
+      "sha256": "0aff61bce31cc3d53b4f280e4e83b6e91e996423dada1a10bc35fe3ef2fc6ff9",
+      "size": 1548
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/48-verify-v5-at-historical-revisions.json",
+      "sha256": "648e789e456f0a354085aa5522892c18ad632029c3410ad9f96e05fd6db69f61",
+      "size": 18509
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/49-report-d59-haiku-help.json",
+      "sha256": "0f00d93e26a43283a005a1a5ee52c4cca426b128b1c48cf97ec6023b566a4959",
+      "size": 799
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/50-check-d59-confirmatory-analysis.json",
+      "sha256": "f96a1f8456e5a244195e35cc57183a23b173fb3eb35dfc3767dc21459bf3ccd9",
+      "size": 460
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/51-d59-private-run-directories-present.json",
+      "sha256": "a85ee377c4f0301eb26955e07d675c80bde2785e049a0d0ebe5ed704dbd646e2",
+      "size": 960
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/52-worktree-status-after-verifiers.json",
+      "sha256": "f79b717e682c6f7f00fc00168f4abbdc3a846acbe09ce12206cce02b83a71e21",
+      "size": 466
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/53-v5-group-generator-partitions-admission.json",
+      "sha256": "649973a976c7dc466ad2c2ca134e8f3607f78a0223a03e052011e390714f6d00",
+      "size": 5893
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/54-v5-group-stateful-harness-journal-resume-dispatch-restore.json",
+      "sha256": "076a21765e30062297bfe7c1d9e0b099dc179be7b4e801c0d4d7bd7b98e0e26e",
+      "size": 11931
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/55-v5-group-credential-secret-redaction-integrity.json",
+      "sha256": "47d77670b3906c644d90757fde41e49298b2a10fe215bc4680a81f6d585c148b",
+      "size": 4279
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/56-v5-group-metrics-statistics.json",
+      "sha256": "153769b17ea6a45ee5118730bef90d8ec9282e8b6d6074897e8b2fe8ff37fb93",
+      "size": 1628
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/57-v5-group-call-cap-planning.json",
+      "sha256": "4d32b74d2c866ed558153a108399881098e8a20d212135d74544f5a7903011cd",
+      "size": 4651
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/58-v5-sandbox-integration.json",
+      "sha256": "bdcc30e7e1bfcbe595b62871ef75ae8867e9d55a0f6d14ac8dd81ec19b9e3d38",
+      "size": 818
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/59-browser-integration.json",
+      "sha256": "dea18aeb51ea9f83729f4aef03d2da5003ae75cd944e4612effb5aa9c9d11448",
+      "size": 814
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/70-osworld-v5-integration-without-guest-image.json",
+      "sha256": "fe28111f88e4e49788e330c746b4ada3535d7708723d8eded8afbc69a05184c1",
+      "size": 948
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/74-osworld-v5-integration-linked-guest-image.json",
+      "sha256": "42b8d33621c5a0a9bca0b1abe2c36db023e00dafef2555f17189b2bf7af1bc1e",
+      "size": 2808
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/80-fast-suite-ci-invocation.json",
+      "sha256": "873aa85b2019cad4a2f8e42f8ca8ad4660b45c043fa37af9015a3557875d6751",
+      "size": 29156
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/81-unit-suite-serial.json",
+      "sha256": "6200e4a37171da786e28e3a10a1d516aa4fb076a36ed58ea30fcafd080cdbbe6",
+      "size": 4491
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/82-worktree-status-after-integration.json",
+      "sha256": "c1a78ae352c53cb4451939423f9118bda3368cdc80d3b01294ce0c3ab3118816",
+      "size": 464
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/84-public-wording-inventory.json",
+      "sha256": "8e309b64e7b933bcaf7a8750b5ae24965c2562e41a5160a06760e7d70511297d",
+      "size": 15302
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/85-worktree-status-before-redaction-scan.json",
+      "sha256": "2e65166fe845296b5bda073989f495edb2a24e03b57bad794b1c19b15ce326d4",
+      "size": 466
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/86-redaction-scan-collected-records.json",
+      "sha256": "9af4a632de0d6b775bebf8a3b350c09b21b39312e24126f0e2c9cb1a358774d8",
+      "size": 1013
+    },
+    {
+      "path": "artifacts/grounding-v5-d56-calibration-approval.md",
+      "sha256": "7df1931d51665fff88c7c657f093a0ca761796de89805416517f26c7224aaf0e",
+      "size": 20471
+    },
+    {
+      "path": "artifacts/grounding-v5-d58-final-design/decision.json",
+      "sha256": "b8c5a879b980b8f7835ec141365b5dec625c5d39ef7f91ea8be81436131347f4",
+      "size": 3533
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/pilot-report.json",
+      "sha256": "78f422c7bfa647f6b4d18ba32af86a13aab9ae77d174f55ef3478e1216497590",
+      "size": 9221
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/preserved-inputs.json",
+      "sha256": "91dbf7d0285afc240a5d6f3b0f83fbdbaf543f3ac68950a852155782748d42cd",
+      "size": 6130
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/report.json",
+      "sha256": "1d0cac6b3332a580b6e6e4cabf4a8bbfdcbc7465d14cd077fd692d629075eaf6",
+      "size": 476069
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/review-guide.md",
+      "sha256": "03fa6c17bdc5a9c8ccb793d2324cc73a423c410849fa95b05c7a4647f545b91e",
+      "size": 5632
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.json",
+      "sha256": "97b925795549a6c5a69b5ad1a70bd75b508fd555c821bda5bcac6109498ad894",
+      "size": 27694
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.md",
+      "sha256": "4e2c5f751c885cab9bc4ae0a81ac71d1fff970ebd33b627357084a6e77cb44a7",
+      "size": 5067
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-freeze/admission.json",
+      "sha256": "d96a44c2a0fb7443684f34791e1b7a11ad328394f92c1684d1fa4e0589778799",
+      "size": 461058
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-freeze/analysis-plan.md",
+      "sha256": "11e12154883af06dc817a6760e723756d97d006c381036fd5f75b107ae363d45",
+      "size": 24205
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-freeze/execution-plan.json",
+      "sha256": "1f7b7fbddd03397dbe47395db7e331d27df00d3b66591eac6fa825e7849c4918",
+      "size": 212185
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-freeze/task-manifest.json",
+      "sha256": "a96858e166207eda2cb0201fae68a3c7a3ac3fa3a91333bcb1af888963df2ea8",
+      "size": 1624576
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-api-retry-execution/owner-approval.json",
+      "sha256": "92551e498a318dc38068374dceb97806673d26c3a4a6212a0d7ca275b221597a",
+      "size": 1117
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json",
+      "sha256": "5eddb406dc989a63772d26c02d447b563af3c829db649fbca509bf7cf21459c2",
+      "size": 217529
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-execution/owner-approval.json",
+      "sha256": "679eff54c6ee4679050c4cd130db1c75ea629bd950382aa84e26e2d75e329637",
+      "size": 1117
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-freeze/execution-plan.json",
+      "sha256": "d7c3ca2871f776e023ac20a996126ccaa8b883e9f5d5ff19223391967cfc523b",
+      "size": 216624
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+      "sha256": "bc493e3b1677db3763ef567f6a1837308de39eda87c2810a17c08f75d5a81035",
+      "size": 1799
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json",
+      "sha256": "f6f3c3de128cee4d900ca61ebca79c71003544364688e16e1aa009b1f060a6a5",
+      "size": 216780
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/authorization-history.json",
+      "sha256": "262d897e09de6fcc5cc8e1848255c0794f1fe37f64844a2bc090ae9337d0d5a7",
+      "size": 2374
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.json",
+      "sha256": "70755949579e765321e33b61d8beae7bc54ad8fd2690b1b008fe2aea22e9b4b3",
+      "size": 17504
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+      "sha256": "a62832a2da459bc608fa25f726d20fbf4dbbaa507f2140b2968c6db9f8fde27b",
+      "size": 7361
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/publication-relation.json",
+      "sha256": "1229cc2671141bc7ec40aac1eae7610dd348a7b5c4240032d40bbccd8ec7ac25",
+      "size": 7188
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/report.json",
+      "sha256": "cffff25e2e25fdce12df95d7174535594da74605d22a60fa8a344c179ea91fff",
+      "size": 119323
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/report.md",
+      "sha256": "cc80f2a4b1f446b8dc7e14e0f1318b72f1031a38b8cf039d8b8e8506f24e1e20",
+      "size": 1633
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-selection/owner-selection.json",
+      "sha256": "689207ef452b22a5fa7fab026d703b5a08c8f651456009181fd05f723915604a",
+      "size": 2376
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-replication-results/confirmatory-analysis.json",
+      "sha256": "2b7196e7e039496be38f2a2ae47203afe265abaeed98a87413d5d75c582da17d",
+      "size": 23014
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-replication-results/confirmatory-analysis.md",
+      "sha256": "3ed3e94a11ed2f3cb814722c59cd4097444687556de75b599ada5f81310a9fa7",
+      "size": 10937
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-replication-results/pilot-report.json",
+      "sha256": "4ade5090413b522561a078933b7987be2fff5a6aed7400352d4de8034404d6e5",
+      "size": 7483
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-replication-results/report.json",
+      "sha256": "ec96890af793dee40d582040dba8e53ad28facf1659189fa4d0db038b43e20d8",
+      "size": 435177
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-replication-results/review-guide.md",
+      "sha256": "22f2710b62c2a7c5271c4bd20ec9adf127df21ac27e32e3e53b26cd93e7eb2a7",
+      "size": 5314
+    },
+    {
+      "path": "artifacts/grounding-v5-development-admission.json",
+      "sha256": "ecc807be33840cc371118ff5cd10981c96094c3d22840d251a76d315fb7e6a52",
+      "size": 57800
+    },
+    {
+      "path": "artifacts/grounding-v5-development-sample/manifest.json",
+      "sha256": "9cf8ff7426b88189a9b5bcbea6f05e14c6d0345f16eeff2a638ffb37284cc6ed",
+      "size": 5469
+    },
+    {
+      "path": "artifacts/grounding-v5-manifests/calibration-d56.json",
+      "sha256": "7049272db38858a0fce73ccb808e089f9d72f7011d9705387f0b2c26b68f21c7",
+      "size": 26539
+    },
+    {
+      "path": "artifacts/grounding-v5-manifests/calibration.json",
+      "sha256": "6b9fb7832ce560a58da5c2a08576b8f063226fc1fa5d6e88d27bd4a339fff5fd",
+      "size": 29609
+    },
+    {
+      "path": "artifacts/grounding-v5-manifests/confirmatory.json",
+      "sha256": "b801fc5617d2df1ad05114f116adb62bbb017ce9dd01c4918a6d0999f0b50f08",
+      "size": 47370
+    },
+    {
+      "path": "artifacts/grounding-v5-manifests/development.json",
+      "sha256": "1ddb4f663f4dfd4b59409d744e8218f25ecde94510db2610c5c9ca33051c1496",
+      "size": 12077
+    },
+    {
+      "path": "artifacts/grounding-v5-scripted-call-cap-plan.json",
+      "sha256": "a342cc02b55d2c125eef282dad4d4797d1d33a7bc215b82151b5937921bcf057",
+      "size": 1385
+    },
+    {
+      "path": "docs/d59-action-extraction-successor.md",
+      "sha256": "977edf3c4aab704c09bbc0ea546eb5391bdcf1862c655781ee775b9abe794f1a",
+      "size": 8589
+    },
+    {
+      "path": "docs/d59-subscription-verification.md",
+      "sha256": "053b7de36c1d834d4e6b65e9130897d840dd588b81d6837732205450ee56c3a5",
+      "size": 11201
+    },
+    {
+      "path": "docs/evidence-index.md",
+      "sha256": "34a2c46fbef6cf59de2c0703e7320bfd8e329896035f6dccbc71ae6c193f06b5",
+      "size": 23922
+    },
+    {
+      "path": "docs/v5-benchmark-design.md",
+      "sha256": "976d8b2d7b5aa81b04471af6db992b2044b30f42a245128c6d0dbe66628966dc",
+      "size": 10868
+    },
+    {
+      "path": "docs/v5-policy-sandbox.md",
+      "sha256": "6525fca1001f8e63778e50d8c700b49c7e397cbc669a80cec2b3475817c320e4",
+      "size": 10230
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/attempt-event.schema.json",
+      "sha256": "75ead82e483a4b2b87b4535ca4e444d185fa5087c160e1c103703598684bfc1e",
+      "size": 1115
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/memory-task-v3.schema.json",
+      "sha256": "30eb57ce2a08c8f3e15d2b262e9c7d65ae56718d7bf9c910cc6f91d77bc1223d",
+      "size": 1615
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/memory-task.schema.json",
+      "sha256": "acc4d9a17ca6852d7dd6e3cdb14a46d6528998e194aa293df01b3fd98f483868",
+      "size": 1612
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/policy.schema.json",
+      "sha256": "6aa2a24e1f41573f4022814639ef0dba0f32ad858e609364546a93e2c2e5af37",
+      "size": 1983
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/task.schema.json",
+      "sha256": "b10e1bf54d614644a99a4ede1b576e84333f380967f076e6f8445c30d1f63e33",
+      "size": 1301
+    },
+    {
+      "path": "pixelgym/grounding/v5/seeds.py",
+      "sha256": "856e01f6bba39ed9d42adf442cb2564606a75acbd2530ceadb12919ffb33f277",
+      "size": 7996
+    },
+    {
+      "path": "scripts/README.md",
+      "sha256": "9cfce2645360a51b6e0c8da296239270d2dda913078a64ca08ca1eb9a16dc1c6",
+      "size": 24964
+    },
+    {
+      "path": "scripts/report_grounding_v5_d59_extraction.py",
+      "sha256": "ea779d2398c3de36349b656afff2c86be5c8ae0a1ba85b99b0215d11051804e2",
+      "size": 22237
+    },
+    {
+      "path": "tests/unit/test_grounding_v5_d59_extraction_report.py",
+      "sha256": "53762cabcee9ae819a8fffef13d5af32b5e198d0e660bcbea1f1fd478503797f",
+      "size": 7736
+    }
+  ],
+  "schema_version": "pixelgym-d510-evidence-manifest-v1",
+  "verdict": null,
+  "verdict_owner": "project owner",
+  "withdrawn_records": [],
+  "worktree_status_observations": {
+    "commands/12-worktree-status.json": " M docs/d59-action-extraction-successor.md\n M docs/evidence-index.md\n M scripts/README.md\n M scripts/report_grounding_v5_d59_replication.py\n?? artifacts/grounding-v5-d510/8327aac872715febe05d7c8e5534e68c2f39c2c2/\n?? artifacts/grounding-v5-d59-action-extraction-results/\n?? scripts/report_grounding_v5_d59_extraction.py\n?? tests/unit/test_grounding_v5_d59_extraction_report.py\n"
+  }
+}

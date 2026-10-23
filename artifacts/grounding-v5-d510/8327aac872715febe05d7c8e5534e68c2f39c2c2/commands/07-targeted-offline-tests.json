@@ -1,0 +1,24 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "tests.support.d59_offline_guard",
+    "tests/unit/test_grounding_v5_d59_extraction_report.py",
+    "tests/unit/test_grounding_v5_d59_replication_report.py",
+    "tests/unit/test_grounding_v5_action_extraction.py",
+    "tests/unit/test_grounding_v5_extraction_successor.py",
+    "tests/unit/test_scripts_inventory.py"
+  ],
+  "command": ".venv/bin/python -m pytest -q -p tests.support.d59_offline_guard tests/unit/test_grounding_v5_d59_extraction_report.py tests/unit/test_grounding_v5_d59_replication_report.py tests/unit/test_grounding_v5_action_extraction.py tests/unit/test_grounding_v5_extraction_successor.py tests/unit/test_scripts_inventory.py",
+  "cwd": "<repository>",
+  "duration_seconds": 0.794386,
+  "ended_at_utc": "2026-10-23T20:21:58.089737+00:00",
+  "environment": {},
+  "exit_status": 4,
+  "output": "ERROR: file or directory not found: tests/unit/test_scripts_inventory.py\n\n\nno tests ran in 0.00s\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T20:21:57.295088+00:00"
+}

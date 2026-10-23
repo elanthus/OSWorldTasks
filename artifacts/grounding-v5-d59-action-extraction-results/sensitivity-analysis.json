@@ -1,0 +1,800 @@
+{
+  "accounting": {
+    "approved_caps": {
+      "environment_action_cap": 12134,
+      "model_attempt_cap": 24268,
+      "provider_control_request_cap": 0,
+      "provider_wire_request_cap": 24268
+    },
+    "approved_runtime_window_hours": 168,
+    "assigned": 432,
+    "authentication_wait_excluded_seconds": 1978.275,
+    "completed": 432,
+    "elapsed_seconds": 42950.207,
+    "journal_integrity": {
+      "digest_version": "v2",
+      "event_chain_digest": "sha256:a07106aa5a536def43a0d0178d4ef982faed006635901aa86b01bd133b224c78",
+      "event_count": 103263,
+      "object_count": 44372,
+      "schema_version": "pixelgym-agent-v5-journal-integrity-v1"
+    },
+    "phase_usage": {
+      "primary": {
+        "environment_actions": 10105,
+        "model_attempts": 10112,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 10112
+      },
+      "reliability": {
+        "environment_actions": 1221,
+        "model_attempts": 1222,
+        "provider_control_requests": 0,
+        "provider_wire_requests": 1222
+      }
+    },
+    "provider_processes_started": 11334,
+    "retention": {
+      "archive": {
+        "bytes": 15244025902,
+        "file_count": 11,
+        "manifest_digest": "sha256:718167af1c7bf405daf25fd0de8ac56d8625881b8bf17f39f09f0d0bd64249eb",
+        "source_fingerprint": "sha256:8f94cfb04b845368fd93135ea84153d99e04dc93eef9e153b4d8eac7d19cea14"
+      },
+      "backup": {
+        "bytes": 15244025902,
+        "file_count": 11,
+        "manifest_digest": "sha256:718167af1c7bf405daf25fd0de8ac56d8625881b8bf17f39f09f0d0bd64249eb",
+        "source_fingerprint": "sha256:8f94cfb04b845368fd93135ea84153d99e04dc93eef9e153b4d8eac7d19cea14"
+      }
+    },
+    "stop_reason": "completed_all_assignments",
+    "wall_elapsed_seconds": 44928.482
+  },
+  "disclosure": {
+    "original_results_reclassified": 0,
+    "stop_rule_changed_after_successor_results": false,
+    "text": "Post-hoc parser sensitivity on previously inspected tasks; not independent confirmation. Original results, policies, and denominators remain unchanged. Pilot excluded from all full denominators. All five confirmed-stopped post-send timeouts retain unknown provider completion and usage. Each received one counted same-request retry; both reservations remain. Login did not settle them. Strict identity and sandbox checks remained active. No model/auth call, task execution, action reparsing or response rescoring occurred in this audit/analysis. Token totals cover reported usage only. Subscription charge accounting is not a provider billing audit. Verified archive/backup copies share one local disk; no new restore drill or off-host backup. D5.10 and public wording remain human-owned.",
+    "unresolved_invocations": 5,
+    "unresolved_timeouts": [
+      {
+        "attempt_index": 0,
+        "counted_attempts_for_action": 2,
+        "invocation_key_digest": "sha256:16dcf7401b6973563b91c795a23583f46b534af4299c82fbc5c1088df7ee7585",
+        "process_confirmed_stopped": true,
+        "provider_completion": "unknown",
+        "provider_usage": "unknown",
+        "retry_request_digest_matches": true,
+        "status": "timeout",
+        "step_index": 26,
+        "trial_id": "d59-extract-primary-6058-history-r0"
+      },
+      {
+        "attempt_index": 0,
+        "counted_attempts_for_action": 2,
+        "invocation_key_digest": "sha256:6dabe761c26efc89ade04c20927f1b38cf039750ef2981d80776f8b58fb7ffa8",
+        "process_confirmed_stopped": true,
+        "provider_completion": "unknown",
+        "provider_usage": "unknown",
+        "retry_request_digest_matches": true,
+        "status": "timeout",
+        "step_index": 12,
+        "trial_id": "d59-extract-primary-6130-history-r0"
+      },
+      {
+        "attempt_index": 0,
+        "counted_attempts_for_action": 2,
+        "invocation_key_digest": "sha256:d629b3e72d7aed58f39c7794f950e319613024732f600da1eb50de82fd713c26",
+        "process_confirmed_stopped": true,
+        "provider_completion": "unknown",
+        "provider_usage": "unknown",
+        "retry_request_digest_matches": true,
+        "status": "timeout",
+        "step_index": 14,
+        "trial_id": "d59-extract-reliability-6034-history-r2"
+      },
+      {
+        "attempt_index": 0,
+        "counted_attempts_for_action": 2,
+        "invocation_key_digest": "sha256:fb3d690c65f63ef1dbfaab9c66c4fdf471aa39f24c321131bfeb9c1675eea071",
+        "process_confirmed_stopped": true,
+        "provider_completion": "unknown",
+        "provider_usage": "unknown",
+        "retry_request_digest_matches": true,
+        "status": "timeout",
+        "step_index": 10,
+        "trial_id": "d59-extract-primary-6111-history-r0"
+      },
+      {
+        "attempt_index": 0,
+        "counted_attempts_for_action": 2,
+        "invocation_key_digest": "sha256:1032fbaf52e91962a85ddaf32f8a5ea8514ee330f03d2eae958f0ab5a325cf34",
+        "process_confirmed_stopped": true,
+        "provider_completion": "unknown",
+        "provider_usage": "unknown",
+        "retry_request_digest_matches": true,
+        "status": "timeout",
+        "step_index": 15,
+        "trial_id": "d59-extract-primary-6145-history-r0"
+      }
+    ]
+  },
+  "extraction_audit": {
+    "actions_reparsed_or_rescored": 0,
+    "decisions": {
+      "accepted": 11326,
+      "rejected": 3
+    },
+    "dispatched": 11326,
+    "envelopes": {
+      "bare_json": 81,
+      "single_json_fence": 11247,
+      "unselected": 1
+    },
+    "extraction_applied": 390,
+    "parse_receipts": 11329,
+    "response_hashes_and_selected_spans_verified": true
+  },
+  "human_gate": {
+    "D5.10": null,
+    "owner": "project owner"
+  },
+  "independent_confirmation": false,
+  "independent_representative_subset": {
+    "label": "exploratory",
+    "note": "The same test restricted to singletons and twin_a, the frozen independent representative rule. The pre-registration does not name this subset as a test.",
+    "paired_success_table": {
+      "both_failure": 47,
+      "both_success": 12,
+      "exact_mcnemar_two_sided_p": 1.7808476387094032e-26,
+      "history_only_success": 105,
+      "pairs": 168,
+      "stateless_only_success": 4
+    },
+    "preregistered": false
+  },
+  "inputs": {
+    "execution_plan": {
+      "execution_plan_digest": "sha256:c24d121809409217f11009308956eef4d0b41f2d4666f468066893409386f4d6",
+      "path": "artifacts/grounding-v5-d59-action-extraction-successor/execution-plan.json",
+      "sha256": "sha256:7415ea7544cdb9fba7cfbcbde5345e82dadb84c5815f1d7d55fd3e3a821ebfc6"
+    },
+    "original_replication": {
+      "content_digest": "sha256:175a7423dcb52f4746c136b5efed9662bcb7f4ad73202b4aacce5ab2b5be3052",
+      "file_sha256": "sha256:ec96890af793dee40d582040dba8e53ad28facf1659189fa4d0db038b43e20d8",
+      "path": "artifacts/grounding-v5-d59-replication-results/report.json"
+    },
+    "pre_registration": "artifacts/grounding-v5-d59-freeze/analysis-plan.md",
+    "projection": {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/report.json",
+      "sha256": "sha256:1d0cac6b3332a580b6e6e4cabf4a8bbfdcbc7465d14cd077fd692d629075eaf6"
+    }
+  },
+  "method": {
+    "bootstrap": {
+      "estimator": "pixelgym.grounding.v5.confirmatory_analysis.stratified_cluster_bootstrap",
+      "interpretation_choices_accepted_by_owner": [
+        "Stratum: the workflow family of the task.",
+        "Logical cluster: the frozen logical_id; a robustness pair (twin_a, twin_b) is one cluster, a singleton is its own cluster. A cluster must lie within one family.",
+        "Resampling within strata: each family independently draws as many clusters, with replacement, as it contains; all rows of a drawn cluster enter the resample.",
+        "Estimate: the pooled all-episode absolute difference mean(history) - mean(stateless) over every row in the resample, not an average of per-family differences.",
+        "Percentile convention: the frozen v1 linear-interpolation percentile at position (n - 1) * q.",
+        "Draw order: one random.Random(seed); per resample, families in ascending key order; within a family, rng.choice over ascending cluster keys once per original cluster.",
+        "Row shape: one row per paired seed with boolean history and stateless outcomes."
+      ],
+      "level": 0.95,
+      "resamples": 10000,
+      "seed": 20260911
+    },
+    "denominator_rule": "every assigned primary episode, including invalid output, step-limit truncation, and infrastructure failure",
+    "interpretation": "Frozen calculations reused as post-hoc same-task sensitivity; no independent confirmatory claim.",
+    "interval_estimator": "pixelgym.grounding.stats.wilson_interval",
+    "mcnemar_estimator": "pixelgym.grounding.stats.exact_mcnemar_p_value",
+    "pre_registration_quotes": [
+      {
+        "line": "- The single primary hypothesis remains a two-sided exact McNemar comparison at alpha 0.05, with",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  a 20-point minimum relevant absolute difference and 80% target power.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- The family-stratified logical-cluster bootstrap keeps seed 20260911, 10,000 resamples, and 95%",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  intervals.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- Screenshot-history policy: `policy-79441db33362e00a1ac6`.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- Current-frame-only policy: `policy-e1d746cd6a83ffb12a20`.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- Primary test: two-sided exact McNemar at alpha 0.05, with the unchanged 20-point minimum",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  relevant absolute difference and 80% target power.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- Reliability schedule: two additional trials per arm on the first two independent",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  representatives in each workflow family.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "  Every singleton and each pair's `twin_a` is a primary representative.",
+        "source": "artifacts/grounding-v5-d59-freeze/analysis-plan.md"
+      },
+      {
+        "line": "- **Primary metric:** exact episode success over all assigned confirmatory episodes. Invalid",
+        "source": "docs/v5-benchmark-design.md"
+      },
+      {
+        "line": "  output, request failures, wrong commits, and exhausted budgets stay in the denominator. A missing",
+        "source": "docs/v5-benchmark-design.md"
+      },
+      {
+        "line": "  episode makes the run incomplete.",
+        "source": "docs/v5-benchmark-design.md"
+      }
+    ],
+    "primary_comparison": {
+      "alpha": 0.05,
+      "difference_direction": "history minus stateless",
+      "minimum_relevant_absolute_difference": 0.2,
+      "paired_on": "identical seed, phase primary, repeat 0",
+      "paired_sample": "all paired_task_seeds in the execution plan's primary_comparison (every assigned primary episode)",
+      "phase": "primary",
+      "policies": {
+        "executed": {
+          "history": {
+            "code_revision": "67b28a4073a8e26e4bd873f748929ccba11ded54",
+            "policy_id": "policy-9f3e13279cacb221eb47",
+            "transport_retry_rule": "claude-one-stopped-timeout-connection-or-auth-retry-v1"
+          },
+          "stateless": {
+            "code_revision": "67b28a4073a8e26e4bd873f748929ccba11ded54",
+            "policy_id": "policy-20215e0a99ac9dfd59f8",
+            "transport_retry_rule": "claude-one-stopped-timeout-connection-or-auth-retry-v1"
+          }
+        },
+        "executed_match_pre_registered": false,
+        "executed_match_successor_frozen": true,
+        "executed_source": "execution plan policy_manifests",
+        "pre_registered": {
+          "history": "policy-79441db33362e00a1ac6",
+          "stateless": "policy-e1d746cd6a83ffb12a20"
+        },
+        "successor_frozen": {
+          "history": "policy-9f3e13279cacb221eb47",
+          "stateless": "policy-20215e0a99ac9dfd59f8"
+        }
+      },
+      "target_power": 0.8,
+      "test": "two-sided exact McNemar"
+    }
+  },
+  "pilot": {
+    "attempts": 97,
+    "completed": 4,
+    "pooled_into_full": false
+  },
+  "predecessor_comparisons": {
+    "historical_d59": {
+      "paired_difference": 0.4739583333333333,
+      "path": "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.json",
+      "primary_rates": {
+        "history": {
+          "denominator": 192,
+          "estimate": 0.5520833333333334,
+          "successes": 106,
+          "wilson_95": [
+            0.48140813449710274,
+            0.6207152877876104
+          ]
+        },
+        "stateless": {
+          "denominator": 192,
+          "estimate": 0.078125,
+          "successes": 15,
+          "wilson_95": [
+            0.04791391008238129,
+            0.12488636941144249
+          ]
+        }
+      },
+      "sha256": "sha256:70755949579e765321e33b61d8beae7bc54ad8fd2690b1b008fe2aea22e9b4b3"
+    },
+    "original_replication": {
+      "paired_difference": 0.21875,
+      "path": "artifacts/grounding-v5-d59-replication-results/confirmatory-analysis.json",
+      "primary_rates": {
+        "history": {
+          "denominator": 192,
+          "estimate": 0.3229166666666667,
+          "successes": 62,
+          "wilson_95": [
+            0.26081007741864376,
+            0.39197028681333174
+          ]
+        },
+        "stateless": {
+          "denominator": 192,
+          "estimate": 0.10416666666666667,
+          "successes": 20,
+          "wilson_95": [
+            0.0684489159645522,
+            0.15541307467162818
+          ]
+        }
+      },
+      "sha256": "sha256:2b7196e7e039496be38f2a2ae47203afe265abaeed98a87413d5d75c582da17d"
+    }
+  },
+  "reliability": {
+    "note": "Reported separately; never pooled with the primary comparison. Inherited schedule on inspected tasks; sensitivity only.",
+    "policies": {
+      "history": {
+        "all_three_failure": 0,
+        "all_three_success": 5,
+        "consistent_tasks": 5,
+        "one_of_three_success": 2,
+        "reliability_phase_only": {
+          "denominator": 24,
+          "estimate": 0.75,
+          "successes": 18,
+          "wilson_95": [
+            0.55100555994846,
+            0.8800063377140499
+          ]
+        },
+        "tasks": 12,
+        "trials_per_task": 3,
+        "two_of_three_success": 5
+      },
+      "stateless": {
+        "all_three_failure": 9,
+        "all_three_success": 0,
+        "consistent_tasks": 9,
+        "one_of_three_success": 3,
+        "reliability_phase_only": {
+          "denominator": 24,
+          "estimate": 0.08333333333333333,
+          "successes": 2,
+          "wilson_95": [
+            0.023158815297043306,
+            0.25848802193210685
+          ]
+        },
+        "tasks": 12,
+        "trials_per_task": 3,
+        "two_of_three_success": 0
+      }
+    },
+    "preregistered": false,
+    "seeds": [
+      6000,
+      6002,
+      6016,
+      6018,
+      6032,
+      6034,
+      6048,
+      6050,
+      6064,
+      6066,
+      6080,
+      6082
+    ]
+  },
+  "result_kind": "post_hoc_same_task_parser_sensitivity",
+  "schema_version": "pixelgym-d59-extraction-sensitivity-analysis-v1",
+  "secondary": {
+    "label": "exploratory",
+    "not_computable_from_public_projection": [
+      {
+        "diagnostic": "dependency retention, recovery, irreversible errors, path overhead, loops, per-request latency",
+        "reason": "No new operational estimator is introduced; trace diagnostics remain unestimated as in the predecessor review."
+      },
+      {
+        "diagnostic": "complete provider token usage",
+        "reason": "5 counted timeout attempts retain unknown usage; no imputation."
+      }
+    ],
+    "note": "Termination categories retain their recorded labels; no terminal request failures occurred.",
+    "preregistered": false,
+    "resource_use": {
+      "primary": {
+        "history": {
+          "environment_actions": {
+            "mean_per_episode": 24.989583333333332,
+            "total": 4798
+          },
+          "episodes": 192,
+          "model_attempts": {
+            "mean_per_episode": 25.020833333333332,
+            "total": 4804
+          },
+          "provider_control_requests": {
+            "mean_per_episode": 0.0,
+            "total": 0
+          },
+          "provider_wire_requests": {
+            "mean_per_episode": 25.020833333333332,
+            "total": 4804
+          }
+        },
+        "stateless": {
+          "environment_actions": {
+            "mean_per_episode": 27.640625,
+            "total": 5307
+          },
+          "episodes": 192,
+          "model_attempts": {
+            "mean_per_episode": 27.645833333333332,
+            "total": 5308
+          },
+          "provider_control_requests": {
+            "mean_per_episode": 0.0,
+            "total": 0
+          },
+          "provider_wire_requests": {
+            "mean_per_episode": 27.645833333333332,
+            "total": 5308
+          }
+        }
+      },
+      "reliability": {
+        "history": {
+          "environment_actions": {
+            "mean_per_episode": 24.208333333333332,
+            "total": 581
+          },
+          "episodes": 24,
+          "model_attempts": {
+            "mean_per_episode": 24.25,
+            "total": 582
+          },
+          "provider_control_requests": {
+            "mean_per_episode": 0.0,
+            "total": 0
+          },
+          "provider_wire_requests": {
+            "mean_per_episode": 24.25,
+            "total": 582
+          }
+        },
+        "stateless": {
+          "environment_actions": {
+            "mean_per_episode": 26.666666666666668,
+            "total": 640
+          },
+          "episodes": 24,
+          "model_attempts": {
+            "mean_per_episode": 26.666666666666668,
+            "total": 640
+          },
+          "provider_control_requests": {
+            "mean_per_episode": 0.0,
+            "total": 0
+          },
+          "provider_wire_requests": {
+            "mean_per_episode": 26.666666666666668,
+            "total": 640
+          }
+        }
+      }
+    },
+    "retained_journal_diagnostics": {
+      "primary": {
+        "history": {
+          "attempts_with_reported_usage": 4800,
+          "attempts_without_reported_usage": 4,
+          "episodes": 192,
+          "first_attempt_critical_decisions": {
+            "correct": 313,
+            "definition": "first model attempt at each reached consumer, including invalid choices",
+            "denominator": 320,
+            "unreached_consumers_are_not_attempts": true,
+            "valid_choice": 319
+          },
+          "reached_both_consumers": 162,
+          "reported_token_totals": {
+            "cache_creation_input_tokens": 72375147,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 1114185,
+            "output_tokens": 7625302
+          },
+          "token_coverage": "reported responses only; timeout usage is unknown"
+        },
+        "stateless": {
+          "attempts_with_reported_usage": 5308,
+          "attempts_without_reported_usage": 0,
+          "episodes": 192,
+          "first_attempt_critical_decisions": {
+            "correct": 118,
+            "definition": "first model attempt at each reached consumer, including invalid choices",
+            "denominator": 361,
+            "unreached_consumers_are_not_attempts": true,
+            "valid_choice": 360
+          },
+          "reached_both_consumers": 181,
+          "reported_token_totals": {
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 11948231,
+            "output_tokens": 6771444
+          },
+          "token_coverage": "reported responses only; timeout usage is unknown"
+        }
+      },
+      "reliability": {
+        "history": {
+          "attempts_with_reported_usage": 581,
+          "attempts_without_reported_usage": 1,
+          "episodes": 24,
+          "first_attempt_critical_decisions": {
+            "correct": 38,
+            "definition": "first model attempt at each reached consumer, including invalid choices",
+            "denominator": 40,
+            "unreached_consumers_are_not_attempts": true,
+            "valid_choice": 40
+          },
+          "reached_both_consumers": 20,
+          "reported_token_totals": {
+            "cache_creation_input_tokens": 8461202,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 139083,
+            "output_tokens": 905248
+          },
+          "token_coverage": "reported responses only; timeout usage is unknown"
+        },
+        "stateless": {
+          "attempts_with_reported_usage": 640,
+          "attempts_without_reported_usage": 0,
+          "episodes": 24,
+          "first_attempt_critical_decisions": {
+            "correct": 13,
+            "definition": "first model attempt at each reached consumer, including invalid choices",
+            "denominator": 43,
+            "unreached_consumers_are_not_attempts": true,
+            "valid_choice": 43
+          },
+          "reached_both_consumers": 21,
+          "reported_token_totals": {
+            "cache_creation_input_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "input_tokens": 1442832,
+            "output_tokens": 850989
+          },
+          "token_coverage": "reported responses only; timeout usage is unknown"
+        }
+      }
+    },
+    "robustness_consistency": {
+      "history": {
+        "different_outcome": 9,
+        "pairs": 24,
+        "same_outcome": 15
+      },
+      "stateless": {
+        "different_outcome": 6,
+        "pairs": 24,
+        "same_outcome": 18
+      }
+    },
+    "termination_profile": {
+      "primary": {
+        "history": {
+          "denominator": 192,
+          "infrastructure_failure": 0,
+          "invalid_output": 2,
+          "step_limit_truncation": 58,
+          "success_termination": 132
+        },
+        "stateless": {
+          "denominator": 192,
+          "infrastructure_failure": 0,
+          "invalid_output": 1,
+          "step_limit_truncation": 171,
+          "success_termination": 20
+        }
+      },
+      "reliability": {
+        "history": {
+          "denominator": 24,
+          "infrastructure_failure": 0,
+          "invalid_output": 0,
+          "step_limit_truncation": 6,
+          "success_termination": 18
+        },
+        "stateless": {
+          "denominator": 24,
+          "infrastructure_failure": 0,
+          "invalid_output": 0,
+          "step_limit_truncation": 22,
+          "success_termination": 2
+        }
+      }
+    }
+  },
+  "sensitivity": {
+    "label": "post_hoc_same_task_parser_sensitivity",
+    "p_value_below_alpha": true,
+    "paired_absolute_difference": {
+      "clusters": 168,
+      "estimate": 0.5833333333333334,
+      "interval": [
+        0.5080213903743316,
+        0.6580310880829016
+      ],
+      "level": 0.95,
+      "method": "family-stratified-logical-cluster-bootstrap-pooled-difference-v1",
+      "percentile": "linear-interpolation-(n-1)q-v1",
+      "resamples": 10000,
+      "rows": 192,
+      "seed": 20260911,
+      "strata": 6
+    },
+    "paired_success_table": {
+      "both_failure": 55,
+      "both_success": 15,
+      "exact_mcnemar_two_sided_p": 8.139090460257346e-29,
+      "history_only_success": 117,
+      "pairs": 192,
+      "stateless_only_success": 5
+    },
+    "preregistered": false
+  },
+  "success_rates": {
+    "label": "exploratory",
+    "note": "Wilson intervals are listed in the v5 design analysis plan but not in the pre-registration record.",
+    "phase": "primary",
+    "policies": {
+      "history": {
+        "overall": {
+          "denominator": 192,
+          "estimate": 0.6875,
+          "successes": 132,
+          "wilson_95": [
+            0.618801255443159,
+            0.7488430647818083
+          ]
+        },
+        "per_family": {
+          "conditional_precedence": {
+            "denominator": 32,
+            "estimate": 0.625,
+            "successes": 20,
+            "wilson_95": [
+              0.4525440735307745,
+              0.7706611269054578
+            ]
+          },
+          "deferred_join": {
+            "denominator": 32,
+            "estimate": 0.59375,
+            "successes": 19,
+            "wilson_95": [
+              0.42260024875382873,
+              0.7448036515733456
+            ]
+          },
+          "evidence_aggregation": {
+            "denominator": 32,
+            "estimate": 0.6875,
+            "successes": 22,
+            "wilson_95": [
+              0.5143332169904459,
+              0.8204745836639026
+            ]
+          },
+          "review_and_commit": {
+            "denominator": 32,
+            "estimate": 0.71875,
+            "successes": 23,
+            "wilson_95": [
+              0.5462549057408342,
+              0.8443541950225723
+            ]
+          },
+          "revision_after_reveal": {
+            "denominator": 32,
+            "estimate": 0.59375,
+            "successes": 19,
+            "wilson_95": [
+              0.42260024875382873,
+              0.7448036515733456
+            ]
+          },
+          "visible_error_recovery": {
+            "denominator": 32,
+            "estimate": 0.90625,
+            "successes": 29,
+            "wilson_95": [
+              0.7578184527161212,
+              0.9675984487016337
+            ]
+          }
+        }
+      },
+      "stateless": {
+        "overall": {
+          "denominator": 192,
+          "estimate": 0.10416666666666667,
+          "successes": 20,
+          "wilson_95": [
+            0.0684489159645522,
+            0.15541307467162818
+          ]
+        },
+        "per_family": {
+          "conditional_precedence": {
+            "denominator": 32,
+            "estimate": 0.125,
+            "successes": 4,
+            "wilson_95": [
+              0.04970134387480073,
+              0.2806830548165022
+            ]
+          },
+          "deferred_join": {
+            "denominator": 32,
+            "estimate": 0.15625,
+            "successes": 5,
+            "wilson_95": [
+              0.0686442028250571,
+              0.3175414959753039
+            ]
+          },
+          "evidence_aggregation": {
+            "denominator": 32,
+            "estimate": 0.03125,
+            "successes": 1,
+            "wilson_95": [
+              0.005537860164003122,
+              0.15744263820012558
+            ]
+          },
+          "review_and_commit": {
+            "denominator": 32,
+            "estimate": 0.125,
+            "successes": 4,
+            "wilson_95": [
+              0.04970134387480073,
+              0.2806830548165022
+            ]
+          },
+          "revision_after_reveal": {
+            "denominator": 32,
+            "estimate": 0.09375,
+            "successes": 3,
+            "wilson_95": [
+              0.032401551298366194,
+              0.24218154728387864
+            ]
+          },
+          "visible_error_recovery": {
+            "denominator": 32,
+            "estimate": 0.09375,
+            "successes": 3,
+            "wilson_95": [
+              0.032401551298366194,
+              0.24218154728387864
+            ]
+          }
+        }
+      }
+    },
+    "preregistered": false
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    ".cache/d59-extraction-analysis/package.py",
+    "preservation"
+  ],
+  "command": ".venv/bin/python .cache/d59-extraction-analysis/package.py preservation",
+  "cwd": "<repository>",
+  "duration_seconds": 0.04883,
+  "ended_at_utc": "2026-10-23T20:24:14.597020+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"unchanged\": true, \"file_count\": 40, \"original_results_reclassified\": 0}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T20:24:14.547941+00:00"
+}
