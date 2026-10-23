@@ -1,0 +1,20 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-p",
+    "tests.support.d59_offline_guard",
+    "tests/unit/test_grounding_v5_d510_restore.py"
+  ],
+  "command": ".venv/bin/python -m pytest -q -p tests.support.d59_offline_guard tests/unit/test_grounding_v5_d510_restore.py",
+  "cwd": "<path-0>",
+  "duration_seconds": 4.192578,
+  "ended_at_utc": "2026-10-23T21:28:41.137729+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "........                                                                 [100%]\n8 passed in 3.46s\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T21:28:36.943679+00:00"
+}

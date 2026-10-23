@@ -1,0 +1,45 @@
+{
+  "current_requested_integration_tests_skipped": 0,
+  "explanations": [
+    {
+      "count": 1,
+      "reason": "Optional legacy v4 PNG-byte verification; release-hosted assets absent. Core dev setup intentionally does not fetch these images.",
+      "test": "tests/unit/test_grounding_v4_artifacts.py:324"
+    },
+    {
+      "count": 1,
+      "reason": "Optional historical Day 2 PNG-byte verification; release-hosted assets absent.",
+      "test": "tests/unit/test_browser_boundary_evidence.py:189"
+    },
+    {
+      "count": 2,
+      "reason": "These historical source records name no reviewed Git commit. Their explicit revision_note is preserved; no revision is invented.",
+      "records": [
+        "artifacts/decisions/d2.11.json",
+        "artifacts/decisions/d3-pilot.json"
+      ],
+      "test": "tests/unit/test_decision_records.py:122"
+    },
+    {
+      "count": 2,
+      "reason": "Those same records have tag=null; the legacy skip message says tag None not present. This is absent historical tag metadata, not a missing tag that can be fetched.",
+      "records": [
+        "artifacts/decisions/d2.11.json",
+        "artifacts/decisions/d3-pilot.json"
+      ],
+      "test": "tests/unit/test_decision_records.py:133"
+    }
+  ],
+  "historical_metadata_modified": false,
+  "legacy_assets_fetched": false,
+  "model_calls": 0,
+  "observed_skip_count": 6,
+  "raw_skip_lines": [
+    "SKIPPED [1] tests/unit/test_grounding_v4_artifacts.py:324: artifacts/grounding-v4-pilot PNGs are release-hosted and not fetched; run `python scripts/fetch_evidence_images.py --set grounding-v4-pilot`",
+    "SKIPPED [1] tests/unit/test_browser_boundary_evidence.py:189: artifacts/day-2 PNGs are release-hosted and not fetched; run `python scripts/fetch_evidence_images.py --set day-2`",
+    "SKIPPED [2] tests/unit/test_decision_records.py:122: record names no reviewed revision (revision_note)",
+    "SKIPPED [2] tests/unit/test_decision_records.py:133: tag None not present in this clone"
+  ],
+  "schema_version": "pixelgym-d510-skip-investigation-v1",
+  "source_record": "commands/07-unit-skip-investigation.json"
+}

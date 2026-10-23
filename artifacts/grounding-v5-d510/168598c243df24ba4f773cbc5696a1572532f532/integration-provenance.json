@@ -1,0 +1,42 @@
+{
+  "browser_launch": null,
+  "browser_screen_size": [
+    1024,
+    768
+  ],
+  "guest_artifact_name": "osworld-v2-ubuntu-x86.qcow2.zip",
+  "guest_artifact_repository": "xlangai/v2-image",
+  "guest_artifact_sha256": "sha256:eb737ae70b49849e24af407de6a518439a23de05a8497096a948334ce0a909aa",
+  "guest_artifact_tag": "v2026.06.24",
+  "guest_volume_size_gb": 50,
+  "host_machine": "arm64",
+  "host_port_allocator": "socket-bind-plus-docker-port-map",
+  "host_system": "Darwin",
+  "installed_osworld_commit": "2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6",
+  "installed_osworld_revision": "v2026.06.24",
+  "installed_versions": {
+    "Pillow": "11.0.0",
+    "numpy": "1.26.4",
+    "osworld": "0.1.0",
+    "playwright": "1.62.0",
+    "pytest": "9.1.1"
+  },
+  "provider": "docker-local",
+  "provider_credentials_inherited": false,
+  "python_version": "3.12.15",
+  "release": "osworld-v2-2026.06.24",
+  "release_manifest_url": "https://github.com/xlang-ai/OSWorld-V2/blob/v2026.06.24/benchmark_releases/osworld-v2-2026.06.24.json",
+  "runtime_image": "docker.io/pixelgym/osworld-qemu-arm64:qemux-6.18",
+  "runtime_image_base": "docker.io/qemux/qemu@sha256:b51ff8a5d69c10e57d3515c7a40dbbd47c410152b1491f849d12ede7607b80be",
+  "runtime_source_commit": "c698406b5a447234379b3fdede03d7f6e4e3fa6c",
+  "sandbox_model_requests": 0,
+  "screen_size": [
+    1024,
+    768
+  ],
+  "selected_local_image_id": "sha256:60fe3501e5f5e16c5eaeb75b5b13b843c490891a1f24b86244b06c0c9d32d9f3",
+  "task_bundle_sha256": null,
+  "upstream_commit": "2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6",
+  "upstream_repository": "https://github.com/xlang-ai/OSWorld-V2",
+  "upstream_tag": "v2026.06.24"
+}
