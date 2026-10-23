@@ -1,0 +1,228 @@
+{
+  "by_phase_and_mode": {
+    "primary": {
+      "history": {
+        "exactly_one_action_object": 127,
+        "failure_reason": {
+          "parse_failure:JSONDecodeError": 121,
+          "parse_failure:ValueError": 6
+        },
+        "failures_after_typing_event": 103,
+        "family": {
+          "conditional_precedence": 18,
+          "deferred_join": 19,
+          "evidence_aggregation": 21,
+          "review_and_commit": 29,
+          "revision_after_reveal": 22,
+          "visible_error_recovery": 18
+        },
+        "final_stage_index": {
+          "1": 59,
+          "10": 3,
+          "11": 1,
+          "12": 1,
+          "2": 4,
+          "3": 5,
+          "4": 45,
+          "5": 2,
+          "7": 3,
+          "8": 2,
+          "9": 2
+        },
+        "finish_reason": {
+          "stop": 127
+        },
+        "invalid_output_episodes": 127,
+        "keywords": {
+          "mentions_case_backspace_or_error": 71,
+          "mentions_code": 107,
+          "references_history_frames": 92
+        },
+        "last_committed_event": {
+          "correct_transition": 17,
+          "ignored_named_key": 1,
+          "incorrect_choice": 2,
+          "invalid_text_value": 18,
+          "key_without_focus": 1,
+          "memory_choice_recorded": 2,
+          "text_input_focused": 79,
+          "text_value_accepted": 6,
+          "wrong_irreversible_commit": 1
+        },
+        "prior_invalid_text_value": 23,
+        "response_shape": {
+          "fence_first_then_prose": 6,
+          "fence_inside_prose": 1,
+          "prose_then_fence_last": 120
+        },
+        "single_rejected_attempt": 127,
+        "terminal_output_tokens": {
+          "max": 12021,
+          "median": 2103,
+          "min": 597
+        }
+      },
+      "stateless": {
+        "exactly_one_action_object": 36,
+        "failure_reason": {
+          "parse_failure:JSONDecodeError": 34,
+          "parse_failure:ValueError": 2
+        },
+        "failures_after_typing_event": 19,
+        "family": {
+          "conditional_precedence": 4,
+          "deferred_join": 2,
+          "evidence_aggregation": 2,
+          "review_and_commit": 14,
+          "revision_after_reveal": 6,
+          "visible_error_recovery": 8
+        },
+        "final_stage_index": {
+          "1": 9,
+          "11": 10,
+          "13": 3,
+          "4": 10,
+          "7": 1,
+          "9": 3
+        },
+        "finish_reason": {
+          "stop": 36
+        },
+        "invalid_output_episodes": 36,
+        "keywords": {
+          "mentions_case_backspace_or_error": 31,
+          "mentions_code": 18,
+          "references_history_frames": 1
+        },
+        "last_committed_event": {
+          "action_after_irreversible_commit": 5,
+          "correct_transition": 1,
+          "invalid_text_value": 4,
+          "key_after_irreversible_commit": 8,
+          "non_progressing_noop": 1,
+          "text_input_focused": 15,
+          "wrong_irreversible_commit": 2
+        },
+        "prior_invalid_text_value": 4,
+        "response_shape": {
+          "fence_first_then_prose": 1,
+          "fence_only": 1,
+          "prose_then_fence_last": 34
+        },
+        "single_rejected_attempt": 36,
+        "terminal_output_tokens": {
+          "max": 9216,
+          "median": 4882,
+          "min": 508
+        }
+      }
+    },
+    "reliability": {
+      "history": {
+        "exactly_one_action_object": 21,
+        "failure_reason": {
+          "parse_failure:JSONDecodeError": 20,
+          "parse_failure:ValueError": 1
+        },
+        "failures_after_typing_event": 17,
+        "family": {
+          "conditional_precedence": 2,
+          "deferred_join": 3,
+          "evidence_aggregation": 4,
+          "review_and_commit": 4,
+          "revision_after_reveal": 4,
+          "visible_error_recovery": 4
+        },
+        "final_stage_index": {
+          "1": 10,
+          "3": 2,
+          "4": 8,
+          "7": 1
+        },
+        "finish_reason": {
+          "stop": 21
+        },
+        "invalid_output_episodes": 21,
+        "keywords": {
+          "mentions_case_backspace_or_error": 13,
+          "mentions_code": 18,
+          "references_history_frames": 16
+        },
+        "last_committed_event": {
+          "correct_transition": 3,
+          "invalid_text_value": 1,
+          "key_without_focus": 1,
+          "text_input_focused": 16
+        },
+        "prior_invalid_text_value": 1,
+        "response_shape": {
+          "fence_first_then_prose": 1,
+          "prose_then_fence_last": 20
+        },
+        "single_rejected_attempt": 21,
+        "terminal_output_tokens": {
+          "max": 14468,
+          "median": 1405,
+          "min": 588
+        }
+      },
+      "stateless": {
+        "exactly_one_action_object": 3,
+        "failure_reason": {
+          "parse_failure:JSONDecodeError": 3
+        },
+        "failures_after_typing_event": 3,
+        "family": {
+          "deferred_join": 1,
+          "review_and_commit": 1,
+          "visible_error_recovery": 1
+        },
+        "final_stage_index": {
+          "1": 2,
+          "4": 1
+        },
+        "finish_reason": {
+          "stop": 3
+        },
+        "invalid_output_episodes": 3,
+        "keywords": {
+          "mentions_case_backspace_or_error": 1,
+          "mentions_code": 3,
+          "references_history_frames": 0
+        },
+        "last_committed_event": {
+          "text_input_focused": 3
+        },
+        "prior_invalid_text_value": 0,
+        "response_shape": {
+          "prose_then_fence_last": 3
+        },
+        "single_rejected_attempt": 3,
+        "terminal_output_tokens": {
+          "max": 7154,
+          "median": 2706,
+          "min": 1511
+        }
+      }
+    }
+  },
+  "disclaimer": "Exploratory diagnostic generated read-only from the retained attempt journal. It uses privileged dispatch diagnostics and the stored model text, so it is never pooled with the pre-registered primary comparison. Only counts are published; no response text, screenshot, or private path is included. No model was called. It attributes no cause to the historical and replication difference. D5.10 remains the owner's decision.",
+  "execution_plan_digest": "sha256:ce6776def9066d2c3b4a1b2701b25567dc182364dfa3cf694b4044d865d59159",
+  "parser_rule": "bare JSON or one complete JSON fence; prose around the action is rejected",
+  "parser_versions": [
+    "pixelgym-agent-v5-claude-stream-json-action-parser-v4-ui-render-preamble"
+  ],
+  "schema_version": "pixelgym-agent-v5-d59-replication-prose-signature-v1",
+  "typing_diagnostics_primary": {
+    "history": {
+      "invalid_text_value": 84,
+      "text_input_focused": 1510,
+      "text_value_accepted": 212
+    },
+    "stateless": {
+      "invalid_text_value": 22,
+      "text_input_focused": 2333,
+      "text_value_accepted": 353
+    }
+  }
+}
