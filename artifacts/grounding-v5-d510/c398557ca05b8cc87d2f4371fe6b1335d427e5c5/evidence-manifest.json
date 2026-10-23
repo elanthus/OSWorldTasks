@@ -11,7 +11,9 @@
         "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/85-worktree-status-before-redaction-scan.json",
         "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/86-redaction-scan-collected-records.json",
         "artifacts/grounding-v5-d59-replication-results/review-guide.md",
-        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/REPORT.md"
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/REPORT.md",
+        "docs/v5-policy-sandbox.md",
+        "docs/d59-subscription-verification.md"
       ],
       "checklist_text": "Review raw commands, outputs, evidence integrity, limitations, benchmark verdict, and any public wording",
       "id": "d5.10-delivery-row",
@@ -456,13 +458,13 @@
   "package_files": [
     {
       "path": "REPORT.md",
-      "sha256": "816526a69403af50caa6e8483216f9fe21f8c1d58fd599c2c2ae63bf5fc7341a",
-      "size": 32909
+      "sha256": "e7d3a15f9cd1f6276262df727f2fb79970812a76b1ba57807961ebdeb051083c",
+      "size": 33227
     },
     {
       "path": "checklist-map.json",
-      "sha256": "87a60240c1cc539e5b9dce53f5eed81cc6d9b2fa0f3265a93c1202f62b28e9ea",
-      "size": 27152
+      "sha256": "ff3218ee9192aada3d8e2028b15b34d250aedca08392309c7f36c357c5e2eac3",
+      "size": 27491
     },
     {
       "path": "commands/00-git-revision.json",
@@ -884,6 +886,11 @@
       "size": 1385
     },
     {
+      "path": "docs/d59-subscription-verification.md",
+      "sha256": "053b7de36c1d834d4e6b65e9130897d840dd588b81d6837732205450ee56c3a5",
+      "size": 11201
+    },
+    {
       "path": "docs/evidence-index.md",
       "sha256": "a88a957595b18831bbc1d98c873599ecfa53bd6ad342a3987f4bbb1d35cfe265",
       "size": 23020
@@ -892,6 +899,11 @@
       "path": "docs/v5-benchmark-design.md",
       "sha256": "244aeecce0c19f77ca0eedabac1d697296697440bad4bbcabbf2f43e9f824db8",
       "size": 10696
+    },
+    {
+      "path": "docs/v5-policy-sandbox.md",
+      "sha256": "6525fca1001f8e63778e50d8c700b49c7e397cbc669a80cec2b3475817c320e4",
+      "size": 10230
     },
     {
       "path": "pixelgym/grounding/v5/schemas/attempt-event.schema.json",

@@ -33,7 +33,8 @@
     "The full and pilot projections are separate. Every full assignment stays in its original denominator. Both historical and replication primary results are published under the frozen disagreement rule; one confirmed-stopped timeout retains unknown provider completion/usage. Neither login nor successful retry settles it.",
     "Two archives on the same local disk were verified; no independent off-host copy or fresh restore drill is claimed. Named secondary metrics lacking a frozen operational estimator remain unestimated. Complete provider token use and per-request latency are not inferred.",
     "The gate verdict remains null. No checklist state or public model-quality wording is approved by this package.",
-    "Records 00-16 observe the analysis-code commit during collection. Records 17-18 additionally capture the final documentation inventory and visible packaging edits before the evidence-package commit. They are not represented as a clean checkout of a later commit. Every preceding successful observation remains stored."
+    "Records 00-16 observe the analysis-code commit during collection. Records 17-18 additionally capture the final documentation inventory and visible packaging edits before the evidence-package commit. They are not represented as a clean checkout of a later commit. Every preceding successful observation remains stored.",
+    "Documentation review subsequently corrected the sandbox status and labelled the parser-incompatible pilot history; the final artifact manifest hashes those documentation updates. Earlier command snapshots are preserved at their collection times."
   ],
   "items": [
     {
@@ -58,7 +59,9 @@
         "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/85-worktree-status-before-redaction-scan.json",
         "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/86-redaction-scan-collected-records.json",
         "artifacts/grounding-v5-d59-replication-results/review-guide.md",
-        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/REPORT.md"
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/REPORT.md",
+        "docs/v5-policy-sandbox.md",
+        "docs/d59-subscription-verification.md"
       ],
       "linked_records": [
         {

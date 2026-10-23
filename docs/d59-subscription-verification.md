@@ -5,8 +5,13 @@ strict parser compatibility fix, replacement freeze, a new four-assignment pilot
 execution only after operational checks pass. The original investigation
 and its earlier digests below are retained as history. The active freeze is now
 `sha256:ce6776def9066d2c3b4a1b2701b25567dc182364dfa3cf694b4044d865d59159`.
+The replacement pilot and full campaign subsequently completed; their [review
+package](../artifacts/grounding-v5-d59-replication-results/review-guide.md) keeps the pilot
+separate and discloses one unresolved confirmed-stopped timeout. D5.10 remains human-owned.
 No experiment call occurred while preparing this replacement; the separate owner-authorized
 Fable code-verification call is recorded outside experiment accounting.
+
+## Historical parser-incompatible pilot
 
 The previous pilot consumed four model attempts and dispatched zero environment actions. All four
 responses reported the frozen Haiku model and available usage, but the strict parser rejected
@@ -14,8 +19,8 @@ responses reported the frozen Haiku model and available usage, but the strict pa
 `completed_all_assignments`; infrastructure failures do not satisfy the owner's operational
 pilot condition. The local controller initially accepted those rows, was stopped before
 full dispatch, and now explicitly rejects infrastructure/request-failure rows. Thirteen local
-offline gate checks passed in 0.56 seconds. No full-phase model attempt occurred; every
-experiment process is closed. Both private retention copies verify. The generated
+offline gate checks passed in 0.56 seconds. No full-phase model attempt occurred under that
+earlier freeze; its experiment processes closed. Both private retention copies verify. The generated
 [pilot launch report](../artifacts/grounding-v5-d59-replication/pilot-launch-report.json)
 records the raw counts, classifications, stream violations, and retention digest. The owner subsequently authorized a strict
 parser successor and a new pilot;
