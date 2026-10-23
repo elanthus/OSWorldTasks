@@ -292,20 +292,18 @@ def test_campaign_records_in_flight_assignments_after_a_stop_and_honours_the_win
             started.set()
             release.wait(timeout=5)
             return {**job, "classification": "success_termination"}
+        assert started.wait(timeout=5)
         return {**job, "classification": "policy_violation"}  # not a continuing outcome
 
-    def late_release(outcome_holder: list) -> None:
-        started.wait(timeout=5)
-        release.set()
-
-    holder: list = []
-    threading.Thread(target=late_release, args=(holder,), daemon=True).start()
     outcome = replication.run_campaign(
         _jobs(3),
         workers=2,
         run_assignment=run,
         window_exhausted=lambda: False,
         ledger_blocked=lambda: False,
+        # Keep t-0 in flight until the stopping result has actually been observed.
+        # Releasing it merely when it starts races dispatch of t-2 against t-1.
+        on_result=lambda row: release.set() if row["trial_id"] == "t-1" else None,
     )
     # t-1 stops the campaign while t-0 is in flight; t-0 is still recorded, t-2 never runs.
     assert outcome.stop_reason == "unexpected_classification:policy_violation"
