@@ -16,6 +16,7 @@ pairing, cluster mapping, reliability schedule, and denominator rule.
 | [Earlier pilot launch report](../grounding-v5-d59-replication/pilot-launch-report.json) | Earlier parser-incompatible pilot retained as a separate attempt, before the versioned parser fix and fresh pilot |
 | [Frozen replication plan](../grounding-v5-d59-replication/execution-plan.json) and [pre-registration addenda](../grounding-v5-d59-freeze/analysis-plan.md) | Exact executed policies, source revision, approved stop-rule options, renewal protocol, caps, and two-result reporting rule; neither file changed during analysis |
 | [Historical D5.9 analysis](../grounding-v5-d59-haiku-results/confirmatory-analysis.md) | Original result, post-result stop amendments, different executed policies, waived kernel sandbox, and lost raw journals; reported unchanged beside the replication |
+| [Parse-failure signature](prose-signature-diagnostic.md) ([JSON](prose-signature-diagnostic.json)) | Separately labelled exploratory diagnostic from the retained journal: shape of every rejected response, failure reasons, task stage, and last committed action; counts only, never pooled with the primary comparison |
 | [Replication command index](../grounding-v5-d510/c398557ca05b8cc87d2f4371fe6b1335d427e5c5/REPORT.md) | Exact offline commands, exit statuses, counts, runtimes, full output, checklist mapping, redaction scan, and artifact hashes |
 | [Earlier full D5.10 evidence index](../grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/REPORT.md) | Historical full-suite and integration observations at their recorded revision; not rerun or represented as observations of this analysis change |
 
@@ -30,6 +31,14 @@ pairing, cluster mapping, reliability schedule, and denominator rule.
   Provider-side completion and token use remain unknown. Recorded response-token totals
   exclude that unknown quantity rather than treating it as zero. Local process closure
   and subscription charge accounting do not establish provider settlement or billing.
+- An exploratory read-only pass over the retained journal shows every invalid-output
+  episode ended on its first and only rejected response. In 186 of 187 the response placed
+  prose outside a single JSON fence; the one exception is a lone fence whose object carries
+  an extra field. Read directly, all 187 fenced bodies parse as JSON and 186 are an exact
+  four-field action object. The parser rule is unchanged from the historical revision.
+  In the primary phase, 103 of 127 history failures and 19 of 36 stateless failures followed
+  a text-entry action. The pass attributes no cause to the historical difference and is
+  reported apart from the primary result.
 - Named secondary diagnostics without frozen operational estimators are explicitly left
   unestimated. Retained traces exist; inventing estimators after observing outcomes would
   require separately labelled exploratory work. The conditional first-attempt diagnostic
