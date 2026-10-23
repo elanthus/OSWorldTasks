@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "git",
+    "status",
+    "--short"
+  ],
+  "command": "git status --short",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.047574,
+  "ended_at_utc": "2026-10-23T21:31:36.183776+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "?? artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T21:31:36.135002+00:00"
+}

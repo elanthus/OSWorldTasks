@@ -1,0 +1,18 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-m",
+    "scripts.report_grounding_v5_d59_extraction",
+    "analyze",
+    "--check"
+  ],
+  "command": ".venv/bin/python -m scripts.report_grounding_v5_d59_extraction analyze --check",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.833827,
+  "ended_at_utc": "2026-10-23T21:28:52.034342+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"D5.10\": null, \"sensitivity\": {\"label\": \"post_hoc_same_task_parser_sensitivity\", \"p_value_below_alpha\": true, \"paired_absolute_difference\": {\"clusters\": 168, \"estimate\": 0.5833333333333334, \"interval\": [0.5080213903743316, 0.6580310880829016], \"level\": 0.95, \"method\": \"family-stratified-logical-cluster-bootstrap-pooled-difference-v1\", \"percentile\": \"linear-interpolation-(n-1)q-v1\", \"resamples\": 10000, \"rows\": 192, \"seed\": 20260911, \"strata\": 6}, \"paired_success_table\": {\"both_failure\": 55, \"both_success\": 15, \"exact_mcnemar_two_sided_p\": 8.139090460257346e-29, \"history_only_success\": 117, \"pairs\": 192, \"stateless_only_success\": 5}, \"preregistered\": false}}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T21:28:51.199435+00:00"
+}

@@ -1,0 +1,35 @@
+{
+  "model_calls": 0,
+  "no_gated_assets_fetched": true,
+  "observations": [
+    {
+      "check": "browser",
+      "command_record": "commands/04-browser.json",
+      "command_record_sha256": "sha256:3976febe8afec74a7b43d16acfa3155bf4dda6f2f74cf12fba8bdbea55ff3454",
+      "duration_seconds": 137.127408,
+      "exit_status": 0,
+      "provenance": "integration-provenance.json",
+      "provenance_sha256": "sha256:6f1dd0f676b38e8ad14f4724aaf03811fd54540cb59ea5d56386efb218a189c0"
+    },
+    {
+      "check": "cli_sandbox",
+      "command_record": "commands/05-cli-sandbox.json",
+      "command_record_sha256": "sha256:d453a7ab16724a066eb721153596dfcec1301f5725ca15b29211d1803eb825b5",
+      "duration_seconds": 76.470109,
+      "exit_status": 0,
+      "provenance": "integration-provenance.json",
+      "provenance_sha256": "sha256:6f1dd0f676b38e8ad14f4724aaf03811fd54540cb59ea5d56386efb218a189c0"
+    },
+    {
+      "check": "osworld",
+      "command_record": "commands/06-osworld.json",
+      "command_record_sha256": "sha256:f5ed076ea15d28482d7065f14206ff5458447adc91d1b49478c1d2677e99e5c2",
+      "duration_seconds": 330.183847,
+      "exit_status": 0,
+      "provenance": "integration-provenance.json",
+      "provenance_sha256": "sha256:6f1dd0f676b38e8ad14f4724aaf03811fd54540cb59ea5d56386efb218a189c0"
+    }
+  ],
+  "provider_closed_record": "commands/17-provider-closed.json",
+  "provider_credentials_inherited": false
+}
