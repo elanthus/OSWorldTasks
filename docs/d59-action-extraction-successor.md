@@ -1,9 +1,15 @@
 # D5.9 action-extraction successor: owner review
 
-This is a prepared, disabled candidate for a **post-hoc parser-sensitivity study on
+The owner approved this exact candidate on 2026-10-23; the durable decision and
+phase limits are in [`owner-direction.json`](../artifacts/grounding-v5-d59-action-extraction-successor/owner-direction.json).
+Pilot execution is authorized, and full execution is authorized only after the
+operational pilot gate passes; task failures are allowed. The original candidate
+bytes and digest stay unchanged, with execution authority in separate phase records.
+
+This was prepared as a disabled candidate for a **post-hoc parser-sensitivity study on
 previously inspected tasks**. It does not replace the completed replication or
 provide an independent confirmatory result. Freezing or executing it requires the
-owner's approval of its exact digest. No model calls were made during preparation.
+owner's approval of its exact digest, now recorded above. No model calls were made during preparation.
 
 The candidate and generated field inventory live in
 [`artifacts/grounding-v5-d59-action-extraction-successor/`](../artifacts/grounding-v5-d59-action-extraction-successor/).
@@ -75,7 +81,7 @@ content hash when available, and accepted candidate hash. It contains no prose.
 Rejected candidates remain terminal invalid outputs with no format retry. Failure
 to retain the receipt prevents normal continuation.
 
-## Candidate and approval boundary
+## Candidate and approval boundary at preparation
 
 The successor has its own artifact directory and `d59-extract-` trial namespace.
 Its plan binds the original completed replication and response-free report by hash.
@@ -97,7 +103,7 @@ analysis mechanics, not a fresh pre-registration after inspecting the task outco
 Only drained owner-login waits pause the active clock. Existing bounded retry and
 shared-ledger stops apply. The public candidate remains `execution_enabled: false`,
 `subscription_execution_authorized: false`, with both approved caps zero. No owner
-approval for this successor has been written. Prior campaign approvals cannot
+approval was written during preparation; the subsequent owner approval is linked above. Prior campaign approvals cannot
 validate against its new digest. D5.10 remains a human decision.
 
 To rebuild or verify **without CLI or network calls**, use the source revision in
@@ -114,3 +120,16 @@ phase approval before any authentication or sandbox probe. Future execution also
 requires fresh live identity and sandbox checks. Preparation here does not run those
 checks or authorize either phase. A fresh held-out confirmatory workload would need
 a separate design decision rather than a change hidden in this parser successor.
+
+## Approved phase activation
+
+The 2026-10-23 owner decision authorizes the listed pilot caps and window and,
+conditionally, the listed full caps and window. The full record is activated only
+after four completed pilot assignments satisfy operational checks: no campaign
+guard stop or infrastructure/request failure; strict identity/sandbox bindings;
+valid accounting and extraction receipts; closed subprocesses; and verified archive
+and backup. Task failures, including invalid outputs, remain in the denominator.
+
+An expired OAuth credential pauses dispatch for the owner to renew it through the
+hidden-input helper. Renewal never clears an unresolved-ledger block or resets caps.
+Original replication evidence and the D5.10 human decision remain separate.
