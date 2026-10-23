@@ -63,10 +63,11 @@
         "commands/16-public-wording-inventory.json",
         "commands/17-provider-closed.json",
         "commands/18-lint.json",
-        "commands/19-worktree-status.json"
+        "commands/19-worktree-status.json",
+        "commands/20-receipt-path-regressions.json"
       ],
       "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:658",
-      "stored_raw_observation": "`00-git-revision`: exit 0<br>`02-evidence-branch`: exit 0<br>`03-checklist-source`: exit 0<br>`04-browser`: exit 0; pytest {\"passed\": 18, \"runtime\": 136.67}<br>`05-cli-sandbox`: exit 0; pytest {\"passed\": 5, \"runtime\": 75.21}<br>`06-osworld`: exit 0; pytest {\"passed\": 1, \"runtime\": 329.13, \"warnings\": 6}<br>`07-unit-skip-investigation`: exit 1; pytest {\"failed\": 9, \"passed\": 3277, \"runtime\": 188.82, \"skipped\": 6, \"warnings\": 16}<br>`08-restore-overlay-regressions`: exit 0; pytest {\"passed\": 6, \"runtime\": 0.11}<br>`09-restore-drill`: exit 0<br>`10-unit-stable-source`: exit 1; pytest {\"failed\": 64, \"passed\": 3228, \"runtime\": 136.13, \"skipped\": 6, \"warnings\": 16}<br>`11-unit-clean-committed-source`: exit 0; pytest {\"passed\": 3294, \"runtime\": 151.14, \"skipped\": 6, \"warnings\": 16}<br>`12-source-commit`: exit 0<br>`13-restore-regressions`: exit 0; pytest {\"passed\": 8, \"runtime\": 3.46}<br>`14-verify-frozen-candidate`: exit 0<br>`15-reproduce-sensitivity-analysis`: exit 0<br>`16-public-wording-inventory`: exit 0<br>`17-provider-closed`: exit 0<br>`18-lint`: exit 0<br>`19-worktree-status`: exit 0"
+      "stored_raw_observation": "`00-git-revision`: exit 0<br>`02-evidence-branch`: exit 0<br>`03-checklist-source`: exit 0<br>`04-browser`: exit 0; pytest {\"passed\": 18, \"runtime\": 136.67}<br>`05-cli-sandbox`: exit 0; pytest {\"passed\": 5, \"runtime\": 75.21}<br>`06-osworld`: exit 0; pytest {\"passed\": 1, \"runtime\": 329.13, \"warnings\": 6}<br>`07-unit-skip-investigation`: exit 1; pytest {\"failed\": 9, \"passed\": 3277, \"runtime\": 188.82, \"skipped\": 6, \"warnings\": 16}<br>`08-restore-overlay-regressions`: exit 0; pytest {\"passed\": 6, \"runtime\": 0.11}<br>`09-restore-drill`: exit 0<br>`10-unit-stable-source`: exit 1; pytest {\"failed\": 64, \"passed\": 3228, \"runtime\": 136.13, \"skipped\": 6, \"warnings\": 16}<br>`11-unit-clean-committed-source`: exit 0; pytest {\"passed\": 3294, \"runtime\": 151.14, \"skipped\": 6, \"warnings\": 16}<br>`12-source-commit`: exit 0<br>`13-restore-regressions`: exit 0; pytest {\"passed\": 8, \"runtime\": 3.46}<br>`14-verify-frozen-candidate`: exit 0<br>`15-reproduce-sensitivity-analysis`: exit 0<br>`16-public-wording-inventory`: exit 0<br>`17-provider-closed`: exit 0<br>`18-lint`: exit 0<br>`19-worktree-status`: exit 0<br>`20-receipt-path-regressions`: exit 0; pytest {\"passed\": 12, \"runtime\": 2.32}"
     },
     {
       "artifacts": [
@@ -181,10 +182,11 @@
       "records": [
         "commands/06-osworld.json",
         "commands/09-restore-drill.json",
-        "commands/13-restore-regressions.json"
+        "commands/13-restore-regressions.json",
+        "commands/20-receipt-path-regressions.json"
       ],
       "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:793",
-      "stored_raw_observation": "`06-osworld`: exit 0; pytest {\"passed\": 1, \"runtime\": 329.13, \"warnings\": 6}<br>`09-restore-drill`: exit 0<br>`13-restore-regressions`: exit 0; pytest {\"passed\": 8, \"runtime\": 3.46}"
+      "stored_raw_observation": "`06-osworld`: exit 0; pytest {\"passed\": 1, \"runtime\": 329.13, \"warnings\": 6}<br>`09-restore-drill`: exit 0<br>`13-restore-regressions`: exit 0; pytest {\"passed\": 8, \"runtime\": 3.46}<br>`20-receipt-path-regressions`: exit 0; pytest {\"passed\": 12, \"runtime\": 2.32}"
     },
     {
       "artifacts": [
@@ -336,10 +338,11 @@
         "commands/16-public-wording-inventory.json",
         "commands/17-provider-closed.json",
         "commands/18-lint.json",
-        "commands/19-worktree-status.json"
+        "commands/19-worktree-status.json",
+        "commands/20-receipt-path-regressions.json"
       ],
       "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:809",
-      "stored_raw_observation": "`00-git-revision`: exit 0<br>`02-evidence-branch`: exit 0<br>`03-checklist-source`: exit 0<br>`04-browser`: exit 0; pytest {\"passed\": 18, \"runtime\": 136.67}<br>`05-cli-sandbox`: exit 0; pytest {\"passed\": 5, \"runtime\": 75.21}<br>`06-osworld`: exit 0; pytest {\"passed\": 1, \"runtime\": 329.13, \"warnings\": 6}<br>`07-unit-skip-investigation`: exit 1; pytest {\"failed\": 9, \"passed\": 3277, \"runtime\": 188.82, \"skipped\": 6, \"warnings\": 16}<br>`08-restore-overlay-regressions`: exit 0; pytest {\"passed\": 6, \"runtime\": 0.11}<br>`09-restore-drill`: exit 0<br>`10-unit-stable-source`: exit 1; pytest {\"failed\": 64, \"passed\": 3228, \"runtime\": 136.13, \"skipped\": 6, \"warnings\": 16}<br>`11-unit-clean-committed-source`: exit 0; pytest {\"passed\": 3294, \"runtime\": 151.14, \"skipped\": 6, \"warnings\": 16}<br>`12-source-commit`: exit 0<br>`13-restore-regressions`: exit 0; pytest {\"passed\": 8, \"runtime\": 3.46}<br>`14-verify-frozen-candidate`: exit 0<br>`15-reproduce-sensitivity-analysis`: exit 0<br>`16-public-wording-inventory`: exit 0<br>`17-provider-closed`: exit 0<br>`18-lint`: exit 0<br>`19-worktree-status`: exit 0"
+      "stored_raw_observation": "`00-git-revision`: exit 0<br>`02-evidence-branch`: exit 0<br>`03-checklist-source`: exit 0<br>`04-browser`: exit 0; pytest {\"passed\": 18, \"runtime\": 136.67}<br>`05-cli-sandbox`: exit 0; pytest {\"passed\": 5, \"runtime\": 75.21}<br>`06-osworld`: exit 0; pytest {\"passed\": 1, \"runtime\": 329.13, \"warnings\": 6}<br>`07-unit-skip-investigation`: exit 1; pytest {\"failed\": 9, \"passed\": 3277, \"runtime\": 188.82, \"skipped\": 6, \"warnings\": 16}<br>`08-restore-overlay-regressions`: exit 0; pytest {\"passed\": 6, \"runtime\": 0.11}<br>`09-restore-drill`: exit 0<br>`10-unit-stable-source`: exit 1; pytest {\"failed\": 64, \"passed\": 3228, \"runtime\": 136.13, \"skipped\": 6, \"warnings\": 16}<br>`11-unit-clean-committed-source`: exit 0; pytest {\"passed\": 3294, \"runtime\": 151.14, \"skipped\": 6, \"warnings\": 16}<br>`12-source-commit`: exit 0<br>`13-restore-regressions`: exit 0; pytest {\"passed\": 8, \"runtime\": 3.46}<br>`14-verify-frozen-candidate`: exit 0<br>`15-reproduce-sensitivity-analysis`: exit 0<br>`16-public-wording-inventory`: exit 0<br>`17-provider-closed`: exit 0<br>`18-lint`: exit 0<br>`19-worktree-status`: exit 0<br>`20-receipt-path-regressions`: exit 0; pytest {\"passed\": 12, \"runtime\": 2.32}"
     }
   ],
   "checklist_source": {
@@ -578,6 +581,20 @@
       "sha256": "8ef48b706c02a5cdb6dbe59dbc037de0bd381094f598c82bd8d1a4c0dd0cd219",
       "size": 443,
       "started_at_utc": "2026-10-23T21:31:36.135002+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q -p tests.support.d59_offline_guard tests/unit/test_grounding_v5_d510_restore.py",
+      "duration_seconds": 3.086584,
+      "ended_at_utc": "2026-10-23T21:41:46.391970+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 12,
+        "runtime": 2.32
+      },
+      "path": "commands/20-receipt-path-regressions.json",
+      "sha256": "58b43bf77237d2f409bb6efdf8b59088185cea77f9db363d427f3bbcca45bdd4",
+      "size": 680,
+      "started_at_utc": "2026-10-23T21:41:43.304132+00:00"
     }
   ],
   "evidence_branch": "evidence/d510-fresh-validation",
@@ -600,18 +617,18 @@
   "package_files": [
     {
       "path": "REPORT.md",
-      "sha256": "ae97987fdeb83020d0bbd2bd7b4d9992fd491d0f799a0795603ed454125ebb98",
-      "size": 34986
+      "sha256": "1329a6ce00641105d348224741ce4f07cb266f1963e227338aecbc21af493a6c",
+      "size": 35743
     },
     {
       "path": "REVIEW-NOTE.md",
-      "sha256": "7d3abf65d1ab06791a494ee4b82289a2af172fef6a973d3d279094411dbc7f63",
-      "size": 6979
+      "sha256": "350e67bed4c35c9852dcda65cc11430f4b8b02e1e849a2a4633c8c1568b54e95",
+      "size": 7132
     },
     {
       "path": "checklist-map.json",
-      "sha256": "fe50f30a8d16c360eee7ddc943d0e438e31dc41f162b97a14ba5fe889d5c42c0",
-      "size": 30143
+      "sha256": "c7664cab38b92bb2e45114205cffeed456a70221e4abe43dfc9a9f717e709e70",
+      "size": 30587
     },
     {
       "path": "commands/00-git-revision.json",
@@ -709,6 +726,11 @@
       "size": 443
     },
     {
+      "path": "commands/20-receipt-path-regressions.json",
+      "sha256": "58b43bf77237d2f409bb6efdf8b59088185cea77f9db363d427f3bbcca45bdd4",
+      "size": 680
+    },
+    {
       "path": "integration-observations.json",
       "sha256": "3516ab615e9f30477fa8717e7c748f578a04b6902c073bfd2298f062fa443d78",
       "size": 1429
@@ -725,7 +747,7 @@
     },
     {
       "path": "redaction-scan.json",
-      "sha256": "8dddfd1a9a0f65e796b276c62bc5108588deca158b580cd6af483134a77c8926",
+      "sha256": "f4fb79942b27eb0e0429b527e5b2c58892828167e176f6af18bdef8c490032c3",
       "size": 445
     },
     {
@@ -740,7 +762,7 @@
     }
   ],
   "redaction_scan": {
-    "files_scanned": 28,
+    "files_scanned": 29,
     "files_with_findings": {},
     "finding_counts": {
       "aws_access_keys": 0,
@@ -929,8 +951,8 @@
     },
     {
       "path": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/REVIEW-NOTE.md",
-      "sha256": "7d3abf65d1ab06791a494ee4b82289a2af172fef6a973d3d279094411dbc7f63",
-      "size": 6979
+      "sha256": "350e67bed4c35c9852dcda65cc11430f4b8b02e1e849a2a4633c8c1568b54e95",
+      "size": 7132
     },
     {
       "path": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/integration-observations.json",
@@ -1209,13 +1231,13 @@
     },
     {
       "path": "scripts/restore_grounding_v5_d510.py",
-      "sha256": "17062d5dfb62e79a2be12a58e643f573be3998370f7b1362a943410eb98109c1",
-      "size": 5318
+      "sha256": "d1c1c2b55dce91ecf335a4f896420ef1e325e18e487950b39fc9237f9f87f849",
+      "size": 5481
     },
     {
       "path": "tests/unit/test_grounding_v5_d510_restore.py",
-      "sha256": "34e241c2a40a3b66e74ebfba753fce55e597e12b8c216b3be1aff9209c4e29aa",
-      "size": 2296
+      "sha256": "2059b94b56467eeca75af85244a4da3899b423d547557cd83b9caf1bd72ecbc7",
+      "size": 2922
     },
     {
       "path": "tests/unit/test_grounding_v5_d59_extraction_report.py",

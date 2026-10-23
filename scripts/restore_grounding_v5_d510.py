@@ -108,7 +108,6 @@ def main() -> None:
     for option in ("run", "archive", "backup", "destination", "output"):
         parser.add_argument("--" + option, type=Path, required=True)
     args = parser.parse_args()
-    os.umask(0o077)
     _separate(
         *(
             _no_links(getattr(args, name))
@@ -117,6 +116,7 @@ def main() -> None:
     )
     if args.output.exists():
         raise FileExistsError("restore receipt already exists")
+    os.umask(0o077)
     result = drill(args.run, args.archive, args.backup, args.destination)
     write_private(args.output, canonical_json_bytes(result) + b"\n")
     print(json.dumps(result, sort_keys=True))

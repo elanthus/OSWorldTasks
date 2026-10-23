@@ -21,7 +21,7 @@ runtime and output remain in the linked command records.
 | CLI/kernel sandbox | 5 passed, no skips | 75.21 s | [05](commands/05-cli-sandbox.json) |
 | OSWorld live reconnect | 1 passed, 6 warnings, no skips | 329.13 s | [06](commands/06-osworld.json) |
 | Whole unit suite, clean committed source | 3,294 passed, 6 skipped, 16 warnings | 151.14 s | [11](commands/11-unit-clean-committed-source.json) |
-| Restore helper regressions, network/sleep guard | 8 passed | 3.46 s | [13](commands/13-restore-regressions.json) |
+| Restore helper regressions, network/sleep guard | 12 passed | 2.32 s | [20](commands/20-receipt-path-regressions.json) |
 | Four-copy evidence restore | 4 exact published projections reproduced | 216.818686 s | [09](commands/09-restore-drill.json) |
 
 The browser observations cover repeatable development golden/recovery traces, fake/browser
@@ -63,8 +63,10 @@ Archive capture precedes the final retention receipt. The helper proves the only
 difference is that published, hash-bound receipt, then places it in a separate audit view.
 Actual restored files are not altered. Before/after fingerprints match for all four copies.
 Regression tests reject altered outcomes, counts, receipts, final bytes and bindings, plus
-unsafe destination paths before any destination write. The drill ran during helper preparation;
-the committed helper additionally validates disjoint, non-symlink roots before writing.
+unsafe destination paths before any destination write. Four additional CLI tests reject receipt
+outputs inside each protected evidence root before creating the destination. The drill ran during helper preparation;
+the committed helper additionally validates disjoint, non-symlink roots and separate receipt
+outputs before writing.
 
 This is an evidence restore and audit, not task/action replay or provider-usage settlement.
 All five full-run confirmed-stopped timeouts retain unknown provider completion and usage.

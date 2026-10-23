@@ -94,7 +94,8 @@
         "commands/16-public-wording-inventory.json",
         "commands/17-provider-closed.json",
         "commands/18-lint.json",
-        "commands/19-worktree-status.json"
+        "commands/19-worktree-status.json",
+        "commands/20-receipt-path-regressions.json"
       ],
       "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:658"
     },
@@ -202,7 +203,8 @@
       "records": [
         "commands/06-osworld.json",
         "commands/09-restore-drill.json",
-        "commands/13-restore-regressions.json"
+        "commands/13-restore-regressions.json",
+        "commands/20-receipt-path-regressions.json"
       ],
       "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:793",
       "source_end_line": 798
@@ -386,7 +388,8 @@
         "commands/16-public-wording-inventory.json",
         "commands/17-provider-closed.json",
         "commands/18-lint.json",
-        "commands/19-worktree-status.json"
+        "commands/19-worktree-status.json",
+        "commands/20-receipt-path-regressions.json"
       ],
       "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:809",
       "source_end_line": 810
@@ -426,7 +429,8 @@
     "Restore verifies archive manifests, file digests, SQLite integrity, journal/accounting/identity/extraction bindings and exact published projections. It does not replay tasks or agent actions. Archive snapshots precede the final retention receipt: a separate audit view supplies only the hash-bound published receipt after proving every other summary field identical. Actual restored bytes remain unchanged.",
     "Both pilot and full copies were restored from each store. All four audited projections match publication; five full-run unresolved timeouts remain unresolved. Restored files, source evidence and both retained copies were not deleted; no cleanup authorization was issued.",
     "Original result and freeze inputs (46 files) were rehashed unchanged. Primary/reliability/pilot denominators and post-hoc same-task parser-sensitivity interpretation remain unchanged. The original Haiku journal-loss and sandbox-exception disclosures remain historical limits; fresh sandbox tests do not retroactively sandbox those runs.",
-    "Linked earlier checklist evidence remains historical at its recorded revision. New observations supplement it without checking checklist boxes. The owner retains the D5.10 verdict and public-wording decisions."
+    "Linked earlier checklist evidence remains historical at its recorded revision. New observations supplement it without checking checklist boxes. The owner retains the D5.10 verdict and public-wording decisions.",
+    "Before final delivery the CLI was hardened to reject receipt output paths inside any run, archive, backup or restore root. Record 20 retains 12 guarded regression results; the completed four-copy drill used an already separate output path and its observations remain unchanged."
   ],
   "schema_version": "pixelgym-d510-checklist-map-v1",
   "verdict": null,
