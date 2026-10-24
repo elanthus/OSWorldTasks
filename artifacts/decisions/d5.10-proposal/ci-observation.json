@@ -1,0 +1,22 @@
+{
+  "schema_version": "pixelgym-d510-proposed-decision-ci-observation-v1",
+  "repository": "elanthus/OSWorldTasks",
+  "pull_request": 265,
+  "tested_pr_head": "37d85e3912b54604025f15a964e055cd66e0d619",
+  "workflow_run_id": 40029152714,
+  "job_id": 120672949022,
+  "source_url": "https://github.com/elanthus/OSWorldTasks/actions/runs/40029152714/job/120672949022",
+  "job_conclusion": "success",
+  "command": "python -m pytest -q -n 4 --dist worksteal --hypothesis-profile=ci --cov=pixelgym --cov-report=term-missing --cov-report=xml --cov-fail-under=80 tests/unit",
+  "passed": 3298,
+  "skipped": 6,
+  "warnings": 12,
+  "pytest_runtime_seconds": 564.94,
+  "pixelgym_coverage_percent": 83.66,
+  "source_summary_lines": [
+    "2026-10-23T21:47:18.8733929Z ##[group]Run python -m pytest -q -n 4 --dist worksteal --hypothesis-profile=ci --cov=pixelgym --cov-report=term-missing --cov-report=xml --cov-fail-under=80 tests/unit",
+    "2026-10-23T21:56:46.8076932Z Required test coverage of 80% reached. Total coverage: 83.66%",
+    "2026-10-23T21:56:46.8079219Z 3298 passed, 6 skipped, 12 warnings in 564.94s (0:09:24)"
+  ],
+  "collection_note": "Copied from the stored GitHub job log inspected during the PR #265 merge. No test or model was rerun to prepare this observation."
+}
