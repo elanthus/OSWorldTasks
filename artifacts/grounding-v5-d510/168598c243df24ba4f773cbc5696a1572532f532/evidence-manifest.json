@@ -1,0 +1,1255 @@
+{
+  "checklist_items": [
+    {
+      "artifacts": [
+        "docs/v5-benchmark-design.md",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/00-git-revision.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/01-worktree-status.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/52-worktree-status-after-verifiers.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/82-worktree-status-after-integration.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/84-public-wording-inventory.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/85-worktree-status-before-redaction-scan.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/86-redaction-scan-collected-records.json",
+        "artifacts/grounding-v5-d59-replication-results/review-guide.md",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/REPORT.md",
+        "docs/v5-policy-sandbox.md",
+        "docs/d59-subscription-verification.md",
+        "scripts/README.md",
+        "artifacts/grounding-v5-d59-action-extraction-results/review-guide.md",
+        "artifacts/grounding-v5-d59-action-extraction-results/report.json",
+        "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.md",
+        "artifacts/grounding-v5-d59-action-extraction-results/pilot-report.json",
+        "artifacts/grounding-v5-d59-action-extraction-results/preserved-inputs.json",
+        "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.json",
+        "scripts/report_grounding_v5_d59_extraction.py",
+        "tests/unit/test_grounding_v5_d59_extraction_report.py",
+        "docs/d59-action-extraction-successor.md",
+        "scripts/restore_grounding_v5_d510.py",
+        "tests/unit/test_grounding_v5_d510_restore.py",
+        "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/integration-provenance.json",
+        "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/integration-observations.json",
+        "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/skip-investigation.json",
+        "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/restore-drill.json",
+        "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/preserved-inputs.json",
+        "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/REVIEW-NOTE.md"
+      ],
+      "checklist_text": "Review raw commands, outputs, evidence integrity, limitations, benchmark verdict, and any public wording",
+      "id": "d5.10-delivery-row",
+      "kind": "delivery_row",
+      "linked_records": [
+        "docs/v5-benchmark-design.md",
+        "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+        "docs/evidence-index.md",
+        "artifacts/grounding-v5-d59-haiku-results/report.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md"
+      ],
+      "number": 1,
+      "records": [
+        "commands/00-git-revision.json",
+        "commands/02-evidence-branch.json",
+        "commands/03-checklist-source.json",
+        "commands/04-browser.json",
+        "commands/05-cli-sandbox.json",
+        "commands/06-osworld.json",
+        "commands/07-unit-skip-investigation.json",
+        "commands/08-restore-overlay-regressions.json",
+        "commands/09-restore-drill.json",
+        "commands/10-unit-stable-source.json",
+        "commands/11-unit-clean-committed-source.json",
+        "commands/12-source-commit.json",
+        "commands/13-restore-regressions.json",
+        "commands/14-verify-frozen-candidate.json",
+        "commands/15-reproduce-sensitivity-analysis.json",
+        "commands/16-public-wording-inventory.json",
+        "commands/17-provider-closed.json",
+        "commands/18-lint.json",
+        "commands/19-worktree-status.json",
+        "commands/20-receipt-path-regressions.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:658",
+      "stored_raw_observation": "`00-git-revision`: exit 0<br>`02-evidence-branch`: exit 0<br>`03-checklist-source`: exit 0<br>`04-browser`: exit 0; pytest {\"passed\": 18, \"runtime\": 136.67}<br>`05-cli-sandbox`: exit 0; pytest {\"passed\": 5, \"runtime\": 75.21}<br>`06-osworld`: exit 0; pytest {\"passed\": 1, \"runtime\": 329.13, \"warnings\": 6}<br>`07-unit-skip-investigation`: exit 1; pytest {\"failed\": 9, \"passed\": 3277, \"runtime\": 188.82, \"skipped\": 6, \"warnings\": 16}<br>`08-restore-overlay-regressions`: exit 0; pytest {\"passed\": 6, \"runtime\": 0.11}<br>`09-restore-drill`: exit 0<br>`10-unit-stable-source`: exit 1; pytest {\"failed\": 64, \"passed\": 3228, \"runtime\": 136.13, \"skipped\": 6, \"warnings\": 16}<br>`11-unit-clean-committed-source`: exit 0; pytest {\"passed\": 3294, \"runtime\": 151.14, \"skipped\": 6, \"warnings\": 16}<br>`12-source-commit`: exit 0<br>`13-restore-regressions`: exit 0; pytest {\"passed\": 8, \"runtime\": 3.46}<br>`14-verify-frozen-candidate`: exit 0<br>`15-reproduce-sensitivity-analysis`: exit 0<br>`16-public-wording-inventory`: exit 0<br>`17-provider-closed`: exit 0<br>`18-lint`: exit 0<br>`19-worktree-status`: exit 0<br>`20-receipt-path-regressions`: exit 0; pytest {\"passed\": 12, \"runtime\": 2.32}"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d56-calibration-approval.md",
+        "artifacts/decisions/d4.12.json"
+      ],
+      "checklist_text": "The human explicitly approves D5.1 and sequencing relative to the separate D4.12 gate.",
+      "id": "done-when-01",
+      "kind": "done_when",
+      "linked_records": [
+        "artifacts/grounding-v5-d56-calibration-approval.md"
+      ],
+      "number": 2,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:785",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-contracts.md",
+        "artifacts/grounding-v5-manifests/development.json",
+        "artifacts/grounding-v5-manifests/calibration.json",
+        "artifacts/grounding-v5-manifests/calibration-d56.json",
+        "artifacts/grounding-v5-manifests/confirmatory.json",
+        "pixelgym/grounding/v5/seeds.py",
+        "pixelgym/grounding/v5/schemas/task.schema.json",
+        "pixelgym/grounding/v5/schemas/policy.schema.json",
+        "pixelgym/grounding/v5/schemas/attempt-event.schema.json",
+        "pixelgym/grounding/v5/schemas/memory-task.schema.json",
+        "pixelgym/grounding/v5/schemas/memory-task-v3.schema.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/53-v5-group-generator-partitions-admission.json"
+      ],
+      "checklist_text": "Versioned schemas and disjoint development, calibration, and confirmatory seed lists are committed before task capture or model calls.",
+      "id": "done-when-02",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 3,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:786",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-development-admission.json",
+        "artifacts/grounding-v5-d59-freeze/admission.json",
+        "artifacts/grounding-v5-d59-freeze/task-manifest.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/53-v5-group-generator-partitions-admission.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/43-verify-d59-freeze.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/48-verify-v5-at-historical-revisions.json"
+      ],
+      "checklist_text": "Six generator families produce the frozen allocations and satisfy every admission rule.",
+      "id": "done-when-03",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 4,
+      "records": [
+        "commands/04-browser.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:788",
+      "stored_raw_observation": "`04-browser`: exit 0; pytest {\"passed\": 18, \"runtime\": 136.67}"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-development-admission.json",
+        "artifacts/grounding-v5-development-sample/manifest.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/59-browser-integration.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/53-v5-group-generator-partitions-admission.json"
+      ],
+      "checklist_text": "Every declared valid and adversarial trace replays twice with identical semantic state and bitwise-identical corresponding screenshots.",
+      "id": "done-when-04",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 5,
+      "records": [
+        "commands/04-browser.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:789",
+      "stored_raw_observation": "`04-browser`: exit 0; pytest {\"passed\": 18, \"runtime\": 136.67}"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-development-admission.json",
+        "artifacts/grounding-v5-d59-freeze/admission.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/53-v5-group-generator-partitions-admission.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/15-golden-trajectory-check.json"
+      ],
+      "checklist_text": "Golden policies reach reward `1.0` exactly once; all declared near-miss and reward-hacking mutations remain at `0.0`.",
+      "id": "done-when-05",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 6,
+      "records": [
+        "commands/04-browser.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:791",
+      "stored_raw_observation": "`04-browser`: exit 0; pytest {\"passed\": 18, \"runtime\": 136.67}"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-contracts.md",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/54-v5-group-stateful-harness-journal-resume-dispatch-restore.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/55-v5-group-credential-secret-redaction-integrity.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/57-v5-group-call-cap-planning.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/70-osworld-v5-integration-without-guest-image.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/74-osworld-v5-integration-linked-guest-image.json"
+      ],
+      "checklist_text": "Stateful policy reset, policy-egress isolation, pre-send attempt persistence, unknown-attempt reconciliation, bounded deadline/cancellation settlement, post-attempt and post-dispatch state reconstruction, canonical parser-input recovery, atomic candidate/checkpoint persistence, sealed parser failure, exact backend-state restore or reconnect, durable dispatch ordering, invalid output, call caps, resume, authoritative replay, credential-free policy inputs, secret exclusion, redaction binding, and evidence integrity have no-cost failure-path tests.",
+      "id": "done-when-06",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 7,
+      "records": [
+        "commands/06-osworld.json",
+        "commands/09-restore-drill.json",
+        "commands/13-restore-regressions.json",
+        "commands/20-receipt-path-regressions.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:793",
+      "stored_raw_observation": "`06-osworld`: exit 0; pytest {\"passed\": 1, \"runtime\": 329.13, \"warnings\": 6}<br>`09-restore-drill`: exit 0<br>`13-restore-regressions`: exit 0; pytest {\"passed\": 8, \"runtime\": 3.46}<br>`20-receipt-path-regressions`: exit 0; pytest {\"passed\": 12, \"runtime\": 2.32}"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/58-v5-sandbox-integration.json"
+      ],
+      "checklist_text": "No-cost OS-level integration evidence denies unauthorized policy egress and preserves required provider-fake, backend, application, and controller traffic without internet or real-provider calls.",
+      "id": "done-when-07",
+      "kind": "done_when",
+      "linked_records": [
+        "artifacts/grounding-v5-d56-calibration-approval.md",
+        "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+        "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+        "docs/v5-benchmark-design.md"
+      ],
+      "number": 8,
+      "records": [
+        "commands/05-cli-sandbox.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:799",
+      "stored_raw_observation": "`05-cli-sandbox`: exit 0; pytest {\"passed\": 5, \"runtime\": 75.21}"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/10-boundary-inventory.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/06-create-dev-venv.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/07-install-dev.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/80-fast-suite-ci-invocation.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/81-unit-suite-serial.json"
+      ],
+      "checklist_text": "The documented fast suite passes without browser, network, OSWorld, provider credentials, or model calls.",
+      "id": "done-when-08",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 9,
+      "records": [
+        "commands/07-unit-skip-investigation.json",
+        "commands/10-unit-stable-source.json",
+        "commands/11-unit-clean-committed-source.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:801",
+      "stored_raw_observation": "`07-unit-skip-investigation`: exit 1; pytest {\"failed\": 9, \"passed\": 3277, \"runtime\": 188.82, \"skipped\": 6, \"warnings\": 16}<br>`10-unit-stable-source`: exit 1; pytest {\"failed\": 64, \"passed\": 3228, \"runtime\": 136.13, \"skipped\": 6, \"warnings\": 16}<br>`11-unit-clean-committed-source`: exit 0; pytest {\"passed\": 3294, \"runtime\": 151.14, \"skipped\": 6, \"warnings\": 16}"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-scripted-call-cap-plan.json",
+        "artifacts/grounding-v5-d59-freeze/execution-plan.json",
+        "artifacts/grounding-v5-d59-haiku-freeze/execution-plan.json",
+        "artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json",
+        "artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/57-v5-group-call-cap-planning.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/42-d59-recorded-source-revisions.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/43-verify-d59-freeze.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/45-verify-d59-haiku-freeze.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/46-verify-d59-haiku-retry-successor.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/47-verify-d59-haiku-network-retry.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/48-verify-v5-at-historical-revisions.json"
+      ],
+      "checklist_text": "A free plan-only command reports exact environment-action, model-attempt, provider-control, and total wire-request caps for each approved phase.",
+      "id": "done-when-09",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 10,
+      "records": [
+        "commands/14-verify-frozen-candidate.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:803",
+      "stored_raw_observation": "`14-verify-frozen-candidate`: exit 0"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d56-calibration-approval.md",
+        "artifacts/grounding-v5-d58-final-design/decision.json",
+        "artifacts/grounding-v5-d59-haiku-selection/owner-selection.json",
+        "artifacts/grounding-v5-d59-haiku-execution/owner-approval.json",
+        "artifacts/grounding-v5-d59-haiku-api-retry-execution/owner-approval.json",
+        "artifacts/grounding-v5-d59-haiku-results/authorization-history.json"
+      ],
+      "checklist_text": "The agent stops for explicit calibration approval and again for explicit confirmatory approval.",
+      "id": "done-when-10",
+      "kind": "done_when",
+      "linked_records": [
+        "artifacts/grounding-v5-d59-haiku-results/report.md"
+      ],
+      "number": 11,
+      "records": [],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:805",
+      "stored_raw_observation": "no stored observation"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d59-haiku-results/report.md",
+        "artifacts/grounding-v5-d59-haiku-results/report.json",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.json",
+        "artifacts/grounding-v5-d59-haiku-results/publication-relation.json",
+        "artifacts/grounding-v5-d59-haiku-results/authorization-history.json",
+        "artifacts/grounding-v5-d59-freeze/analysis-plan.md",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/50-check-d59-confirmatory-analysis.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/49-report-d59-haiku-help.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/51-d59-private-run-directories-present.json",
+        "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/56-v5-group-metrics-statistics.json",
+        "artifacts/grounding-v5-d59-replication-results/report.json",
+        "artifacts/grounding-v5-d59-replication-results/pilot-report.json",
+        "artifacts/grounding-v5-d59-replication-results/confirmatory-analysis.json",
+        "artifacts/grounding-v5-d59-replication-results/confirmatory-analysis.md"
+      ],
+      "checklist_text": "The confirmatory report is generated only from sealed evidence, retains every failure, and separates primary, diagnostic, ablation, reliability, and exploratory results.",
+      "id": "done-when-11",
+      "kind": "done_when",
+      "linked_records": [
+        "docs/evidence-index.md",
+        "artifacts/grounding-v5-d59-haiku-results/report.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+        "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md"
+      ],
+      "number": 12,
+      "records": [
+        "commands/09-restore-drill.json",
+        "commands/15-reproduce-sensitivity-analysis.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:807",
+      "stored_raw_observation": "`09-restore-drill`: exit 0<br>`15-reproduce-sensitivity-analysis`: exit 0"
+    },
+    {
+      "artifacts": [],
+      "checklist_text": "The agent reports raw milestone-gate commands, exit statuses, counts, runtimes, and full output without declaring the human gate passed or approving public wording.",
+      "id": "done-when-12",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 13,
+      "records": [
+        "commands/00-git-revision.json",
+        "commands/02-evidence-branch.json",
+        "commands/03-checklist-source.json",
+        "commands/04-browser.json",
+        "commands/05-cli-sandbox.json",
+        "commands/06-osworld.json",
+        "commands/07-unit-skip-investigation.json",
+        "commands/08-restore-overlay-regressions.json",
+        "commands/09-restore-drill.json",
+        "commands/10-unit-stable-source.json",
+        "commands/11-unit-clean-committed-source.json",
+        "commands/12-source-commit.json",
+        "commands/13-restore-regressions.json",
+        "commands/14-verify-frozen-candidate.json",
+        "commands/15-reproduce-sensitivity-analysis.json",
+        "commands/16-public-wording-inventory.json",
+        "commands/17-provider-closed.json",
+        "commands/18-lint.json",
+        "commands/19-worktree-status.json",
+        "commands/20-receipt-path-regressions.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:809",
+      "stored_raw_observation": "`00-git-revision`: exit 0<br>`02-evidence-branch`: exit 0<br>`03-checklist-source`: exit 0<br>`04-browser`: exit 0; pytest {\"passed\": 18, \"runtime\": 136.67}<br>`05-cli-sandbox`: exit 0; pytest {\"passed\": 5, \"runtime\": 75.21}<br>`06-osworld`: exit 0; pytest {\"passed\": 1, \"runtime\": 329.13, \"warnings\": 6}<br>`07-unit-skip-investigation`: exit 1; pytest {\"failed\": 9, \"passed\": 3277, \"runtime\": 188.82, \"skipped\": 6, \"warnings\": 16}<br>`08-restore-overlay-regressions`: exit 0; pytest {\"passed\": 6, \"runtime\": 0.11}<br>`09-restore-drill`: exit 0<br>`10-unit-stable-source`: exit 1; pytest {\"failed\": 64, \"passed\": 3228, \"runtime\": 136.13, \"skipped\": 6, \"warnings\": 16}<br>`11-unit-clean-committed-source`: exit 0; pytest {\"passed\": 3294, \"runtime\": 151.14, \"skipped\": 6, \"warnings\": 16}<br>`12-source-commit`: exit 0<br>`13-restore-regressions`: exit 0; pytest {\"passed\": 8, \"runtime\": 3.46}<br>`14-verify-frozen-candidate`: exit 0<br>`15-reproduce-sensitivity-analysis`: exit 0<br>`16-public-wording-inventory`: exit 0<br>`17-provider-closed`: exit 0<br>`18-lint`: exit 0<br>`19-worktree-status`: exit 0<br>`20-receipt-path-regressions`: exit 0; pytest {\"passed\": 12, \"runtime\": 2.32}"
+    }
+  ],
+  "checklist_source": {
+    "path": "plans/grounding-v5-agent-benchmark.md",
+    "record": "commands/03-checklist-source.json",
+    "revision": "f0bcbd6f3e379f880baeca233d4b7e05528bcfc5"
+  },
+  "command_records": [
+    {
+      "command": "git rev-parse '168598c243df24ba4f773cbc5696a1572532f532^{commit}'",
+      "duration_seconds": 0.017355,
+      "ended_at_utc": "2026-10-23T21:28:36.682961+00:00",
+      "exit_status": 0,
+      "path": "commands/00-git-revision.json",
+      "sha256": "38452aff62dc6f480979555907ecfd7368c33ed22b3cee6edd5b4128fc5a4279",
+      "size": 503,
+      "started_at_utc": "2026-10-23T21:28:36.664458+00:00"
+    },
+    {
+      "command": "git branch --show-current",
+      "duration_seconds": 0.013179,
+      "ended_at_utc": "2026-10-23T21:28:36.749435+00:00",
+      "exit_status": 0,
+      "path": "commands/02-evidence-branch.json",
+      "sha256": "ea2e3950b1f1490d828818522ef43c3fdd2543009f9d49d8825d40c96d08808a",
+      "size": 415,
+      "started_at_utc": "2026-10-23T21:28:36.735112+00:00"
+    },
+    {
+      "command": "git show f0bcbd6f3e379f880baeca233d4b7e05528bcfc5:plans/grounding-v5-agent-benchmark.md",
+      "duration_seconds": 0.015463,
+      "ended_at_utc": "2026-10-23T21:28:36.816483+00:00",
+      "exit_status": 0,
+      "path": "commands/03-checklist-source.json",
+      "sha256": "8ba247b0464b36b6aee4df1c9b6d90070c23e569921ae0e63cfe7eeb6219ca4b",
+      "size": 55731,
+      "started_at_utc": "2026-10-23T21:28:36.799918+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q -rs -m browser_integration tests/integration/test_grounding_v5_browser.py tests/integration/test_vendor_form_browser.py",
+      "duration_seconds": 137.127408,
+      "ended_at_utc": "2026-10-23T21:18:45.866049+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 18,
+        "runtime": 136.67
+      },
+      "path": "commands/04-browser.json",
+      "sha256": "3976febe8afec74a7b43d16acfa3155bf4dda6f2f74cf12fba8bdbea55ff3454",
+      "size": 829,
+      "started_at_utc": "2026-10-23T21:16:28.732484+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q -rs -m 'v5_cli_sandbox_integration or v5_sandbox_integration' tests/integration/test_grounding_v5_cli_sandbox.py tests/integration/test_grounding_v5_sandbox.py tests/integration/test_stateful_serving_sandbox.py",
+      "duration_seconds": 76.470109,
+      "ended_at_utc": "2026-10-23T21:17:45.762124+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 5,
+        "runtime": 75.21
+      },
+      "path": "commands/05-cli-sandbox.json",
+      "sha256": "d453a7ab16724a066eb721153596dfcec1301f5725ca15b29211d1803eb825b5",
+      "size": 1062,
+      "started_at_utc": "2026-10-23T21:16:29.285133+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q -rs -m osworld_integration tests/integration/test_grounding_v5_osworld.py",
+      "duration_seconds": 330.183847,
+      "ended_at_utc": "2026-10-23T21:21:59.013126+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 1,
+        "runtime": 329.13,
+        "warnings": 6
+      },
+      "path": "commands/06-osworld.json",
+      "sha256": "f5ed076ea15d28482d7065f14206ff5458447adc91d1b49478c1d2677e99e5c2",
+      "size": 2266,
+      "started_at_utc": "2026-10-23T21:16:28.823552+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q -rs -n 4 --dist worksteal --hypothesis-profile=ci tests/unit",
+      "duration_seconds": 189.790913,
+      "ended_at_utc": "2026-10-23T21:19:37.930747+00:00",
+      "exit_status": 1,
+      "observed_test_summary": {
+        "failed": 9,
+        "passed": 3277,
+        "runtime": 188.82,
+        "skipped": 6,
+        "warnings": 16
+      },
+      "path": "commands/07-unit-skip-investigation.json",
+      "sha256": "ecace69afc671e9284ad165f79e5d24ae73faf5fa5cea07992f436950c346e73",
+      "size": 34568,
+      "started_at_utc": "2026-10-23T21:16:28.135091+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q -p tests.support.d59_offline_guard tests/unit/test_grounding_v5_d510_restore.py",
+      "duration_seconds": 1.376051,
+      "ended_at_utc": "2026-10-23T21:19:00.880006+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 6,
+        "runtime": 0.11
+      },
+      "path": "commands/08-restore-overlay-regressions.json",
+      "sha256": "011c4c885fbd020e57f310d0cf3ce2a3b3204627609ea872fc646022f24f6123",
+      "size": 679,
+      "started_at_utc": "2026-10-23T21:18:59.500646+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.restore_grounding_v5_d510 --run <path-1> --archive <path-2> --backup <path-3> --destination <path-4> --output <home>/.local/share/pixelgym-evidence-restored/d510-168598c-receipt.json",
+      "duration_seconds": 216.818686,
+      "ended_at_utc": "2026-10-23T21:23:22.788417+00:00",
+      "exit_status": 0,
+      "path": "commands/09-restore-drill.json",
+      "sha256": "9b264a86a2064cac1c750a00d6913083865d6008d67060ca7764798958d4c3b0",
+      "size": 4622,
+      "started_at_utc": "2026-10-23T21:19:45.963563+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q -rs -n 4 --dist worksteal --hypothesis-profile=ci tests/unit",
+      "duration_seconds": 137.425686,
+      "ended_at_utc": "2026-10-23T21:24:18.455295+00:00",
+      "exit_status": 1,
+      "observed_test_summary": {
+        "failed": 64,
+        "passed": 3228,
+        "runtime": 136.13,
+        "skipped": 6,
+        "warnings": 16
+      },
+      "path": "commands/10-unit-stable-source.json",
+      "sha256": "576308e359f28ab0c9b2e108860ae741beea9767f6f60713f0ff3992808609aa",
+      "size": 169261,
+      "started_at_utc": "2026-10-23T21:22:01.024285+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q -rs -n 4 --dist worksteal --hypothesis-profile=ci tests/unit",
+      "duration_seconds": 152.043089,
+      "ended_at_utc": "2026-10-23T21:30:38.399836+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 3294,
+        "runtime": 151.14,
+        "skipped": 6,
+        "warnings": 16
+      },
+      "path": "commands/11-unit-clean-committed-source.json",
+      "sha256": "d52a3eb871e9c1e71b3ac4767e76a82f4b0bb43325506f3acad8c9db68aa78f0",
+      "size": 7385,
+      "started_at_utc": "2026-10-23T21:28:06.354405+00:00"
+    },
+    {
+      "command": "git rev-parse HEAD",
+      "duration_seconds": 0.016085,
+      "ended_at_utc": "2026-10-23T21:28:36.889354+00:00",
+      "exit_status": 0,
+      "path": "commands/12-source-commit.json",
+      "sha256": "4fe1c0e78be70c60853490ed1f10d2a8e20a0453b163ea0fbf93e805abc62a60",
+      "size": 411,
+      "started_at_utc": "2026-10-23T21:28:36.871919+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q -p tests.support.d59_offline_guard tests/unit/test_grounding_v5_d510_restore.py",
+      "duration_seconds": 4.192578,
+      "ended_at_utc": "2026-10-23T21:28:41.137729+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 8,
+        "runtime": 3.46
+      },
+      "path": "commands/13-restore-regressions.json",
+      "sha256": "0da4f1c1c4c5f5c310d0b807693872df8c585c3854cfb2f645117e78d41c1136",
+      "size": 679,
+      "started_at_utc": "2026-10-23T21:28:36.943679+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.prepare_grounding_v5_d59_extraction --source-revision 67b28a4073a8e26e4bd873f748929ccba11ded54 --verify",
+      "duration_seconds": 9.945798,
+      "ended_at_utc": "2026-10-23T21:28:51.140982+00:00",
+      "exit_status": 0,
+      "path": "commands/14-verify-frozen-candidate.json",
+      "sha256": "5abd120d2cac98b2cb6522a3fbd4dd04baff58da7fd7cd4577b4354a9b73c166",
+      "size": 922,
+      "started_at_utc": "2026-10-23T21:28:41.193804+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.report_grounding_v5_d59_extraction analyze --check",
+      "duration_seconds": 0.833827,
+      "ended_at_utc": "2026-10-23T21:28:52.034342+00:00",
+      "exit_status": 0,
+      "path": "commands/15-reproduce-sensitivity-analysis.json",
+      "sha256": "7c59ffcb4b517e3a3f7d58d4fbd2b1ddf11fe218e5b02d727ceaa4da2b7db34d",
+      "size": 1222,
+      "started_at_utc": "2026-10-23T21:28:51.199435+00:00"
+    },
+    {
+      "command": "rg -n 'D5.10|parser-sensitivity|post-hoc|sandbox|isolation' README.md docs/v5-benchmark-design.md docs/d59-action-extraction-successor.md",
+      "duration_seconds": 0.010801,
+      "ended_at_utc": "2026-10-23T21:28:52.101267+00:00",
+      "exit_status": 0,
+      "path": "commands/16-public-wording-inventory.json",
+      "sha256": "3c418db2a9f5f7655a89ae84653e441bc32b70104912b956f6daf609c6a3912e",
+      "size": 4218,
+      "started_at_utc": "2026-10-23T21:28:52.089243+00:00"
+    },
+    {
+      "command": "docker ps --filter ancestor=sha256:60fe3501e5f5e16c5eaeb75b5b13b843c490891a1f24b86244b06c0c9d32d9f3 --format '{{.ID}} {{.Image}}'",
+      "duration_seconds": 0.027396,
+      "ended_at_utc": "2026-10-23T21:28:52.183696+00:00",
+      "exit_status": 0,
+      "path": "commands/17-provider-closed.json",
+      "sha256": "0ce9b5f7e8fb745cb50e41310fce6db3208848fc30d92ba138273d0e0635b12c",
+      "size": 610,
+      "started_at_utc": "2026-10-23T21:28:52.155065+00:00"
+    },
+    {
+      "command": ".venv/bin/ruff check .",
+      "duration_seconds": 0.024962,
+      "ended_at_utc": "2026-10-23T21:28:52.264550+00:00",
+      "exit_status": 0,
+      "path": "commands/18-lint.json",
+      "sha256": "38026dd984a5238ed15c3279d76664cf36d348f5250e7d1cf516ca584c4521b6",
+      "size": 397,
+      "started_at_utc": "2026-10-23T21:28:52.238182+00:00"
+    },
+    {
+      "command": "git status --short",
+      "duration_seconds": 0.047574,
+      "ended_at_utc": "2026-10-23T21:31:36.183776+00:00",
+      "exit_status": 0,
+      "path": "commands/19-worktree-status.json",
+      "sha256": "8ef48b706c02a5cdb6dbe59dbc037de0bd381094f598c82bd8d1a4c0dd0cd219",
+      "size": 443,
+      "started_at_utc": "2026-10-23T21:31:36.135002+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q -p tests.support.d59_offline_guard tests/unit/test_grounding_v5_d510_restore.py",
+      "duration_seconds": 3.086584,
+      "ended_at_utc": "2026-10-23T21:41:46.391970+00:00",
+      "exit_status": 0,
+      "observed_test_summary": {
+        "passed": 12,
+        "runtime": 2.32
+      },
+      "path": "commands/20-receipt-path-regressions.json",
+      "sha256": "58b43bf77237d2f409bb6efdf8b59088185cea77f9db363d427f3bbcca45bdd4",
+      "size": 680,
+      "started_at_utc": "2026-10-23T21:41:43.304132+00:00"
+    }
+  ],
+  "evidence_branch": "evidence/d510-fresh-validation",
+  "evidence_revision": "168598c243df24ba4f773cbc5696a1572532f532",
+  "gate": "D5.10",
+  "not_run": [
+    {
+      "item": "Off-host restore and independent backup",
+      "reason": "Four restores verified both pilot/full copies on this host. Both retained copies remain on the same local disk; no off-host recovery was performed."
+    },
+    {
+      "item": "Undefined trace estimators and complete provider usage",
+      "reason": "No post-result estimator or usage imputation invented. Five confirmed-stopped timeouts retain unknown provider completion/usage."
+    },
+    {
+      "item": "Historical optional PNG bytes and absent decision provenance",
+      "reason": "Two release-hosted image sets were not fetched. Two original decision records have no reviewed revision or tag; these metadata were preserved rather than invented."
+    }
+  ],
+  "package_files": [
+    {
+      "path": "REPORT.md",
+      "sha256": "1329a6ce00641105d348224741ce4f07cb266f1963e227338aecbc21af493a6c",
+      "size": 35743
+    },
+    {
+      "path": "REVIEW-NOTE.md",
+      "sha256": "350e67bed4c35c9852dcda65cc11430f4b8b02e1e849a2a4633c8c1568b54e95",
+      "size": 7132
+    },
+    {
+      "path": "checklist-map.json",
+      "sha256": "c7664cab38b92bb2e45114205cffeed456a70221e4abe43dfc9a9f717e709e70",
+      "size": 30587
+    },
+    {
+      "path": "commands/00-git-revision.json",
+      "sha256": "38452aff62dc6f480979555907ecfd7368c33ed22b3cee6edd5b4128fc5a4279",
+      "size": 503
+    },
+    {
+      "path": "commands/02-evidence-branch.json",
+      "sha256": "ea2e3950b1f1490d828818522ef43c3fdd2543009f9d49d8825d40c96d08808a",
+      "size": 415
+    },
+    {
+      "path": "commands/03-checklist-source.json",
+      "sha256": "8ba247b0464b36b6aee4df1c9b6d90070c23e569921ae0e63cfe7eeb6219ca4b",
+      "size": 55731
+    },
+    {
+      "path": "commands/04-browser.json",
+      "sha256": "3976febe8afec74a7b43d16acfa3155bf4dda6f2f74cf12fba8bdbea55ff3454",
+      "size": 829
+    },
+    {
+      "path": "commands/05-cli-sandbox.json",
+      "sha256": "d453a7ab16724a066eb721153596dfcec1301f5725ca15b29211d1803eb825b5",
+      "size": 1062
+    },
+    {
+      "path": "commands/06-osworld.json",
+      "sha256": "f5ed076ea15d28482d7065f14206ff5458447adc91d1b49478c1d2677e99e5c2",
+      "size": 2266
+    },
+    {
+      "path": "commands/07-unit-skip-investigation.json",
+      "sha256": "ecace69afc671e9284ad165f79e5d24ae73faf5fa5cea07992f436950c346e73",
+      "size": 34568
+    },
+    {
+      "path": "commands/08-restore-overlay-regressions.json",
+      "sha256": "011c4c885fbd020e57f310d0cf3ce2a3b3204627609ea872fc646022f24f6123",
+      "size": 679
+    },
+    {
+      "path": "commands/09-restore-drill.json",
+      "sha256": "9b264a86a2064cac1c750a00d6913083865d6008d67060ca7764798958d4c3b0",
+      "size": 4622
+    },
+    {
+      "path": "commands/10-unit-stable-source.json",
+      "sha256": "576308e359f28ab0c9b2e108860ae741beea9767f6f60713f0ff3992808609aa",
+      "size": 169261
+    },
+    {
+      "path": "commands/11-unit-clean-committed-source.json",
+      "sha256": "d52a3eb871e9c1e71b3ac4767e76a82f4b0bb43325506f3acad8c9db68aa78f0",
+      "size": 7385
+    },
+    {
+      "path": "commands/12-source-commit.json",
+      "sha256": "4fe1c0e78be70c60853490ed1f10d2a8e20a0453b163ea0fbf93e805abc62a60",
+      "size": 411
+    },
+    {
+      "path": "commands/13-restore-regressions.json",
+      "sha256": "0da4f1c1c4c5f5c310d0b807693872df8c585c3854cfb2f645117e78d41c1136",
+      "size": 679
+    },
+    {
+      "path": "commands/14-verify-frozen-candidate.json",
+      "sha256": "5abd120d2cac98b2cb6522a3fbd4dd04baff58da7fd7cd4577b4354a9b73c166",
+      "size": 922
+    },
+    {
+      "path": "commands/15-reproduce-sensitivity-analysis.json",
+      "sha256": "7c59ffcb4b517e3a3f7d58d4fbd2b1ddf11fe218e5b02d727ceaa4da2b7db34d",
+      "size": 1222
+    },
+    {
+      "path": "commands/16-public-wording-inventory.json",
+      "sha256": "3c418db2a9f5f7655a89ae84653e441bc32b70104912b956f6daf609c6a3912e",
+      "size": 4218
+    },
+    {
+      "path": "commands/17-provider-closed.json",
+      "sha256": "0ce9b5f7e8fb745cb50e41310fce6db3208848fc30d92ba138273d0e0635b12c",
+      "size": 610
+    },
+    {
+      "path": "commands/18-lint.json",
+      "sha256": "38026dd984a5238ed15c3279d76664cf36d348f5250e7d1cf516ca584c4521b6",
+      "size": 397
+    },
+    {
+      "path": "commands/19-worktree-status.json",
+      "sha256": "8ef48b706c02a5cdb6dbe59dbc037de0bd381094f598c82bd8d1a4c0dd0cd219",
+      "size": 443
+    },
+    {
+      "path": "commands/20-receipt-path-regressions.json",
+      "sha256": "58b43bf77237d2f409bb6efdf8b59088185cea77f9db363d427f3bbcca45bdd4",
+      "size": 680
+    },
+    {
+      "path": "integration-observations.json",
+      "sha256": "3516ab615e9f30477fa8717e7c748f578a04b6902c073bfd2298f062fa443d78",
+      "size": 1429
+    },
+    {
+      "path": "integration-provenance.json",
+      "sha256": "6f1dd0f676b38e8ad14f4724aaf03811fd54540cb59ea5d56386efb218a189c0",
+      "size": 1656
+    },
+    {
+      "path": "preserved-inputs.json",
+      "sha256": "afbd8681e9450981fe64acc17d378c23234fb13902f4fe63fb45a7499b5f4025",
+      "size": 7072
+    },
+    {
+      "path": "redaction-scan.json",
+      "sha256": "f4fb79942b27eb0e0429b527e5b2c58892828167e176f6af18bdef8c490032c3",
+      "size": 445
+    },
+    {
+      "path": "restore-drill.json",
+      "sha256": "a75be8ca9a505fc3264e85ad43c73e14282dfee43eeab08dc66edc3c3572d87d",
+      "size": 4104
+    },
+    {
+      "path": "skip-investigation.json",
+      "sha256": "0f6d94158f0a4aac9549926e3e400be223f5ec62f0a7d1d95720424fd543d387",
+      "size": 2115
+    }
+  ],
+  "redaction_scan": {
+    "files_scanned": 29,
+    "files_with_findings": {},
+    "finding_counts": {
+      "aws_access_keys": 0,
+      "bearer_tokens": 0,
+      "host_identity_paths_or_emails": 0,
+      "local_absolute_paths": 0,
+      "local_demo_credentials": 0,
+      "private_key_markers": 0,
+      "privileged_json_fields": 0,
+      "provider_api_keys": 0,
+      "system_temp_paths": 0,
+      "unredacted_image_payloads": 0
+    },
+    "schema_version": "pixelgym-d510-redaction-scan-v1"
+  },
+  "referenced_artifacts": [
+    {
+      "path": "artifacts/decisions/d4.12.json",
+      "sha256": "dcf6e4bd83e58d0d051ebb24c0bb385500c6a136e4b7491e376f8080fa3c2a01",
+      "size": 396
+    },
+    {
+      "path": "artifacts/grounding-v5-contracts.md",
+      "sha256": "fddc9be787b4dd80b218fbfdb3289e8f8cb0bdabb43b0bd1a7a2435618c19710",
+      "size": 7862
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/REPORT.md",
+      "sha256": "45d7456481423cfb532975bebee3cf5ee5d2ad1d7af64aaa02f89f477ac4d4be",
+      "size": 49809
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/00-git-revision.json",
+      "sha256": "7f68b51d65e8b5e323c68bd3fc6b2c83613a085b026cb1d71ec2cb1e58b1bd1d",
+      "size": 449
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/01-worktree-status.json",
+      "sha256": "ccdc213872b9867ef5c1bd1be2229a29d01801dabca2ee8ffa452176a43f2b3c",
+      "size": 466
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/06-create-dev-venv.json",
+      "sha256": "b8b2137365b03e63c12d32db37e17d42ec2e27a92bc40be4a2edd44817a0b68d",
+      "size": 388
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/07-install-dev.json",
+      "sha256": "5849030152b8247a8b91bedfeba311921c42deeff47ac7bcb9114b148d186f85",
+      "size": 20748
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/10-boundary-inventory.json",
+      "sha256": "8bae6d77d699af1eab85c02f35cc20e4cab22caded551e90a3872bc4971884b7",
+      "size": 2010
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/15-golden-trajectory-check.json",
+      "sha256": "5bf24572face7ca681bd83789cc8bc9f9925e974fca9b6ce150a5afe5e5ef920",
+      "size": 837
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/42-d59-recorded-source-revisions.json",
+      "sha256": "c615af3402753e320bf5ee5a956d11d9210af9ef90ac5e754e5a5d7e1f519fdc",
+      "size": 2009
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/43-verify-d59-freeze.json",
+      "sha256": "f82f931777df24587ce93a27026e8d8cc0e0ad4fcab9406df6ee2f4ed2034254",
+      "size": 703
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/45-verify-d59-haiku-freeze.json",
+      "sha256": "0252f81775cb50859e3222c58a32eabce93931099063def6d3d9ce728c49f04b",
+      "size": 725
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/46-verify-d59-haiku-retry-successor.json",
+      "sha256": "d2b4fff6542396d2f98a48c971c6e4fa4b8d3015bc2376f69d7973c609ccb50e",
+      "size": 1778
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/47-verify-d59-haiku-network-retry.json",
+      "sha256": "0aff61bce31cc3d53b4f280e4e83b6e91e996423dada1a10bc35fe3ef2fc6ff9",
+      "size": 1548
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/48-verify-v5-at-historical-revisions.json",
+      "sha256": "648e789e456f0a354085aa5522892c18ad632029c3410ad9f96e05fd6db69f61",
+      "size": 18509
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/49-report-d59-haiku-help.json",
+      "sha256": "0f00d93e26a43283a005a1a5ee52c4cca426b128b1c48cf97ec6023b566a4959",
+      "size": 799
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/50-check-d59-confirmatory-analysis.json",
+      "sha256": "f96a1f8456e5a244195e35cc57183a23b173fb3eb35dfc3767dc21459bf3ccd9",
+      "size": 460
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/51-d59-private-run-directories-present.json",
+      "sha256": "a85ee377c4f0301eb26955e07d675c80bde2785e049a0d0ebe5ed704dbd646e2",
+      "size": 960
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/52-worktree-status-after-verifiers.json",
+      "sha256": "f79b717e682c6f7f00fc00168f4abbdc3a846acbe09ce12206cce02b83a71e21",
+      "size": 466
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/53-v5-group-generator-partitions-admission.json",
+      "sha256": "649973a976c7dc466ad2c2ca134e8f3607f78a0223a03e052011e390714f6d00",
+      "size": 5893
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/54-v5-group-stateful-harness-journal-resume-dispatch-restore.json",
+      "sha256": "076a21765e30062297bfe7c1d9e0b099dc179be7b4e801c0d4d7bd7b98e0e26e",
+      "size": 11931
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/55-v5-group-credential-secret-redaction-integrity.json",
+      "sha256": "47d77670b3906c644d90757fde41e49298b2a10fe215bc4680a81f6d585c148b",
+      "size": 4279
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/56-v5-group-metrics-statistics.json",
+      "sha256": "153769b17ea6a45ee5118730bef90d8ec9282e8b6d6074897e8b2fe8ff37fb93",
+      "size": 1628
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/57-v5-group-call-cap-planning.json",
+      "sha256": "4d32b74d2c866ed558153a108399881098e8a20d212135d74544f5a7903011cd",
+      "size": 4651
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/58-v5-sandbox-integration.json",
+      "sha256": "bdcc30e7e1bfcbe595b62871ef75ae8867e9d55a0f6d14ac8dd81ec19b9e3d38",
+      "size": 818
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/59-browser-integration.json",
+      "sha256": "dea18aeb51ea9f83729f4aef03d2da5003ae75cd944e4612effb5aa9c9d11448",
+      "size": 814
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/70-osworld-v5-integration-without-guest-image.json",
+      "sha256": "fe28111f88e4e49788e330c746b4ada3535d7708723d8eded8afbc69a05184c1",
+      "size": 948
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/74-osworld-v5-integration-linked-guest-image.json",
+      "sha256": "42b8d33621c5a0a9bca0b1abe2c36db023e00dafef2555f17189b2bf7af1bc1e",
+      "size": 2808
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/80-fast-suite-ci-invocation.json",
+      "sha256": "873aa85b2019cad4a2f8e42f8ca8ad4660b45c043fa37af9015a3557875d6751",
+      "size": 29156
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/81-unit-suite-serial.json",
+      "sha256": "6200e4a37171da786e28e3a10a1d516aa4fb076a36ed58ea30fcafd080cdbbe6",
+      "size": 4491
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/82-worktree-status-after-integration.json",
+      "sha256": "c1a78ae352c53cb4451939423f9118bda3368cdc80d3b01294ce0c3ab3118816",
+      "size": 464
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/84-public-wording-inventory.json",
+      "sha256": "8e309b64e7b933bcaf7a8750b5ae24965c2562e41a5160a06760e7d70511297d",
+      "size": 15302
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/85-worktree-status-before-redaction-scan.json",
+      "sha256": "2e65166fe845296b5bda073989f495edb2a24e03b57bad794b1c19b15ce326d4",
+      "size": 466
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/commands/86-redaction-scan-collected-records.json",
+      "sha256": "9af4a632de0d6b775bebf8a3b350c09b21b39312e24126f0e2c9cb1a358774d8",
+      "size": 1013
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/REVIEW-NOTE.md",
+      "sha256": "350e67bed4c35c9852dcda65cc11430f4b8b02e1e849a2a4633c8c1568b54e95",
+      "size": 7132
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/integration-observations.json",
+      "sha256": "3516ab615e9f30477fa8717e7c748f578a04b6902c073bfd2298f062fa443d78",
+      "size": 1429
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/integration-provenance.json",
+      "sha256": "6f1dd0f676b38e8ad14f4724aaf03811fd54540cb59ea5d56386efb218a189c0",
+      "size": 1656
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/preserved-inputs.json",
+      "sha256": "afbd8681e9450981fe64acc17d378c23234fb13902f4fe63fb45a7499b5f4025",
+      "size": 7072
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/restore-drill.json",
+      "sha256": "a75be8ca9a505fc3264e85ad43c73e14282dfee43eeab08dc66edc3c3572d87d",
+      "size": 4104
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/skip-investigation.json",
+      "sha256": "0f6d94158f0a4aac9549926e3e400be223f5ec62f0a7d1d95720424fd543d387",
+      "size": 2115
+    },
+    {
+      "path": "artifacts/grounding-v5-d56-calibration-approval.md",
+      "sha256": "7df1931d51665fff88c7c657f093a0ca761796de89805416517f26c7224aaf0e",
+      "size": 20471
+    },
+    {
+      "path": "artifacts/grounding-v5-d58-final-design/decision.json",
+      "sha256": "b8c5a879b980b8f7835ec141365b5dec625c5d39ef7f91ea8be81436131347f4",
+      "size": 3533
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/pilot-report.json",
+      "sha256": "78f422c7bfa647f6b4d18ba32af86a13aab9ae77d174f55ef3478e1216497590",
+      "size": 9221
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/preserved-inputs.json",
+      "sha256": "91dbf7d0285afc240a5d6f3b0f83fbdbaf543f3ac68950a852155782748d42cd",
+      "size": 6130
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/report.json",
+      "sha256": "1d0cac6b3332a580b6e6e4cabf4a8bbfdcbc7465d14cd077fd692d629075eaf6",
+      "size": 476069
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/review-guide.md",
+      "sha256": "03fa6c17bdc5a9c8ccb793d2324cc73a423c410849fa95b05c7a4647f545b91e",
+      "size": 5632
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.json",
+      "sha256": "97b925795549a6c5a69b5ad1a70bd75b508fd555c821bda5bcac6109498ad894",
+      "size": 27694
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.md",
+      "sha256": "4e2c5f751c885cab9bc4ae0a81ac71d1fff970ebd33b627357084a6e77cb44a7",
+      "size": 5067
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-freeze/admission.json",
+      "sha256": "d96a44c2a0fb7443684f34791e1b7a11ad328394f92c1684d1fa4e0589778799",
+      "size": 461058
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-freeze/analysis-plan.md",
+      "sha256": "11e12154883af06dc817a6760e723756d97d006c381036fd5f75b107ae363d45",
+      "size": 24205
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-freeze/execution-plan.json",
+      "sha256": "1f7b7fbddd03397dbe47395db7e331d27df00d3b66591eac6fa825e7849c4918",
+      "size": 212185
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-freeze/task-manifest.json",
+      "sha256": "a96858e166207eda2cb0201fae68a3c7a3ac3fa3a91333bcb1af888963df2ea8",
+      "size": 1624576
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-api-retry-execution/owner-approval.json",
+      "sha256": "92551e498a318dc38068374dceb97806673d26c3a4a6212a0d7ca275b221597a",
+      "size": 1117
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-api-retry-successor/execution-plan.json",
+      "sha256": "5eddb406dc989a63772d26c02d447b563af3c829db649fbca509bf7cf21459c2",
+      "size": 217529
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-execution/owner-approval.json",
+      "sha256": "679eff54c6ee4679050c4cd130db1c75ea629bd950382aa84e26e2d75e329637",
+      "size": 1117
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-freeze/execution-plan.json",
+      "sha256": "d7c3ca2871f776e023ac20a996126ccaa8b883e9f5d5ff19223391967cfc523b",
+      "size": 216624
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+      "sha256": "bc493e3b1677db3763ef567f6a1837308de39eda87c2810a17c08f75d5a81035",
+      "size": 1799
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json",
+      "sha256": "f6f3c3de128cee4d900ca61ebca79c71003544364688e16e1aa009b1f060a6a5",
+      "size": 216780
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/authorization-history.json",
+      "sha256": "262d897e09de6fcc5cc8e1848255c0794f1fe37f64844a2bc090ae9337d0d5a7",
+      "size": 2374
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.json",
+      "sha256": "70755949579e765321e33b61d8beae7bc54ad8fd2690b1b008fe2aea22e9b4b3",
+      "size": 17504
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+      "sha256": "a62832a2da459bc608fa25f726d20fbf4dbbaa507f2140b2968c6db9f8fde27b",
+      "size": 7361
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/publication-relation.json",
+      "sha256": "1229cc2671141bc7ec40aac1eae7610dd348a7b5c4240032d40bbccd8ec7ac25",
+      "size": 7188
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/report.json",
+      "sha256": "cffff25e2e25fdce12df95d7174535594da74605d22a60fa8a344c179ea91fff",
+      "size": 119323
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-results/report.md",
+      "sha256": "cc80f2a4b1f446b8dc7e14e0f1318b72f1031a38b8cf039d8b8e8506f24e1e20",
+      "size": 1633
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-haiku-selection/owner-selection.json",
+      "sha256": "689207ef452b22a5fa7fab026d703b5a08c8f651456009181fd05f723915604a",
+      "size": 2376
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-replication-results/confirmatory-analysis.json",
+      "sha256": "2b7196e7e039496be38f2a2ae47203afe265abaeed98a87413d5d75c582da17d",
+      "size": 23014
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-replication-results/confirmatory-analysis.md",
+      "sha256": "3ed3e94a11ed2f3cb814722c59cd4097444687556de75b599ada5f81310a9fa7",
+      "size": 10937
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-replication-results/pilot-report.json",
+      "sha256": "4ade5090413b522561a078933b7987be2fff5a6aed7400352d4de8034404d6e5",
+      "size": 7483
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-replication-results/report.json",
+      "sha256": "ec96890af793dee40d582040dba8e53ad28facf1659189fa4d0db038b43e20d8",
+      "size": 435177
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-replication-results/review-guide.md",
+      "sha256": "22f2710b62c2a7c5271c4bd20ec9adf127df21ac27e32e3e53b26cd93e7eb2a7",
+      "size": 5314
+    },
+    {
+      "path": "artifacts/grounding-v5-development-admission.json",
+      "sha256": "ecc807be33840cc371118ff5cd10981c96094c3d22840d251a76d315fb7e6a52",
+      "size": 57800
+    },
+    {
+      "path": "artifacts/grounding-v5-development-sample/manifest.json",
+      "sha256": "9cf8ff7426b88189a9b5bcbea6f05e14c6d0345f16eeff2a638ffb37284cc6ed",
+      "size": 5469
+    },
+    {
+      "path": "artifacts/grounding-v5-manifests/calibration-d56.json",
+      "sha256": "7049272db38858a0fce73ccb808e089f9d72f7011d9705387f0b2c26b68f21c7",
+      "size": 26539
+    },
+    {
+      "path": "artifacts/grounding-v5-manifests/calibration.json",
+      "sha256": "6b9fb7832ce560a58da5c2a08576b8f063226fc1fa5d6e88d27bd4a339fff5fd",
+      "size": 29609
+    },
+    {
+      "path": "artifacts/grounding-v5-manifests/confirmatory.json",
+      "sha256": "b801fc5617d2df1ad05114f116adb62bbb017ce9dd01c4918a6d0999f0b50f08",
+      "size": 47370
+    },
+    {
+      "path": "artifacts/grounding-v5-manifests/development.json",
+      "sha256": "1ddb4f663f4dfd4b59409d744e8218f25ecde94510db2610c5c9ca33051c1496",
+      "size": 12077
+    },
+    {
+      "path": "artifacts/grounding-v5-scripted-call-cap-plan.json",
+      "sha256": "a342cc02b55d2c125eef282dad4d4797d1d33a7bc215b82151b5937921bcf057",
+      "size": 1385
+    },
+    {
+      "path": "docs/d59-action-extraction-successor.md",
+      "sha256": "977edf3c4aab704c09bbc0ea546eb5391bdcf1862c655781ee775b9abe794f1a",
+      "size": 8589
+    },
+    {
+      "path": "docs/d59-subscription-verification.md",
+      "sha256": "053b7de36c1d834d4e6b65e9130897d840dd588b81d6837732205450ee56c3a5",
+      "size": 11201
+    },
+    {
+      "path": "docs/evidence-index.md",
+      "sha256": "b9c077561d89118101327d8c20dd8b66c068914d34efa3092177b5cf6cbbbe76",
+      "size": 24573
+    },
+    {
+      "path": "docs/v5-benchmark-design.md",
+      "sha256": "976d8b2d7b5aa81b04471af6db992b2044b30f42a245128c6d0dbe66628966dc",
+      "size": 10868
+    },
+    {
+      "path": "docs/v5-policy-sandbox.md",
+      "sha256": "6525fca1001f8e63778e50d8c700b49c7e397cbc669a80cec2b3475817c320e4",
+      "size": 10230
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/attempt-event.schema.json",
+      "sha256": "75ead82e483a4b2b87b4535ca4e444d185fa5087c160e1c103703598684bfc1e",
+      "size": 1115
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/memory-task-v3.schema.json",
+      "sha256": "30eb57ce2a08c8f3e15d2b262e9c7d65ae56718d7bf9c910cc6f91d77bc1223d",
+      "size": 1615
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/memory-task.schema.json",
+      "sha256": "acc4d9a17ca6852d7dd6e3cdb14a46d6528998e194aa293df01b3fd98f483868",
+      "size": 1612
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/policy.schema.json",
+      "sha256": "6aa2a24e1f41573f4022814639ef0dba0f32ad858e609364546a93e2c2e5af37",
+      "size": 1983
+    },
+    {
+      "path": "pixelgym/grounding/v5/schemas/task.schema.json",
+      "sha256": "b10e1bf54d614644a99a4ede1b576e84333f380967f076e6f8445c30d1f63e33",
+      "size": 1301
+    },
+    {
+      "path": "pixelgym/grounding/v5/seeds.py",
+      "sha256": "856e01f6bba39ed9d42adf442cb2564606a75acbd2530ceadb12919ffb33f277",
+      "size": 7996
+    },
+    {
+      "path": "scripts/README.md",
+      "sha256": "f46a97585d0375339a8c4a7c9e33c4b24364839b7f9dbeeaa91c438bc9411c7c",
+      "size": 25362
+    },
+    {
+      "path": "scripts/report_grounding_v5_d59_extraction.py",
+      "sha256": "ea779d2398c3de36349b656afff2c86be5c8ae0a1ba85b99b0215d11051804e2",
+      "size": 22237
+    },
+    {
+      "path": "scripts/restore_grounding_v5_d510.py",
+      "sha256": "d1c1c2b55dce91ecf335a4f896420ef1e325e18e487950b39fc9237f9f87f849",
+      "size": 5481
+    },
+    {
+      "path": "tests/unit/test_grounding_v5_d510_restore.py",
+      "sha256": "2059b94b56467eeca75af85244a4da3899b423d547557cd83b9caf1bd72ecbc7",
+      "size": 2922
+    },
+    {
+      "path": "tests/unit/test_grounding_v5_d59_extraction_report.py",
+      "sha256": "53762cabcee9ae819a8fffef13d5af32b5e198d0e660bcbea1f1fd478503797f",
+      "size": 7736
+    }
+  ],
+  "schema_version": "pixelgym-d510-evidence-manifest-v1",
+  "verdict": null,
+  "verdict_owner": "project owner",
+  "withdrawn_records": [],
+  "worktree_status_observations": {
+    "commands/19-worktree-status.json": "?? artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/\n"
+  }
+}

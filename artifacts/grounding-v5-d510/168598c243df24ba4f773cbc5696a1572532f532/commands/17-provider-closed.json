@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "docker",
+    "ps",
+    "--filter",
+    "ancestor=sha256:60fe3501e5f5e16c5eaeb75b5b13b843c490891a1f24b86244b06c0c9d32d9f3",
+    "--format",
+    "{{.ID}} {{.Image}}"
+  ],
+  "command": "docker ps --filter ancestor=sha256:60fe3501e5f5e16c5eaeb75b5b13b843c490891a1f24b86244b06c0c9d32d9f3 --format '{{.ID}} {{.Image}}'",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.027396,
+  "ended_at_utc": "2026-10-23T21:28:52.183696+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T21:28:52.155065+00:00"
+}

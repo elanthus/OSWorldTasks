@@ -1,0 +1,26 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-m",
+    "scripts.restore_grounding_v5_d510",
+    "--run",
+    "<path-1>",
+    "--archive",
+    "<path-2>",
+    "--backup",
+    "<path-3>",
+    "--destination",
+    "<path-4>",
+    "--output",
+    "<home>/.local/share/pixelgym-evidence-restored/d510-168598c-receipt.json"
+  ],
+  "command": ".venv/bin/python -m scripts.restore_grounding_v5_d510 --run <path-1> --archive <path-2> --backup <path-3> --destination <path-4> --output <home>/.local/share/pixelgym-evidence-restored/d510-168598c-receipt.json",
+  "cwd": "<path-0>",
+  "duration_seconds": 216.818686,
+  "ended_at_utc": "2026-10-23T21:23:22.788417+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\"authentication_calls\": 0, \"cleanup_authorized\": false, \"copies_on_same_local_disk\": true, \"model_calls\": 0, \"observations\": [{\"completed\": 4, \"copy\": \"archive\", \"phase\": \"pilot\", \"projection_digest\": \"sha256:352a3c9ff7b276724b68c31991c352d4490f3da08af64a63bbcb7af6f71b1598\", \"projection_matches_published\": true, \"restore\": {\"bytes\": 112061945, \"file_count\": 10, \"manifest_digest\": \"sha256:7c843a3cf30af04c2bcc159ea55b7ca1dacf4d3b85041a38db66779e39a2a9b4\", \"restored_file_count\": 10, \"source_fingerprint\": \"sha256:139138068c3a6509e29e1da6c1194e3bebe5f417a38addf9dca4fa10a88cad22\"}, \"restored_bytes_unchanged\": true, \"restored_fingerprint_after\": \"sha256:6d1720e727f58cd9e9421c37663734e97cd5aa1f4a2e806a75ba2985b9502ed5\", \"restored_fingerprint_before\": \"sha256:6d1720e727f58cd9e9421c37663734e97cd5aa1f4a2e806a75ba2985b9502ed5\", \"summary_overlay\": \"only bound final retention receipt; restored file untouched\", \"unresolved_timeouts\": 0}, {\"completed\": 4, \"copy\": \"backup\", \"phase\": \"pilot\", \"projection_digest\": \"sha256:352a3c9ff7b276724b68c31991c352d4490f3da08af64a63bbcb7af6f71b1598\", \"projection_matches_published\": true, \"restore\": {\"bytes\": 112061945, \"file_count\": 10, \"manifest_digest\": \"sha256:7c843a3cf30af04c2bcc159ea55b7ca1dacf4d3b85041a38db66779e39a2a9b4\", \"restored_file_count\": 10, \"source_fingerprint\": \"sha256:139138068c3a6509e29e1da6c1194e3bebe5f417a38addf9dca4fa10a88cad22\"}, \"restored_bytes_unchanged\": true, \"restored_fingerprint_after\": \"sha256:6d1720e727f58cd9e9421c37663734e97cd5aa1f4a2e806a75ba2985b9502ed5\", \"restored_fingerprint_before\": \"sha256:6d1720e727f58cd9e9421c37663734e97cd5aa1f4a2e806a75ba2985b9502ed5\", \"summary_overlay\": \"only bound final retention receipt; restored file untouched\", \"unresolved_timeouts\": 0}, {\"completed\": 432, \"copy\": \"archive\", \"phase\": \"full\", \"projection_digest\": \"sha256:1005a84b32ba25a8044dcf1f7db7b84e253c2ca4c9c65cf42e9675a5156621e4\", \"projection_matches_published\": true, \"restore\": {\"bytes\": 15244025902, \"file_count\": 11, \"manifest_digest\": \"sha256:718167af1c7bf405daf25fd0de8ac56d8625881b8bf17f39f09f0d0bd64249eb\", \"restored_file_count\": 11, \"source_fingerprint\": \"sha256:8f94cfb04b845368fd93135ea84153d99e04dc93eef9e153b4d8eac7d19cea14\"}, \"restored_bytes_unchanged\": true, \"restored_fingerprint_after\": \"sha256:5d44bb604e066aeb81d8209b009f2abfd0fabba3b1b1f5c8a7f751305e240b99\", \"restored_fingerprint_before\": \"sha256:5d44bb604e066aeb81d8209b009f2abfd0fabba3b1b1f5c8a7f751305e240b99\", \"summary_overlay\": \"only bound final retention receipt; restored file untouched\", \"unresolved_timeouts\": 5}, {\"completed\": 432, \"copy\": \"backup\", \"phase\": \"full\", \"projection_digest\": \"sha256:1005a84b32ba25a8044dcf1f7db7b84e253c2ca4c9c65cf42e9675a5156621e4\", \"projection_matches_published\": true, \"restore\": {\"bytes\": 15244025902, \"file_count\": 11, \"manifest_digest\": \"sha256:718167af1c7bf405daf25fd0de8ac56d8625881b8bf17f39f09f0d0bd64249eb\", \"restored_file_count\": 11, \"source_fingerprint\": \"sha256:8f94cfb04b845368fd93135ea84153d99e04dc93eef9e153b4d8eac7d19cea14\"}, \"restored_bytes_unchanged\": true, \"restored_fingerprint_after\": \"sha256:5d44bb604e066aeb81d8209b009f2abfd0fabba3b1b1f5c8a7f751305e240b99\", \"restored_fingerprint_before\": \"sha256:5d44bb604e066aeb81d8209b009f2abfd0fabba3b1b1f5c8a7f751305e240b99\", \"summary_overlay\": \"only bound final retention receipt; restored file untouched\", \"unresolved_timeouts\": 5}], \"off_host_restore_performed\": false, \"original_results_modified\": false, \"originals_or_restored_evidence_deleted\": false, \"schema_version\": \"pixelgym-d510-campaign-restore-drill-v1\", \"tasks_reexecuted\": 0}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T21:19:45.963563+00:00"
+}

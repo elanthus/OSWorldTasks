@@ -1,0 +1,26 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-rs",
+    "-m",
+    "v5_cli_sandbox_integration or v5_sandbox_integration",
+    "tests/integration/test_grounding_v5_cli_sandbox.py",
+    "tests/integration/test_grounding_v5_sandbox.py",
+    "tests/integration/test_stateful_serving_sandbox.py"
+  ],
+  "command": ".venv/bin/python -m pytest -q -rs -m 'v5_cli_sandbox_integration or v5_sandbox_integration' tests/integration/test_grounding_v5_cli_sandbox.py tests/integration/test_grounding_v5_sandbox.py tests/integration/test_stateful_serving_sandbox.py",
+  "cwd": "<path-0>",
+  "duration_seconds": 76.470109,
+  "ended_at_utc": "2026-10-23T21:17:45.762124+00:00",
+  "environment": {
+    "PIXELGYM_RUN_V5_CLI_SANDBOX_TESTS": "1",
+    "PIXELGYM_RUN_V5_SANDBOX_TESTS": "1"
+  },
+  "exit_status": 0,
+  "output": ".....                                                                    [100%]\n5 passed in 75.21s (0:01:15)\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-23T21:16:29.285133+00:00"
+}
