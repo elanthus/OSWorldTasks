@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "gate": "D5.10",
+  "verdict": "PASS",
+  "declared_by": "project owner",
+  "declared_at": "2026-10-25T01:47:54Z",
+  "declaration": "Close D5.10 on the claim the evidence actually carries: the environment, the platform, and the evidence discipline. State the Haiku result descriptively: the stateful condition beat stateless in the same direction in all three campaigns, the magnitude is unresolved, and it is not a pre-registered confirmation or a model ranking.",
+  "declaration_recorded_by": "agent, from the owner's written instruction of 2026-10-24; merging the pull request that adds this record is the owner's confirmation",
+  "graded_revision": "fd54dc2782ac8e7b3526f19e7fa46a0131175e5e",
+  "evidence_index": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/REVIEW-NOTE.md",
+  "evidence_packages": [
+    "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/REPORT.md",
+    "artifacts/grounding-v5-d510/8327aac872715febe05d7c8e5534e68c2f39c2c2/REPORT.md",
+    "artifacts/grounding-v5-d510/c398557ca05b8cc87d2f4371fe6b1335d427e5c5/REPORT.md",
+    "artifacts/grounding-v5-d510/07824eeeafee6e61f95aaa3a414dcf021da68b15/REPORT.md"
+  ],
+  "claim": {
+    "supported": [
+      "The v5 environment, generator families, stateful policy harness, evaluator boundary, and OSWorld reconnect behave as specified under no-cost tests (fresh records 04-06 and 11 of the graded package).",
+      "The kernel sandbox and egress proxy deny unauthorized policy egress in fresh integration tests (record 05).",
+      "Every campaign outcome, invalid output, step limit, and timeout is retained in the published projections; no response was reparsed or rescored.",
+      "Both retained copies of the replication and parser-sensitivity campaigns restore byte-exactly and reproduce their published projections (restore-drill.json).",
+      "All 46 frozen result and freeze inputs are unchanged (preserved-inputs.json); the redaction scan found zero findings."
+    ],
+    "descriptive_only": {
+      "statement": "Across three separate Haiku campaigns on the frozen 192-pair design, the history (stateful) condition succeeded more often than the stateless condition in the same direction each time. The magnitude differs across campaigns and is unresolved.",
+      "campaigns": [
+        {
+          "label": "historical D5.9",
+          "history_successes": 106,
+          "stateless_successes": 15,
+          "pairs": 192,
+          "paired_difference": 0.4739583333333333,
+          "preregistered": true,
+          "path": "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.json",
+          "sha256": "sha256:70755949579e765321e33b61d8beae7bc54ad8fd2690b1b008fe2aea22e9b4b3"
+        },
+        {
+          "label": "original replication",
+          "history_successes": 62,
+          "stateless_successes": 20,
+          "pairs": 192,
+          "paired_difference": 0.21875,
+          "preregistered": true,
+          "path": "artifacts/grounding-v5-d59-replication-results/confirmatory-analysis.json",
+          "sha256": "sha256:2b7196e7e039496be38f2a2ae47203afe265abaeed98a87413d5d75c582da17d"
+        },
+        {
+          "label": "parser sensitivity (post-hoc, same tasks)",
+          "history_successes": 132,
+          "stateless_successes": 20,
+          "pairs": 192,
+          "paired_difference": 0.5833333333333334,
+          "preregistered": false,
+          "path": "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.json",
+          "sha256": "sha256:97b925795549a6c5a69b5ad1a70bd75b508fd555c821bda5bcac6109498ad894"
+        }
+      ],
+      "not_pooled": true
+    },
+    "not_claimed": [
+      "a pre-registered confirmatory result (executed policy IDs differ from the pre-registered IDs and the stop rule was amended mid-campaign)",
+      "a causal estimate of the parser's effect",
+      "a model ranking or any statement about other models",
+      "OS-enforced policy isolation for the D5.9 Haiku runs (recorded owner exception)",
+      "portability beyond one Darwin arm64 host",
+      "generalization beyond the synthetic vendor-onboarding form"
+    ]
+  },
+  "limitations": [
+    {
+      "surface": "Five confirmed-stopped post-send timeouts with unknown provider completion and usage",
+      "classification": "known limitation",
+      "evidence": "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.md",
+      "residual_risk": "Token totals cover 11,329 of 11,334 reserved attempts; both reservations per timeout remain counted against the caps; billing settlement is not a provider audit."
+    },
+    {
+      "surface": "Original D5.9 private attempt and invocation journals not retained",
+      "classification": "known limitation",
+      "evidence": "docs/evidence-index.md",
+      "residual_risk": "Historical D5.9 digests cannot be re-verified; that campaign closes on its published projection."
+    },
+    {
+      "surface": "OS-level sandbox enforcement waived for the executed Haiku policy pair",
+      "classification": "known limitation",
+      "evidence": "artifacts/grounding-v5-d59-haiku-freeze/owner-exception.json",
+      "residual_risk": "Fresh enforcement evidence (record 05) does not retroactively isolate historical runs; isolation claims are limited to the mechanism, not the campaigns."
+    },
+    {
+      "surface": "Cross-campaign disagreement exceeds the frozen 20-point threshold",
+      "classification": "known limitation",
+      "evidence": "artifacts/grounding-v5-d59-replication-results/confirmatory-analysis.json",
+      "residual_risk": "Historical and replication paired differences differ by 25.5 points; both are published and neither is selected."
+    },
+    {
+      "surface": "Executed policy IDs differ from pre-registered IDs; stop rule amended after observed failures",
+      "classification": "known limitation",
+      "evidence": "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+      "residual_risk": "The pre-registered confirmatory interpretation is not available; results are reported as recorded."
+    },
+    {
+      "surface": "Parser-sensitivity campaign is post-hoc on previously inspected tasks",
+      "classification": "known limitation",
+      "evidence": "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.json",
+      "residual_risk": "Not independent confirmation; cross-campaign differences are descriptive only."
+    },
+    {
+      "surface": "Secondary trace diagnostics without frozen estimators",
+      "classification": "known limitation",
+      "evidence": "artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md",
+      "residual_risk": "Critical-decision accuracy, dependency retention, and recovery success remain unestimated; no estimator was invented after the results."
+    },
+    {
+      "surface": "Both retained campaign copies on one local disk; no off-host recovery drilled",
+      "classification": "known limitation",
+      "evidence": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/restore-drill.json",
+      "residual_risk": "Disk loss would remove both copies; an off-host copy and drill are prepared as a follow-up and are not part of this record."
+    },
+    {
+      "surface": "Single Darwin arm64 host for all fresh integration observations",
+      "classification": "known limitation",
+      "evidence": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/integration-provenance.json",
+      "residual_risk": "No portability or full desktop coverage is established."
+    },
+    {
+      "surface": "Public readers cannot replay private raw journals",
+      "classification": "mitigated",
+      "evidence": "artifacts/grounding-v5-d59-action-extraction-results/report.json",
+      "residual_risk": "Projections are hash-bound to private journals; reproduction of statistics is public, re-audit beneath the projection is owner-only."
+    },
+    {
+      "surface": "Two historical decision records lack reviewed revision and tag; two optional PNG sets not fetched",
+      "classification": "known limitation",
+      "evidence": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/skip-investigation.json",
+      "residual_risk": "Six unit skips are explained; no historical metadata was invented and no gated asset fetched."
+    },
+    {
+      "surface": "Invalid model outputs",
+      "classification": "tested",
+      "evidence": "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.json",
+      "residual_risk": "Three invalid outputs remain in the denominators; no retry or discard."
+    },
+    {
+      "surface": "Evidence integrity, preservation, and restore",
+      "classification": "tested",
+      "evidence": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/preserved-inputs.json",
+      "residual_risk": "Manifests bind contents but are not signatures against an actor who can replace both copies and the expected digest."
+    },
+    {
+      "surface": "Credential and private-path leakage in the published package",
+      "classification": "tested",
+      "evidence": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/redaction-scan.json",
+      "residual_risk": "Scan covers the 29 package files at capture; later edits need a new scan."
+    }
+  ],
+  "not_declared": [
+    "any paid provider call or further campaign",
+    "public README wording beyond the status row recorded in the same pull request",
+    "a model ranking",
+    "cleanup or deletion of any retained evidence",
+    "the v5 serving gate (S8), which remains separate and human-owned"
+  ]
+}

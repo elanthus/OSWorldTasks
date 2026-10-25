@@ -1,0 +1,11 @@
+{
+  "schema_version": "pixelgym-decision-record-v1",
+  "gate": "D5.10",
+  "decision": "PASS",
+  "revision": "fd54dc2782ac8e7b3526f19e7fa46a0131175e5e",
+  "date": "2026-10-25T01:47:54Z",
+  "decided_by": "Michael Swailes",
+  "tag": "d5.10-pass",
+  "source_record": "artifacts/grounding-v5-d510/human-gate.json",
+  "source_record_sha256": "ba206c1bd2ff176389245c1cf6acc4f8db4937ea6005a1356638a1c424559884"
+}

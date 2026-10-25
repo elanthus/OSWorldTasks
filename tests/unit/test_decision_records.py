@@ -14,7 +14,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 DECISIONS = ROOT / "artifacts" / "decisions"
-EXPECTED = {"d1.8", "d2.11", "d3.11", "d4.12", "d3-pilot"}
+EXPECTED = {"d1.8", "d2.11", "d3.11", "d4.12", "d5.10", "d3-pilot"}
 REQUIRED = (
     "schema_version",
     "gate",
