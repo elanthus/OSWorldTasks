@@ -9,8 +9,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
+from pixelgym.grounding.protocols import (
+    V1_PROTOCOL,
+    GroundingProtocol,
+    v1_prediction_paths,
+)
 from pixelgym.grounding.providers import GroundingProvider, ProviderResponse
-from pixelgym.grounding.schema import PROTOCOL_VERSION
+from pixelgym.grounding.schema import PROTOCOL_VERSION, SCREEN_STATES, TARGET_SPECS
+from pixelgym.grounding.schema_v2 import validate_records as validate_v2_records
 from pixelgym.serialization import canonical_json_text, load_jsonl
 
 Condition = Literal["raw", "marks"]
@@ -347,7 +353,20 @@ def evaluate_one(
     return record, cache_hit
 
 
-def pilot_example_ids(examples: list[dict[str, Any]]) -> list[str]:
+V2_PILOT_SELECTION_RULE = (
+    "For target index t in 0..9 (frozen TARGET_SPECS order) select the unique v2 example "
+    "with screen_state_index = t mod 5 and task_seed = t - (t mod 5). The crossed "
+    "allocation target_index = (task_seed + screen_state_index) mod 10 then yields target "
+    "t, so the pilot covers all 10 targets once, every screen state exactly twice, and "
+    "seeds 0 and 5 only. Selection is independent of JSONL row order."
+)
+
+
+def pilot_example_ids(
+    examples: list[dict[str, Any]], *, protocol: GroundingProtocol = V1_PROTOCOL
+) -> list[str]:
+    if protocol.name != "v1":
+        return pilot_example_ids_v2(examples)
     ordered = sorted(examples, key=lambda row: row["example_id"])
     if len(ordered) != 100:
         raise ValueError("pilot selection requires the frozen 100-example dataset")
@@ -357,9 +376,30 @@ def pilot_example_ids(examples: list[dict[str, Any]]) -> list[str]:
     return selected
 
 
-def _load_inputs(repository_root: Path) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
-    examples = load_jsonl(repository_root / "artifacts" / "grounding-dataset.jsonl")
-    overlays = load_jsonl(repository_root / "artifacts" / "grounding-overlays.jsonl")
+def pilot_example_ids_v2(examples: list[dict[str, Any]]) -> list[str]:
+    """Apply :data:`V2_PILOT_SELECTION_RULE` to the crossed v2 dataset."""
+    by_cell = {(row["task_seed"], row["screen_state"]): row for row in examples}
+    if len(examples) != 100 or len(by_cell) != 100:
+        raise ValueError("v2 pilot selection requires the frozen 100-example crossed dataset")
+    selected = []
+    for target_index, target in enumerate(TARGET_SPECS):
+        state_index = target_index % len(SCREEN_STATES)
+        seed = target_index - state_index
+        row = by_cell.get((seed, SCREEN_STATES[state_index]))
+        if row is None or row["target_id"] != target.semantic_id:
+            raise ValueError("v2 pilot selection does not match the crossed allocation")
+        selected.append(row["example_id"])
+    return selected
+
+
+def _load_inputs(
+    repository_root: Path, protocol: GroundingProtocol = V1_PROTOCOL
+) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
+    examples = load_jsonl(repository_root / protocol.dataset_path)
+    overlays = load_jsonl(repository_root / protocol.overlays_path)
+    if protocol.name == "v2":
+        candidates = load_jsonl(repository_root / protocol.candidates_path)
+        validate_v2_records(examples, candidates, overlays)
     by_example = {row["example_id"]: row for row in overlays}
     if len(by_example) != len(overlays):
         raise ValueError("overlay metadata contains duplicate example IDs")
@@ -377,15 +417,16 @@ def planned_new_calls(
     prompt_version: str = PROMPT_VERSION,
     parser_version: str = PARSER_VERSION_V1,
     prediction_schema_version: str = PREDICTION_SCHEMA_VERSION,
+    protocol: GroundingProtocol = V1_PROTOCOL,
 ) -> dict[str, int]:
     validate_evaluation_versions(
         prompt_version=prompt_version,
         parser_version=parser_version,
         prediction_schema_version=prediction_schema_version,
     )
-    examples, overlays = _load_inputs(repository_root)
+    examples, overlays = _load_inputs(repository_root, protocol)
     if pilot:
-        selected = set(pilot_example_ids(examples))
+        selected = set(pilot_example_ids(examples, protocol=protocol))
         examples = [row for row in examples if row["example_id"] in selected]
     total = 0
     cached = 0
@@ -404,6 +445,7 @@ def planned_new_calls(
                 image_sha256=image_sha,
                 schema=schema,
                 prompt_version=prompt_version,
+                protocol_version=protocol.protocol_version,
             )
             total += 1
             cached += cache.get(key) is not None
@@ -421,13 +463,18 @@ def run_evaluation(
     prompt_version: str = PROMPT_VERSION,
     parser_version: str = PARSER_VERSION_V1,
     prediction_schema_version: str = PREDICTION_SCHEMA_VERSION,
+    protocol: GroundingProtocol = V1_PROTOCOL,
 ) -> dict[str, Any]:
     validate_evaluation_versions(
         prompt_version=prompt_version,
         parser_version=parser_version,
         prediction_schema_version=prediction_schema_version,
     )
-    cache = ResponseCache(cache_directory or repository_root / ".cache" / "grounding" / "responses")
+    if protocol.name != "v1" and output_path.resolve() in {
+        path.resolve() for path in v1_prediction_paths(repository_root)
+    }:
+        raise ValueError(f"{protocol.name} evaluation refuses to write a frozen v1 result path")
+    cache = ResponseCache(cache_directory or repository_root / protocol.cache_directory)
     plan = planned_new_calls(
         repository_root=repository_root,
         provider=provider,
@@ -436,14 +483,15 @@ def run_evaluation(
         prompt_version=prompt_version,
         parser_version=parser_version,
         prediction_schema_version=prediction_schema_version,
+        protocol=protocol,
     )
     if plan["new_calls"] > max_new_calls:
         raise RuntimeError(
             f"evaluation needs {plan['new_calls']} new calls but cap is {max_new_calls}"
         )
-    examples, overlays = _load_inputs(repository_root)
+    examples, overlays = _load_inputs(repository_root, protocol)
     if pilot:
-        selected = set(pilot_example_ids(examples))
+        selected = set(pilot_example_ids(examples, protocol=protocol))
         examples = [row for row in examples if row["example_id"] in selected]
     records = []
     cache_hits = 0
@@ -460,6 +508,7 @@ def run_evaluation(
                 prompt_version=prompt_version,
                 parser_version=parser_version,
                 prediction_schema_version=prediction_schema_version,
+                protocol_version=protocol.protocol_version,
             )
             records.append(record)
             cache_hits += cache_hit
@@ -469,7 +518,7 @@ def run_evaluation(
         raise ValueError("refusing to overwrite a different immutable prediction file")
     output_path.write_text(encoded)
     return {
-        "protocol_version": PROTOCOL_VERSION,
+        "protocol_version": protocol.protocol_version,
         "prompt_version": prompt_version,
         "prediction_schema_version": prediction_schema_version,
         "provider": provider.name,

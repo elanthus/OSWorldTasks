@@ -11,11 +11,16 @@ from typing import Any
 from PIL import Image, ImageDraw, ImageFont
 
 from pixelgym.grounding.evaluation import PROMPT_VERSION, prompt_for
-from pixelgym.grounding.schema import PROTOCOL_VERSION
+from pixelgym.grounding.protocols import V1_PROTOCOL, GroundingProtocol
 from pixelgym.serialization import load_jsonl
 from pixelgym.tasks.vendor_form.render import BOLD_FONT, REGULAR_FONT
 
 PILOT_AUDIT_VERSION = "pixelgym-grounding-pilot-audit-v1"
+# Frozen v1 reviewer note; it describes the stored v1 pilot and does not apply to v2.
+_V1_PILOT_REVIEW_LINES = (
+    "three raw misses land on the visually similar read-only request card, which must be",
+    "considered during the human ambiguity review rather than silently excluded.",
+)
 
 
 def _annotate_panel(
@@ -105,16 +110,21 @@ def _contact_sheet(pair_paths: list[Path], output_path: Path) -> None:
     sheet.save(output_path, format="PNG", optimize=False, compress_level=9)
 
 
-def generate_pilot_review(repository_root: Path, predictions_path: Path) -> dict[str, Any]:
+def generate_pilot_review(
+    repository_root: Path,
+    predictions_path: Path,
+    *,
+    protocol: GroundingProtocol = V1_PROTOCOL,
+) -> dict[str, Any]:
     predictions = load_jsonl(predictions_path)
     examples = {
-        row["example_id"]: row
-        for row in load_jsonl(repository_root / "artifacts" / "grounding-dataset.jsonl")
+        row["example_id"]: row for row in load_jsonl(repository_root / protocol.dataset_path)
     }
     overlays = {
-        row["example_id"]: row
-        for row in load_jsonl(repository_root / "artifacts" / "grounding-overlays.jsonl")
+        row["example_id"]: row for row in load_jsonl(repository_root / protocol.overlays_path)
     }
+    if any(record.get("protocol_version") != protocol.protocol_version for record in predictions):
+        raise ValueError("pilot predictions were not produced under the selected protocol")
     grouped: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
     for record in predictions:
         if record["example_id"] not in examples:
@@ -186,7 +196,7 @@ def generate_pilot_review(repository_root: Path, predictions_path: Path) -> dict
     latencies = [float(record["latency_ms"]) for record in predictions]
     audit = {
         "schema_version": PILOT_AUDIT_VERSION,
-        "protocol_version": PROTOCOL_VERSION,
+        "protocol_version": protocol.protocol_version,
         "prompt_version": PROMPT_VERSION,
         "provider": predictions[0]["provider"],
         "model": predictions[0]["model"],
@@ -224,7 +234,7 @@ def generate_pilot_review(repository_root: Path, predictions_path: Path) -> dict
     markdown = [
         "# Grounding Pilot Audit",
         "",
-        f"- Protocol: `{PROTOCOL_VERSION}`",
+        f"- Protocol: `{protocol.protocol_version}`",
         f"- Provider/model: `{audit['provider']}` / `{audit['model']}`",
         f"- Calls: {audit['condition_call_count']} ({audit['example_count']} paired examples)",
         f"- Parse failures: {audit['invalid_or_unparseable_count']}",
@@ -241,10 +251,11 @@ def generate_pilot_review(repository_root: Path, predictions_path: Path) -> dict
         f"- Credential marker scan clean: {audit['credential_scan_clean']}",
         "",
         "Blue boxes in the review images are frozen ground truth and were added only after",
-        "model collection. Green points are correct; red points are incorrect. The first",
-        "three raw misses land on the visually similar read-only request card, which must be",
-        "considered during the human ambiguity review rather than silently excluded.",
-        "",
+        "model collection. Green points are correct; red points are incorrect.",
     ]
+    if protocol.name == "v1":
+        markdown[-1] += " The first"
+        markdown.extend(_V1_PILOT_REVIEW_LINES)
+    markdown.append("")
     (output_dir / "audit.md").write_text("\n".join(markdown))
     return audit
