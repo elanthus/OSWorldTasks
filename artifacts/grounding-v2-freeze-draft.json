@@ -1,6 +1,7 @@
 {
   "approval": {
     "approved_utc": null,
+    "full_approved": null,
     "owner": null,
     "pilot_approved": null
   },
@@ -33,7 +34,7 @@
   "model": null,
   "model_calls_performed": 0,
   "notes": [
-    "No model has been called under protocol v2. Owner fills provider, model, prompt_version, parser_version, prediction_schema_version, parameters, and approval before the first call.",
+    "No model has been called under protocol v2. Owner fills provider, model, prompt_version, parser_version, prediction_schema_version, parameters, and approval before the first call. The runner refuses any non-mock v2 run until approval.owner and approval.approved_utc are set, approval.pilot_approved (pilot) or approval.full_approved (full) is true, and provider/model match the run.",
     "The pilot runs only after approval and stops at its cap; the full run needs a second approval and must not exceed full_new_calls_after_pilot new calls.",
     "V2 results are reported separately from v1 and never replace the frozen v1 result files."
   ],

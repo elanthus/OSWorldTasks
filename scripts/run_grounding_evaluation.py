@@ -5,7 +5,8 @@
 v1 input, output, and cache path unchanged.  ``--protocol v2`` reads the crossed v2
 dataset, stamps ``pixelgym-grounding-v2``, writes only under v2 paths, and with
 ``--plan-only`` also drafts ``artifacts/grounding-v2-freeze-draft.json`` for the owner.
-V2 execution against any paid provider remains owner-gated.
+V2 execution against any non-mock provider is refused until that record carries the
+owner's approval, the approved stage flag, and the exact provider and model to be called.
 """
 
 from __future__ import annotations
@@ -16,7 +17,11 @@ from pathlib import Path
 from typing import Any
 
 from pixelgym.grounding.evaluation import ResponseCache, planned_new_calls, run_evaluation
-from pixelgym.grounding.freeze_v2 import write_v2_freeze_draft
+from pixelgym.grounding.freeze_v2 import (
+    OwnerApprovalError,
+    require_owner_approval,
+    write_v2_freeze_draft,
+)
 from pixelgym.grounding.protocols import PROTOCOL_NAMES, protocol_for
 from pixelgym.grounding.providers import CodexCLIProvider, MockProvider, OpenRouterProvider
 
@@ -66,6 +71,11 @@ def main(argv: list[str] | None = None, repository_root: Path | None = None) -> 
         if protocol.name == "v2":
             result["freeze_draft"] = write_v2_freeze_draft(repository_root)
     else:
+        if protocol.name == "v2":
+            try:
+                require_owner_approval(repository_root, provider=provider, pilot=pilot)
+            except OwnerApprovalError as exc:
+                raise SystemExit(str(exc)) from exc
         result = run_evaluation(
             repository_root=repository_root,
             provider=provider,

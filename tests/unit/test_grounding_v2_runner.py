@@ -38,7 +38,10 @@ from pixelgym.grounding.evaluation import (
 from pixelgym.grounding.freeze_v2 import (
     DEFAULT_FREEZE_DRAFT_PATH,
     FREEZE_DRAFT_SCHEMA_VERSION,
+    OwnerApprovalError,
     build_v2_freeze_draft,
+    require_owner_approval,
+    write_v2_freeze_draft,
 )
 from pixelgym.grounding.protocols import V1_PROTOCOL, V2_PROTOCOL, protocol_for
 from pixelgym.grounding.providers import MockProvider
@@ -374,7 +377,12 @@ def test_plan_only_v2_writes_the_freeze_draft_without_any_provider_call(
     assert draft["paired_condition_call_count"] == 200
     for field in ("provider", "model", "prompt_version", "parameters"):
         assert draft[field] is None
-    assert draft["approval"] == {"owner": None, "approved_utc": None, "pilot_approved": None}
+    assert draft["approval"] == {
+        "owner": None,
+        "approved_utc": None,
+        "pilot_approved": None,
+        "full_approved": None,
+    }
     assert draft["model_calls_performed"] == 0
     assert draft["output_paths"]["full_predictions"] == "artifacts/grounding-v2-predictions.jsonl"
     assert not (root / "artifacts" / "grounding-predictions.jsonl").exists()
@@ -447,3 +455,92 @@ def test_default_v1_runner_path_reads_v1_inputs_and_writes_v1_locations(
     full_output = tmp_path / "artifacts" / "grounding-predictions.jsonl"
     assert len(full_output.read_text().splitlines()) == 200
     assert not (tmp_path / "artifacts" / "grounding-v2-predictions.jsonl").exists()
+
+
+class _PaidProviderStub:
+    """Stands in for a metered provider; any invoke is a test failure."""
+
+    name = "openrouter"
+    model = "frozen-model-id"
+
+    def __init__(self) -> None:
+        self.parameters: dict[str, Any] = {}
+
+    def invoke(self, *, image_path: Path, prompt: str, schema: dict[str, Any]) -> Any:
+        raise AssertionError("a metered provider was invoked without owner approval")
+
+
+def _write_approved_record(root: Path, **overrides: Any) -> Path:
+    path = root / DEFAULT_FREEZE_DRAFT_PATH
+    record = build_v2_freeze_draft(root)
+    record["provider"] = _PaidProviderStub.name
+    record["model"] = _PaidProviderStub.model
+    record["approval"] = {
+        "owner": "owner@example.test",
+        "approved_utc": "2026-10-25T00:00:00+00:00",
+        "pilot_approved": True,
+        "full_approved": False,
+    }
+    record.update(overrides)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
+    return path
+
+
+def test_v2_paid_execution_is_refused_without_a_complete_owner_approval(tmp_path: Path) -> None:
+    root = _copy_v2_metadata(tmp_path)
+    provider = _PaidProviderStub()
+
+    with pytest.raises(OwnerApprovalError, match="run with --plan-only first"):
+        require_owner_approval(root, provider=provider, pilot=True)
+
+    write_v2_freeze_draft(root)
+    with pytest.raises(OwnerApprovalError, match="approval.owner and approval.approved_utc"):
+        require_owner_approval(root, provider=provider, pilot=True)
+
+    (root / DEFAULT_FREEZE_DRAFT_PATH).unlink()
+    _write_approved_record(root, approval={"owner": "o", "approved_utc": "t"})
+    with pytest.raises(OwnerApprovalError, match="approval.pilot_approved to be true"):
+        require_owner_approval(root, provider=provider, pilot=True)
+
+    _write_approved_record(root, provider=None, model=None)
+    with pytest.raises(OwnerApprovalError, match="would call 'openrouter'"):
+        require_owner_approval(root, provider=provider, pilot=True)
+
+    _write_approved_record(root)
+    with pytest.raises(OwnerApprovalError, match="approval.full_approved to be true"):
+        require_owner_approval(root, provider=provider, pilot=False)
+    approval = require_owner_approval(root, provider=provider, pilot=True)
+    assert approval["pilot_approved"] is True
+
+    dataset = root / V2_PROTOCOL.dataset_path
+    dataset.write_text(dataset.read_text() + "\n")
+    with pytest.raises(OwnerApprovalError, match="drifted"):
+        require_owner_approval(root, provider=provider, pilot=True)
+
+
+def test_mock_provider_is_exempt_from_the_owner_gate(tmp_path: Path) -> None:
+    root = _copy_v2_metadata(tmp_path)
+
+    result = require_owner_approval(root, provider=MockProvider(), pilot=True)
+
+    assert result["exempt"] is True
+    assert not (root / DEFAULT_FREEZE_DRAFT_PATH).exists()
+
+
+def test_runner_exits_before_any_paid_v2_call_without_owner_approval(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = _copy_v2_metadata(tmp_path)
+    write_v2_freeze_draft(root)
+    script = _load_script()
+    monkeypatch.setattr(script, "OpenRouterProvider", _PaidProviderStub)
+
+    with pytest.raises(SystemExit, match="approval.owner and approval.approved_utc"):
+        script.main(
+            ["--provider", "openrouter", "--protocol", "v2", "--pilot", "--max-new-calls", "20"],
+            repository_root=root,
+        )
+
+    assert not (root / V2_PROTOCOL.pilot_predictions_path).exists()
+    assert not (root / ".cache").exists()

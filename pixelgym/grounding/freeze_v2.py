@@ -19,6 +19,7 @@ from pixelgym.grounding.evaluation import (
     pilot_example_ids,
 )
 from pixelgym.grounding.protocols import V2_PROTOCOL
+from pixelgym.grounding.providers import GroundingProvider
 
 FREEZE_DRAFT_SCHEMA_VERSION = "pixelgym-grounding-v2-freeze-draft-v1"
 DEFAULT_FREEZE_DRAFT_PATH = "artifacts/grounding-v2-freeze-draft.json"
@@ -33,7 +34,9 @@ _DRAFT_NOTES = (
     (
         "No model has been called under protocol v2. Owner fills provider, model, "
         "prompt_version, parser_version, prediction_schema_version, parameters, and "
-        "approval before the first call."
+        "approval before the first call. The runner refuses any non-mock v2 run until "
+        "approval.owner and approval.approved_utc are set, approval.pilot_approved (pilot) "
+        "or approval.full_approved (full) is true, and provider/model match the run."
     ),
     (
         "The pilot runs only after approval and stops at its cap; the full run needs a "
@@ -108,7 +111,12 @@ def build_v2_freeze_draft(repository_root: Path) -> dict[str, Any]:
         "parser_version": None,
         "prediction_schema_version": None,
         "parameters": None,
-        "approval": {"owner": None, "approved_utc": None, "pilot_approved": None},
+        "approval": {
+            "owner": None,
+            "approved_utc": None,
+            "pilot_approved": None,
+            "full_approved": None,
+        },
         "output_paths": {
             "pilot_predictions": protocol.pilot_predictions_path,
             "full_predictions": protocol.full_predictions_path,
@@ -140,3 +148,57 @@ def write_v2_freeze_draft(repository_root: Path, path: Path | None = None) -> di
         "condition_call_cap": draft["condition_call_cap"],
         "model_calls_performed": 0,
     }
+
+
+class OwnerApprovalError(RuntimeError):
+    """A v2 model run was requested without the frozen owner approval."""
+
+
+def require_owner_approval(
+    repository_root: Path,
+    *,
+    provider: GroundingProvider,
+    pilot: bool,
+    path: Path | None = None,
+) -> dict[str, Any]:
+    """Refuse a v2 run against any non-mock provider unless the owner froze and approved it.
+
+    The mock provider makes no model call and is exempt.  Every other provider needs the
+    freeze record with owner identity and timestamp, the stage-specific approval flag, the
+    exact provider name and model that will be called, and input digests that still match
+    the checked-in v2 metadata.  Returns the approval block that authorised the run.
+    """
+    if provider.name == "mock":
+        return {"exempt": True, "reason": "mock provider makes no model call"}
+    target = path or repository_root / DEFAULT_FREEZE_DRAFT_PATH
+    if not target.is_file():
+        raise OwnerApprovalError(
+            f"v2 execution requires the owner freeze record at {DEFAULT_FREEZE_DRAFT_PATH}; "
+            "run with --plan-only first and have the owner fill it in"
+        )
+    record = json.loads(target.read_text(encoding="utf-8"))
+    approval = record.get("approval")
+    if not isinstance(approval, dict):
+        raise OwnerApprovalError("v2 freeze record has no approval block")
+    if not approval.get("owner") or not approval.get("approved_utc"):
+        raise OwnerApprovalError(
+            "v2 execution requires approval.owner and approval.approved_utc in the freeze record"
+        )
+    stage = "pilot_approved" if pilot else "full_approved"
+    if approval.get(stage) is not True:
+        raise OwnerApprovalError(
+            f"v2 {'pilot' if pilot else 'full'} execution requires approval.{stage} to be true"
+        )
+    if record.get("provider") != provider.name or record.get("model") != provider.model:
+        raise OwnerApprovalError(
+            f"freeze record names provider {record.get('provider')!r} and model "
+            f"{record.get('model')!r}, but this run would call {provider.name!r} "
+            f"{provider.model!r}"
+        )
+    try:
+        current_inputs = build_v2_freeze_draft(repository_root)["inputs"]
+    except ValueError as exc:
+        raise OwnerApprovalError(f"v2 inputs have drifted from the frozen manifest: {exc}") from exc
+    if record.get("inputs") != current_inputs:
+        raise OwnerApprovalError("v2 inputs have drifted from the digests in the freeze record")
+    return dict(approval)
