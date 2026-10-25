@@ -55,7 +55,7 @@ tests; it does **not** run the Docker/Playwright lifecycle suite
 | Grounding v1 experiment | Done, frozen | Sprint 3 gate ([D3.11](artifacts/decisions/d3.11.json)) |
 | Platform scripted lifecycle | Done for the scripted provider at revision 4c4a7fb | Milestone 4 platform gate ([D4.12](artifacts/decisions/d4.12.json)) |
 | Grounding v2 crossed allocation | Designed, not run against a model | [v2 manifest](artifacts/grounding-v2-manifest.json) |
-| v5 agent benchmark and calibration | In progress; v5 benchmark verdict (D5.10) not declared | [v5 design](docs/v5-benchmark-design.md), [evidence index](docs/evidence-index.md) |
+| v5 agent benchmark and calibration | Done at revision fd54dc2 for the environment, platform, and evidence-discipline claim; the Haiku stateful-versus-stateless result is descriptive (same direction in three campaigns, magnitude unresolved), not a pre-registered confirmation or model ranking | v5 gate ([D5.10](artifacts/decisions/d5.10.json), [gate record](artifacts/grounding-v5-d510/human-gate.json)), [v5 design](docs/v5-benchmark-design.md), [evidence index](docs/evidence-index.md) |
 | v5 stateful serving | In progress | [Platform design](docs/platform-design.md#v5-stateful-serving-apiv2) |
 
 ## Problem

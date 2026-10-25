@@ -1,7 +1,7 @@
 # v5 agent benchmark design
 
 - **Protocol identifier:** `pixelgym-agent-v5`
-- **Status:** in progress; no v5 milestone verdict (D5.10) has been declared
+- **Status:** v5 benchmark gate (D5.10) declared on 2026-10-25 (UTC) against `fd54dc27` for the environment, platform, and evidence-discipline claim; the Haiku result is descriptive ([decision record](../artifacts/decisions/d5.10.json), [gate record](../artifacts/grounding-v5-d510/human-gate.json))
 - **Terms:** see the [glossary](glossary.md) for D-numbers, workflow names, and model codenames
 
 ## Goal
@@ -148,7 +148,7 @@ The binding D5.9 pre-registration, copied verbatim from the frozen design, is th
 | D5.8: design decisions (difficulty, minimum difference, power, sample, caps) | Decided; Gemini and Haiku analyses retained | [Gemini power check](../artifacts/grounding-v5-d58-final-design/power.md), [Haiku successor analysis](../artifacts/grounding-v5-d58-haiku-successor/report.md) |
 | D5.9: confirmatory evaluation | Haiku execution recorded, 432 outcomes. The stop rule was amended after repeated intermittent network failures to allow for retries in the case of intermittent network issues. Confirmatory analysis: [confirmatory analysis](../artifacts/grounding-v5-d59-haiku-results/confirmatory-analysis.md). | [D5.9 Haiku report](../artifacts/grounding-v5-d59-haiku-results/report.md), [pre-registration](../artifacts/grounding-v5-d59-freeze/analysis-plan.md) |
 | D5.9 replication: pre-registered successor beside D5.9 | All 432 assignments recorded; frozen analysis and retained-journal audit prepared for owner review. One timeout retains unknown provider completion/usage. The historical and replication differences exceed the frozen disagreement threshold; both are reported. An exploratory [parse-failure signature](../artifacts/grounding-v5-d59-replication-results/prose-signature-diagnostic.md) from the retained journal is reported separately. D5.10 remains human-owned. | [replication review guide](../artifacts/grounding-v5-d59-replication-results/review-guide.md), [analysis](../artifacts/grounding-v5-d59-replication-results/confirmatory-analysis.md), [replication plan](../artifacts/grounding-v5-d59-replication/execution-plan.json), [addendum](../artifacts/grounding-v5-d59-freeze/analysis-plan.md) |
-| D5.10: milestone verdict and public wording | Not declared; human-owned | — |
+| D5.10: milestone verdict and public wording | Declared `PASS` against `fd54dc27` on 2026-10-25 (UTC) for the environment, platform, and evidence-discipline claim. The Haiku stateful-versus-stateless result is reported descriptively: history beat stateless in the same direction in all three campaigns (historical 106 vs 15, replication 62 vs 20, post-hoc parser sensitivity 132 vs 20, each of 192 pairs); the magnitude is unresolved and no campaign is selected. Not a pre-registered confirmation, causal parser estimate, OS-enforced isolation claim, or model ranking. Every limitation is classified in the gate record. | [decision record](../artifacts/decisions/d5.10.json), [gate record](../artifacts/grounding-v5-d510/human-gate.json), [fresh validation supplement](../artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/REVIEW-NOTE.md), [sensitivity analysis](../artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.md) |
 
 Calibration results are descriptive and are not a model ranking. The D5.9 Haiku policies ran under
 a recorded exception that waived OS-level sandbox enforcement, so that evidence cannot support an
