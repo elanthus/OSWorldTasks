@@ -1,0 +1,25 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-m",
+    "scripts.report_grounding_v5_d59_replication",
+    "--input",
+    "<path-5>",
+    "--archive",
+    "<path-1>/d59-replication-ce6776de",
+    "--backup",
+    "<path-3>/d59-replication-ce6776de",
+    "--output",
+    "artifacts/grounding-v5-d59-replication-results",
+    "--verify"
+  ],
+  "command": ".venv/bin/python -m scripts.report_grounding_v5_d59_replication --input <path-5> --archive <path-1>/d59-replication-ce6776de --backup <path-3>/d59-replication-ce6776de --output artifacts/grounding-v5-d59-replication-results --verify",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.534095,
+  "ended_at_utc": "2026-10-25T23:54:27.503695+00:00",
+  "environment": {},
+  "exit_status": 1,
+  "output": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"<path-0>/scripts/report_grounding_v5_d59_replication.py\", line 479, in <module>\n    main()\n  File \"<path-0>/scripts/report_grounding_v5_d59_replication.py\", line 456, in main\n    phase: audit(args.input / phase, args.archive / phase, args.backup / phase)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<path-0>/scripts/report_grounding_v5_d59_replication.py\", line 161, in audit\n    require(\n  File \"<path-0>/scripts/report_grounding_v5_d59_replication.py\", line 43, in require\n    raise ValueError(message)\nValueError: source file hash mismatch\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-25T23:54:26.966024+00:00"
+}
