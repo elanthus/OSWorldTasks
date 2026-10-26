@@ -23,12 +23,24 @@ from pixelgym.grounding.freeze_v2 import (
     write_v2_freeze_draft,
 )
 from pixelgym.grounding.protocols import PROTOCOL_NAMES, protocol_for
-from pixelgym.grounding.providers import CodexCLIProvider, MockProvider, OpenRouterProvider
+from pixelgym.grounding.providers import (
+    ClaudeCodeCLIProvider,
+    CodexCLIProvider,
+    GroundingProvider,
+    MockProvider,
+    OpenRouterProvider,
+)
+
+PROVIDER_CHOICES = ("codex", "claude", "openrouter", "mock")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--provider", choices=("codex", "openrouter", "mock"), required=True)
+    parser.add_argument("--provider", choices=PROVIDER_CHOICES, required=True)
+    parser.add_argument(
+        "--model",
+        help="exact model identifier; required with --provider claude, rejected otherwise",
+    )
     parser.add_argument("--protocol", choices=PROTOCOL_NAMES, default="v1")
     scope = parser.add_mutually_exclusive_group(required=True)
     scope.add_argument("--pilot", action="store_true")
@@ -39,18 +51,30 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def build_provider(name: str, model: str | None) -> GroundingProvider:
+    """Construct the provider without contacting it; the model is frozen by the caller."""
+    if name == "claude":
+        if not model:
+            raise SystemExit("--provider claude requires --model with the exact model identifier")
+        return ClaudeCodeCLIProvider(model=model)
+    if model is not None:
+        raise SystemExit(f"--model is only accepted with --provider claude, not {name!r}")
+    if name == "codex":
+        return CodexCLIProvider()
+    if name == "openrouter":
+        return OpenRouterProvider()
+    if name == "mock":
+        return MockProvider()
+    raise SystemExit(f"unknown provider {name!r}")
+
+
 def main(argv: list[str] | None = None, repository_root: Path | None = None) -> None:
     args = parse_args(argv)
     if args.max_new_calls < 0:
         raise SystemExit("--max-new-calls must be nonnegative")
     repository_root = repository_root or Path(__file__).resolve().parents[1]
     protocol = protocol_for(args.protocol)
-    if args.provider == "codex":
-        provider = CodexCLIProvider()
-    elif args.provider == "openrouter":
-        provider = OpenRouterProvider()
-    else:
-        provider = MockProvider()
+    provider = build_provider(args.provider, args.model)
     pilot = args.pilot
     output = args.output or (
         repository_root / protocol.pilot_predictions_path
