@@ -7,5 +7,6 @@
   "decided_by": "Michael Swailes",
   "tag": "d5.10-pass",
   "source_record": "artifacts/grounding-v5-d510/human-gate.json",
-  "source_record_sha256": "ba206c1bd2ff176389245c1cf6acc4f8db4937ea6005a1356638a1c424559884"
+  "source_record_sha256": "4b4294c9c37b988892434eff3a72b5ba1df9678360152e96650715b087646a72",
+  "source_record_amended": "2026-10-26: amendments[0] in the gate record reclassifies single-disk retention as tested; verdict, revision, date and tag unchanged"
 }
