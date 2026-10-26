@@ -167,11 +167,13 @@ or proxied onto a shared network ([deployment warning](deploy/README.md)).
 
 The owner-recorded [D1.8](artifacts/decisions/d1.8.json),
 [D2.11](artifacts/decisions/d2.11.json),
-[D3.11](artifacts/decisions/d3.11.json), and
-[D4.12](artifacts/decisions/d4.12.json) decisions remain in the audit trail. D4.12 applies only
-to its reviewed revision and scripted-provider scope. The v5 confirmatory benchmark and v5
-milestone gate remain incomplete; retained calibration, negative results, and unfinished work are
-documented without being promoted to a headline result
+[D3.11](artifacts/decisions/d3.11.json),
+[D4.12](artifacts/decisions/d4.12.json), and [D5.10](artifacts/decisions/d5.10.json) decisions
+remain in the audit trail. D4.12 applies only to its reviewed revision and scripted-provider
+scope. D5.10 was declared `PASS` on 2026-10-25 against revision `fd54dc2` for the environment,
+platform, and evidence-discipline claim only; the Haiku stateful-versus-stateless result is
+descriptive, and retained calibration, negative results, and known limitations are documented
+without being promoted to a headline result
 ([v5 design](docs/v5-benchmark-design.md), [evidence index](docs/evidence-index.md)).
 
 ## Limitations
@@ -204,8 +206,9 @@ documented without being promoted to a headline result
   prompt is not part of the recorded prompt v1, and it is not recorded whether the harness prompt
   was identical across conditions.
 - Platform metrics are synthetic, local scripted-provider measurements. V5 calibration is
-  descriptive, the confirmatory benchmark is unfinished, and no v5 gate is declared
-  ([evidence index](docs/evidence-index.md)).
+  descriptive, and the D5.10 gate covers the environment, platform, and evidence discipline, not a
+  pre-registered confirmatory result or a model ranking; v5 stateful serving (S8) has not been
+  rehearsed ([evidence index](docs/evidence-index.md), [gate record](artifacts/grounding-v5-d510/human-gate.json)).
 
 ## Related work and demonstrated contribution
 

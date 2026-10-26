@@ -33,8 +33,12 @@ The core environment, OSWorld adapter, validation suite, frozen grounding experi
 local-first platform components are implemented. The project owner recorded D4.12 `PASS` on 2026-09-09 against revision
 `4c4a7fb2fcb983e81084542365abc0ec2d7df538` in `artifacts/platform/human-gate.json`.
 That decision covers the reviewed scripted-provider governance and orchestration evidence; it is
-not a model-quality or production-readiness claim and does not grade later changes. The v5 agent
-benchmark and v5 serving work remain unfinished; agents must not infer a new milestone verdict.
+not a model-quality or production-readiness claim and does not grade later changes. The owner
+recorded D5.10 `PASS` on 2026-10-25 against revision `fd54dc2782ac8e7b3526f19e7fa46a0131175e5e`
+in `artifacts/grounding-v5-d510/human-gate.json` for the environment, platform, and
+evidence-discipline claim; the Haiku result is descriptive only, and later dated amendments to that
+record are the owner's. The v5 stateful serving rehearsal (S8) remains unfinished; agents must not
+infer a new milestone verdict.
 
 Current repository layout includes the following core paths:
 

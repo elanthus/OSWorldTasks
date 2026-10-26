@@ -6,7 +6,8 @@
 - **Status:** bound into the frozen D5.9 replication; the completed pilot and full campaign's
   retained invocation evidence records OS sandbox enforcement. The [replication review
   package](../artifacts/grounding-v5-d59-replication-results/review-guide.md) discloses the
-  unresolved timeout and evidence limits; D5.10 remains the owner's decision.
+  unresolved timeout and evidence limits. D5.10 was declared on 2026-10-25 and does not claim
+  OS-enforced isolation for the D5.9 Haiku runs ([gate record](../artifacts/grounding-v5-d510/human-gate.json)).
 - **Terms:** see the [glossary](glossary.md) and the [v5 benchmark design](v5-benchmark-design.md)
 
 ## Why the D5.9 launches ran without OS enforcement

@@ -104,7 +104,8 @@ Only drained owner-login waits pause the active clock. Existing bounded retry an
 shared-ledger stops apply. The public candidate remains `execution_enabled: false`,
 `subscription_execution_authorized: false`, with both approved caps zero. No owner
 approval was written during preparation; the subsequent owner approval is linked above. Prior campaign approvals cannot
-validate against its new digest. D5.10 remains a human decision.
+validate against its new digest. D5.10 was later declared on 2026-10-25
+([decision record](../artifacts/decisions/d5.10.json)).
 
 To rebuild or verify **without CLI or network calls**, use the source revision in
 the prepared plan (not an arbitrary newer HEAD):
