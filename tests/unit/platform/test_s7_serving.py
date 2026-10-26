@@ -536,6 +536,132 @@ def test_predecessors_preserve_consumed_allowance_and_refuse_duplicates_or_chang
     assert inventory(run) == original
 
 
+def completed_archive(root: Path, count: int, *, nested: bool, name: str = "done") -> Path:
+    """Explicit completed unit predecessor: sealed results and packages, no replay."""
+    from pixelgym.platform.s7_source import content_digest_bytes
+
+    run = root / name / "qualification" if nested else root / name
+    write_json(run / "source/fixture.json", {"fixture": "completed source " + name})
+    write_json(
+        run / "source-binding.json",
+        {
+            "revision": "4" * 40,
+            "files": {
+                "fixture.json": content_digest_bytes((run / "source/fixture.json").read_bytes())
+            },
+        },
+    )
+    plan = {
+        "fixture": name + str(count),
+        "schema_version": "pixelgym-s7-qualification-plan-v1",
+        "evidence_label": EVIDENCE_LABEL,
+        "gate_policy_sha256": POLICY_SHA256,
+    }
+    write_json(run / "plan.json", plan)
+    write_json(
+        run / "results.json",
+        {
+            "schema_version": "pixelgym-s7-qualification-results-v1",
+            "activation_performed": False,
+            "publication_performed": False,
+            "real_provider_requests": 0,
+            "provider_control_requests": 0,
+            "monetary_spend_usd": 0,
+            "plan_sha256": content_digest(plan),
+            "fake_sends": {"qualification": count},
+        },
+    )
+    write_json(run / "verification.json", {"fixture": "stored verification"})
+    write_json(run / "packages/A.json", {"fixture": "package"})
+    budget = S7SendBudget(run / "send-budget.sqlite")
+    for index in range(count):
+        budget.reserve("qualification", str(index))
+    seal(run)
+    if nested:
+        write_json(root / name / "review/report.json", {"fixture": "review"})
+    archive = root / (name + "-archive")
+    create_archive(root / name, archive)
+    return archive
+
+
+def test_completed_and_stopped_predecessors_accumulate_into_one_allowance(
+    tmp_path: Path,
+) -> None:
+    from pixelgym.platform.s7_predecessors import freeze_predecessors, verify_predecessors
+
+    stopped = stopped_archive(tmp_path / "stopped", 73)
+    completed = completed_archive(tmp_path, 77, nested=True)
+    run = tmp_path / "successor"
+    accounting = freeze_predecessors(
+        run, (approved_archive(stopped), approved_archive(completed)), expected_sends=150
+    )
+    assert [r["qualification_sends"] for r in accounting["records"]] == [73, 77]
+    assert accounting["records"][0]["path"] == "predecessors/0/run"
+    assert accounting["records"][1]["path"] == "predecessors/1/run/qualification"
+    assert accounting["qualification_allowance"] == 227
+    assert accounting["campaign_allowance"] == 261
+    assert verify_predecessors(run, accounting) == 150
+    assert (run / "predecessors/1/run/review/report.json").exists()
+    flat = completed_archive(tmp_path / "flat", 5, nested=False)
+    flat_run = tmp_path / "flat-successor"
+    flat_accounting = freeze_predecessors(flat_run, (approved_archive(flat),), expected_sends=5)
+    assert flat_accounting["records"][0]["path"] == "predecessors/0/run"
+    assert verify_predecessors(flat_run, flat_accounting) == 5
+
+
+@pytest.mark.parametrize(
+    ("damage", "match"),
+    [
+        ("failure", "retains a failure record"),
+        ("packages", "lacks packages"),
+        ("plan", "different plan"),
+        ("ledger", "durable ledger"),
+        ("spend", "zero-spend"),
+        ("neither", "neither a failure record"),
+    ],
+)
+def test_completed_predecessor_refuses_conflicting_or_unbound_evidence(
+    tmp_path: Path, damage: str, match: str
+) -> None:
+    import shutil
+
+    from pixelgym.platform.s7_predecessors import completed_count, predecessor_count
+
+    completed_archive(tmp_path, 3, nested=False)
+    run = tmp_path / "done"
+    (run / "seal.json").unlink()
+
+    def rewrite(name: str, value: dict[str, Any]) -> None:
+        (run / name).unlink()
+        write_json(run / name, value)
+
+    if damage == "failure":
+        write_json(run / "failure.json", {"stage": "qualification"})
+    elif damage == "packages":
+        shutil.rmtree(run / "packages")
+    elif damage == "plan":
+        rewrite("plan.json", {**read_json(run / "plan.json"), "fixture": "edited"})
+    elif damage == "ledger":
+        S7SendBudget(run / "send-budget.sqlite").reserve("qualification", "extra")
+    elif damage == "spend":
+        rewrite("results.json", {**read_json(run / "results.json"), "monetary_spend_usd": 1})
+    else:
+        (run / "results.json").unlink()
+    seal(run)
+    # A failure record routes through the stopped path; completed_count itself must refuse it.
+    count = completed_count if damage == "failure" else predecessor_count
+    with pytest.raises(ValueError, match=match):
+        count(run)
+
+
+def test_predecessor_root_requires_a_seal(tmp_path: Path) -> None:
+    from pixelgym.platform.s7_predecessors import predecessor_root
+
+    (tmp_path / "qualification").mkdir()
+    with pytest.raises(ValueError, match="no sealed qualification"):
+        predecessor_root(tmp_path)
+
+
 def test_git_source_refuses_modified_untracked_ignored_and_wrong_root(tmp_path: Path) -> None:
     from pixelgym.platform.s7_source import git_source, snapshot
 

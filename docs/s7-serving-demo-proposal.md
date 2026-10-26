@@ -86,6 +86,15 @@ new qualification is authorized here. The owner must resolve the source/version 
 activation; the old checkout lacks these later repairs. Keep frozen evidence unchanged and use
 separately approved successor evidence if qualifying repaired source becomes necessary.
 
+On 2026-10-26 the owner resolved that mismatch by approving a fresh successor qualification of
+the repaired source with a further 77 fake sends. The predecessor loader now accepts a completed
+sealed qualification as well as stopped ones, so the successor freeze declares all three retained
+archives (0 + 73 + 77 = 150 prior sends) and carries cumulative ceilings of **227** qualification
+and **261** campaign sends. A completed predecessor is counted from its stored bytes only: seal,
+plan, source snapshot, results-to-ledger agreement, and the presence of packages and stored
+verification. It is not replayed and its packages are not loaded. Activation, the full serving
+rehearsal, publication, and milestone decisions remain separate owner gates.
+
 ## Decisions requested
 
 Approve this specification before generating qualification outputs or configuring an approved
