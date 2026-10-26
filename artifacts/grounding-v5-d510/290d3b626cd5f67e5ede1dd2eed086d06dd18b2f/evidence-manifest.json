@@ -1,0 +1,540 @@
+{
+  "checklist_items": [
+    {
+      "artifacts": [
+        "artifacts/decisions/d5.10.json",
+        "artifacts/grounding-v5-d510/human-gate.json",
+        "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/REVIEW-NOTE.md",
+        "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/restore-drill.json",
+        "docs/v5-benchmark-design.md",
+        "docs/evidence-retention.md",
+        "scripts/restore_grounding_v5_d510.py",
+        "scripts/retain_v5_evidence.py",
+        "scripts/report_grounding_v5_d59_replication.py",
+        "scripts/observe_b2_object_lock.py",
+        "tests/unit/test_observe_b2_object_lock.py",
+        "artifacts/grounding-v5-d59-action-extraction-results/report.json",
+        "artifacts/grounding-v5-d59-action-extraction-results/pilot-report.json",
+        "artifacts/grounding-v5-d59-replication-results/report.json",
+        "artifacts/grounding-v5-d59-replication-results/pilot-report.json",
+        "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/REVIEW-NOTE.md",
+        "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/object-lock-observation.json",
+        "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/offhost-restore-drill.json"
+      ],
+      "checklist_text": "Review raw commands, outputs, evidence integrity, limitations, benchmark verdict, and any public wording",
+      "id": "d5.10-delivery-row",
+      "kind": "delivery_row",
+      "linked_records": [
+        "artifacts/grounding-v5-d510/human-gate.json",
+        "docs/evidence-retention.md"
+      ],
+      "number": 1,
+      "records": [
+        "commands/00-git-revision.json",
+        "commands/01-worktree-status.json",
+        "commands/02-rclone-version.json",
+        "commands/03-object-lock-readback.json",
+        "commands/04-downloaded-vs-local-extraction.json",
+        "commands/05-downloaded-vs-local-replication.json",
+        "commands/06-offhost-restore-drill-extraction.json",
+        "commands/07-offhost-restore-replication-full.json",
+        "commands/08-offhost-restore-replication-pilot.json",
+        "commands/09-replication-audit-verify-offhost.json",
+        "commands/10-public-wording-inventory.json",
+        "commands/11-worktree-status-after.json",
+        "commands/12-evidence-branch.json",
+        "commands/13-checklist-source.json",
+        "commands/14-replication-audit-verify-local-control.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:658",
+      "stored_raw_observation": "`00-git-revision`: exit 0<br>`01-worktree-status`: exit 0<br>`02-rclone-version`: exit 0<br>`03-object-lock-readback`: exit 0<br>`04-downloaded-vs-local-extraction`: exit 0<br>`05-downloaded-vs-local-replication`: exit 0<br>`06-offhost-restore-drill-extraction`: exit 0<br>`07-offhost-restore-replication-full`: exit 0<br>`08-offhost-restore-replication-pilot`: exit 0<br>`09-replication-audit-verify-offhost`: exit 1<br>`10-public-wording-inventory`: exit 0<br>`11-worktree-status-after`: exit 0<br>`12-evidence-branch`: exit 0<br>`13-checklist-source`: exit 0<br>`14-replication-audit-verify-local-control`: exit 1"
+    },
+    {
+      "artifacts": [
+        "scripts/restore_grounding_v5_d510.py",
+        "tests/unit/test_grounding_v5_d510_restore.py",
+        "pixelgym/grounding/v5/retention.py",
+        "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/offhost-restore-drill.json"
+      ],
+      "checklist_text": "Stateful policy reset, policy-egress isolation, pre-send attempt persistence, unknown-attempt reconciliation, bounded deadline/cancellation settlement, post-attempt and post-dispatch state reconstruction, canonical parser-input recovery, atomic candidate/checkpoint persistence, sealed parser failure, exact backend-state restore or reconnect, durable dispatch ordering, invalid output, call caps, resume, authoritative replay, credential-free policy inputs, secret exclusion, redaction binding, and evidence integrity have no-cost failure-path tests.",
+      "id": "done-when-06",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 2,
+      "records": [
+        "commands/06-offhost-restore-drill-extraction.json",
+        "commands/07-offhost-restore-replication-full.json",
+        "commands/08-offhost-restore-replication-pilot.json",
+        "commands/09-replication-audit-verify-offhost.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:793",
+      "stored_raw_observation": "`06-offhost-restore-drill-extraction`: exit 0<br>`07-offhost-restore-replication-full`: exit 0<br>`08-offhost-restore-replication-pilot`: exit 0<br>`09-replication-audit-verify-offhost`: exit 1"
+    },
+    {
+      "artifacts": [
+        "artifacts/grounding-v5-d59-replication-results/report.json",
+        "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.json"
+      ],
+      "checklist_text": "The confirmatory report is generated only from sealed evidence, retains every failure, and separates primary, diagnostic, ablation, reliability, and exploratory results.",
+      "id": "done-when-11",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 3,
+      "records": [
+        "commands/06-offhost-restore-drill-extraction.json",
+        "commands/09-replication-audit-verify-offhost.json",
+        "commands/14-replication-audit-verify-local-control.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:807",
+      "stored_raw_observation": "`06-offhost-restore-drill-extraction`: exit 0<br>`09-replication-audit-verify-offhost`: exit 1<br>`14-replication-audit-verify-local-control`: exit 1"
+    },
+    {
+      "artifacts": [],
+      "checklist_text": "The agent reports raw milestone-gate commands, exit statuses, counts, runtimes, and full output without declaring the human gate passed or approving public wording.",
+      "id": "done-when-12",
+      "kind": "done_when",
+      "linked_records": [],
+      "number": 4,
+      "records": [
+        "commands/00-git-revision.json",
+        "commands/01-worktree-status.json",
+        "commands/02-rclone-version.json",
+        "commands/03-object-lock-readback.json",
+        "commands/04-downloaded-vs-local-extraction.json",
+        "commands/05-downloaded-vs-local-replication.json",
+        "commands/06-offhost-restore-drill-extraction.json",
+        "commands/07-offhost-restore-replication-full.json",
+        "commands/08-offhost-restore-replication-pilot.json",
+        "commands/09-replication-audit-verify-offhost.json",
+        "commands/10-public-wording-inventory.json",
+        "commands/11-worktree-status-after.json",
+        "commands/12-evidence-branch.json",
+        "commands/13-checklist-source.json",
+        "commands/14-replication-audit-verify-local-control.json"
+      ],
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:809",
+      "stored_raw_observation": "`00-git-revision`: exit 0<br>`01-worktree-status`: exit 0<br>`02-rclone-version`: exit 0<br>`03-object-lock-readback`: exit 0<br>`04-downloaded-vs-local-extraction`: exit 0<br>`05-downloaded-vs-local-replication`: exit 0<br>`06-offhost-restore-drill-extraction`: exit 0<br>`07-offhost-restore-replication-full`: exit 0<br>`08-offhost-restore-replication-pilot`: exit 0<br>`09-replication-audit-verify-offhost`: exit 1<br>`10-public-wording-inventory`: exit 0<br>`11-worktree-status-after`: exit 0<br>`12-evidence-branch`: exit 0<br>`13-checklist-source`: exit 0<br>`14-replication-audit-verify-local-control`: exit 1"
+    }
+  ],
+  "checklist_source": {
+    "path": "plans/grounding-v5-agent-benchmark.md",
+    "record": "commands/13-checklist-source.json",
+    "revision": "f0bcbd6f3e379f880baeca233d4b7e05528bcfc5"
+  },
+  "command_records": [
+    {
+      "command": "git rev-parse HEAD",
+      "duration_seconds": 0.012536,
+      "ended_at_utc": "2026-10-25T23:49:41.104648+00:00",
+      "exit_status": 0,
+      "path": "commands/00-git-revision.json",
+      "sha256": "7458902de6813162767f0a17ca28ab646428db9ad0ef3f84f30c861eb5b76386",
+      "size": 411,
+      "started_at_utc": "2026-10-25T23:49:41.089648+00:00"
+    },
+    {
+      "command": "git status --short",
+      "duration_seconds": 0.036662,
+      "ended_at_utc": "2026-10-25T23:49:41.196915+00:00",
+      "exit_status": 0,
+      "path": "commands/01-worktree-status.json",
+      "sha256": "5fe55684063fced9e5892870e7b2b5fc44e29785f151f4966f7651c0dd2ac81f",
+      "size": 481,
+      "started_at_utc": "2026-10-25T23:49:41.158106+00:00"
+    },
+    {
+      "command": "rclone version",
+      "duration_seconds": 0.065761,
+      "ended_at_utc": "2026-10-25T23:49:41.315566+00:00",
+      "exit_status": 0,
+      "path": "commands/02-rclone-version.json",
+      "sha256": "0161097ec09c445a946314b5616783d551eb90e7b9a1b3bc4b456510fc679a1f",
+      "size": 555,
+      "started_at_utc": "2026-10-25T23:49:41.248085+00:00"
+    },
+    {
+      "command": ".venv/bin/python -I scripts/observe_b2_object_lock.py d59-action-extraction-c24d1218 d59-replication-ce6776de",
+      "duration_seconds": 1.072357,
+      "ended_at_utc": "2026-10-25T23:49:42.440047+00:00",
+      "exit_status": 0,
+      "path": "commands/03-object-lock-readback.json",
+      "sha256": "329ce66e6d17ec411ace804162564be78b1dfa7dfef7c46ded255b1e9707696b",
+      "size": 29460,
+      "started_at_utc": "2026-10-25T23:49:41.365544+00:00"
+    },
+    {
+      "command": "rclone check --checksum <path-2>/d59-action-extraction-c24d1218 <path-1>/d59-action-extraction-c24d1218",
+      "duration_seconds": 21.620249,
+      "ended_at_utc": "2026-10-25T23:50:04.115631+00:00",
+      "exit_status": 0,
+      "path": "commands/04-downloaded-vs-local-extraction.json",
+      "sha256": "8665f4afef6badd79e116c657761c0f08e11d305a9fc9b49b825f9a38acf58b8",
+      "size": 880,
+      "started_at_utc": "2026-10-25T23:49:42.492361+00:00"
+    },
+    {
+      "command": "rclone check --checksum <path-2>/d59-replication-ce6776de <path-1>/d59-replication-ce6776de",
+      "duration_seconds": 14.769418,
+      "ended_at_utc": "2026-10-25T23:50:18.964893+00:00",
+      "exit_status": 0,
+      "path": "commands/05-downloaded-vs-local-replication.json",
+      "sha256": "cde79c468ae7690bceb22140ee88df9b434060271dbc3384addb60f76eed12a8",
+      "size": 844,
+      "started_at_utc": "2026-10-25T23:50:04.193080+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.restore_grounding_v5_d510 --run <path-4> --archive <path-1>/d59-action-extraction-c24d1218 --backup <path-3>/d59-action-extraction-c24d1218 --destination <path-6>/extraction --output <path-7>/extraction-restore-receipt.json",
+      "duration_seconds": 230.606248,
+      "ended_at_utc": "2026-10-25T23:54:09.649402+00:00",
+      "exit_status": 0,
+      "path": "commands/06-offhost-restore-drill-extraction.json",
+      "sha256": "e4bb6670d1326f5c4d4fa4cd217364b66b5da2c35335fbab2ec9e41713c32fc0",
+      "size": 4704,
+      "started_at_utc": "2026-10-25T23:50:19.037652+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.retain_v5_evidence restore --archive <path-1>/d59-replication-ce6776de/full --destination <path-6>/replication/full --digest sha256:99cff640fe31b3b831c18b3d7a3c03c355baaba55edd71ddc726b6a5011e3049",
+      "duration_seconds": 16.565195,
+      "ended_at_utc": "2026-10-25T23:54:26.280256+00:00",
+      "exit_status": 0,
+      "path": "commands/07-offhost-restore-replication-full.json",
+      "sha256": "ea84ea691e1ea8bd2c18f322af148d44a0e304c6613c8f8dda3417064451f7cb",
+      "size": 1123,
+      "started_at_utc": "2026-10-25T23:54:09.711303+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.retain_v5_evidence restore --archive <path-1>/d59-replication-ce6776de/pilot --destination <path-6>/replication/pilot --digest sha256:ee1dd23ea69d4ef58793ff1fcb8a7f8a813e463ca3616d49b202f3d404be7c2c",
+      "duration_seconds": 0.56672,
+      "ended_at_utc": "2026-10-25T23:54:26.912418+00:00",
+      "exit_status": 0,
+      "path": "commands/08-offhost-restore-replication-pilot.json",
+      "sha256": "7db9aaa35ce5079945aaea6fc0e1f371e5f4942577494253371ad1007e5d65f7",
+      "size": 1122,
+      "started_at_utc": "2026-10-25T23:54:26.342418+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.report_grounding_v5_d59_replication --input <path-5> --archive <path-1>/d59-replication-ce6776de --backup <path-3>/d59-replication-ce6776de --output artifacts/grounding-v5-d59-replication-results --verify",
+      "duration_seconds": 0.534095,
+      "ended_at_utc": "2026-10-25T23:54:27.503695+00:00",
+      "exit_status": 1,
+      "path": "commands/09-replication-audit-verify-offhost.json",
+      "sha256": "70927149a785c6e017256612b4e49ba7d747c699fecc88872b23bfcf67377b32",
+      "size": 1620,
+      "started_at_utc": "2026-10-25T23:54:26.966024+00:00"
+    },
+    {
+      "command": "grep -n -E 'D5.10|off-host|same local disk|single disk' README.md docs/v5-benchmark-design.md docs/evidence-index.md",
+      "duration_seconds": 0.006549,
+      "ended_at_utc": "2026-10-25T23:55:52.469977+00:00",
+      "exit_status": 0,
+      "path": "commands/10-public-wording-inventory.json",
+      "sha256": "e5fa119465f24f05c1af8afb68f1a830ee447fb0ba755072a418a7bb006a70e2",
+      "size": 8324,
+      "started_at_utc": "2026-10-25T23:55:52.462240+00:00"
+    },
+    {
+      "command": "git status --short",
+      "duration_seconds": 0.029013,
+      "ended_at_utc": "2026-10-25T23:54:27.638287+00:00",
+      "exit_status": 0,
+      "path": "commands/11-worktree-status-after.json",
+      "sha256": "bbb799340a913178ba4b2e63bcb4959b169e0829dbad40ca8465c8da2f0743df",
+      "size": 549,
+      "started_at_utc": "2026-10-25T23:54:27.606814+00:00"
+    },
+    {
+      "command": "git rev-parse --abbrev-ref HEAD",
+      "duration_seconds": 0.015268,
+      "ended_at_utc": "2026-10-25T23:50:31.731085+00:00",
+      "exit_status": 0,
+      "path": "commands/12-evidence-branch.json",
+      "sha256": "fe351dae1a601cd00f685c514dcf00b4456bfb8d8016911d8556c04658c3741b",
+      "size": 433,
+      "started_at_utc": "2026-10-25T23:50:31.714876+00:00"
+    },
+    {
+      "command": "git show f0bcbd6f3e379f880baeca233d4b7e05528bcfc5:plans/grounding-v5-agent-benchmark.md",
+      "duration_seconds": 0.026603,
+      "ended_at_utc": "2026-10-25T23:51:39.838901+00:00",
+      "exit_status": 0,
+      "path": "commands/13-checklist-source.json",
+      "sha256": "cdd74537e393fafebffac3a58d3833cee69d80efa0c1ca9e4b2d9a757eec0630",
+      "size": 55731,
+      "started_at_utc": "2026-10-25T23:51:39.811128+00:00"
+    },
+    {
+      "command": ".venv/bin/python -m scripts.report_grounding_v5_d59_replication --input <path-5> --archive <path-2>/d59-replication-ce6776de --backup <path-3>/d59-replication-ce6776de --output artifacts/grounding-v5-d59-replication-results --verify",
+      "duration_seconds": 0.865945,
+      "ended_at_utc": "2026-10-25T23:55:10.797878+00:00",
+      "exit_status": 1,
+      "path": "commands/14-replication-audit-verify-local-control.json",
+      "sha256": "48fdee3160778be6ab4896e0917032f9cc90d44fdf121d5c8b4ba68c9c9e2301",
+      "size": 1620,
+      "started_at_utc": "2026-10-25T23:55:09.920387+00:00"
+    }
+  ],
+  "evidence_branch": "evidence/d510-offhost-restore",
+  "evidence_revision": "290d3b626cd5f67e5ede1dd2eed086d06dd18b2f",
+  "gate": "D5.10",
+  "not_run": [
+    {
+      "item": "Replication audit (--verify) at the current checkout",
+      "reason": "Records 09 (off-host archive) and 14 (local archive control) both fail in under one second with 'source file hash mismatch': scripts/report_grounding_v5_d59_replication.py checks the campaign's bound source files against the current checkout, and those files changed after the campaign. The failure is identical for both copies and is independent of the off-host copy. The replication audit at its historical source revision is retained in the earlier c398557 package; here the replication off-host copy is established by records 05, 07 and 08 only.",
+      "records": [
+        "commands/09-replication-audit-verify-offhost.json",
+        "commands/14-replication-audit-verify-local-control.json"
+      ]
+    },
+    {
+      "item": "Off-host copy of the original D5.9 Haiku journals",
+      "reason": "Those journals were not retained (evidence index, 2026-09-30 note); nothing exists to copy. D5.9 still closes on its published projection."
+    },
+    {
+      "item": "Independent custody of the off-host copy",
+      "reason": "The bucket, its key and both local copies are controlled by the same owner account; governance-mode retention resists deletion but an account holder with bypass rights could still remove versions after the lock. No third-party escrow was used."
+    },
+    {
+      "item": "Provider usage settlement for the five unknown timeouts",
+      "reason": "Unchanged; the off-host copy adds durability, not new provider information."
+    }
+  ],
+  "package_files": [
+    {
+      "path": "REPORT.md",
+      "sha256": "6fefa87f1ad0003650a1483a9cb2b62cd3c15d68ef39bf59a8ade74c01e2fdbc",
+      "size": 21874
+    },
+    {
+      "path": "REVIEW-NOTE.md",
+      "sha256": "ebaab53abb497bd6974f8609f40a6fd153c3e9a464b1f0730b8e9668702854c8",
+      "size": 5037
+    },
+    {
+      "path": "checklist-map.json",
+      "sha256": "8777cec86732cb1c7e2ddaa924ae636fd1dca1ca9b008255d0a36e71ea2e9f53",
+      "size": 12001
+    },
+    {
+      "path": "commands/00-git-revision.json",
+      "sha256": "7458902de6813162767f0a17ca28ab646428db9ad0ef3f84f30c861eb5b76386",
+      "size": 411
+    },
+    {
+      "path": "commands/01-worktree-status.json",
+      "sha256": "5fe55684063fced9e5892870e7b2b5fc44e29785f151f4966f7651c0dd2ac81f",
+      "size": 481
+    },
+    {
+      "path": "commands/02-rclone-version.json",
+      "sha256": "0161097ec09c445a946314b5616783d551eb90e7b9a1b3bc4b456510fc679a1f",
+      "size": 555
+    },
+    {
+      "path": "commands/03-object-lock-readback.json",
+      "sha256": "329ce66e6d17ec411ace804162564be78b1dfa7dfef7c46ded255b1e9707696b",
+      "size": 29460
+    },
+    {
+      "path": "commands/04-downloaded-vs-local-extraction.json",
+      "sha256": "8665f4afef6badd79e116c657761c0f08e11d305a9fc9b49b825f9a38acf58b8",
+      "size": 880
+    },
+    {
+      "path": "commands/05-downloaded-vs-local-replication.json",
+      "sha256": "cde79c468ae7690bceb22140ee88df9b434060271dbc3384addb60f76eed12a8",
+      "size": 844
+    },
+    {
+      "path": "commands/06-offhost-restore-drill-extraction.json",
+      "sha256": "e4bb6670d1326f5c4d4fa4cd217364b66b5da2c35335fbab2ec9e41713c32fc0",
+      "size": 4704
+    },
+    {
+      "path": "commands/07-offhost-restore-replication-full.json",
+      "sha256": "ea84ea691e1ea8bd2c18f322af148d44a0e304c6613c8f8dda3417064451f7cb",
+      "size": 1123
+    },
+    {
+      "path": "commands/08-offhost-restore-replication-pilot.json",
+      "sha256": "7db9aaa35ce5079945aaea6fc0e1f371e5f4942577494253371ad1007e5d65f7",
+      "size": 1122
+    },
+    {
+      "path": "commands/09-replication-audit-verify-offhost.json",
+      "sha256": "70927149a785c6e017256612b4e49ba7d747c699fecc88872b23bfcf67377b32",
+      "size": 1620
+    },
+    {
+      "path": "commands/10-public-wording-inventory.json",
+      "sha256": "e5fa119465f24f05c1af8afb68f1a830ee447fb0ba755072a418a7bb006a70e2",
+      "size": 8324
+    },
+    {
+      "path": "commands/11-worktree-status-after.json",
+      "sha256": "bbb799340a913178ba4b2e63bcb4959b169e0829dbad40ca8465c8da2f0743df",
+      "size": 549
+    },
+    {
+      "path": "commands/12-evidence-branch.json",
+      "sha256": "fe351dae1a601cd00f685c514dcf00b4456bfb8d8016911d8556c04658c3741b",
+      "size": 433
+    },
+    {
+      "path": "commands/13-checklist-source.json",
+      "sha256": "cdd74537e393fafebffac3a58d3833cee69d80efa0c1ca9e4b2d9a757eec0630",
+      "size": 55731
+    },
+    {
+      "path": "commands/14-replication-audit-verify-local-control.json",
+      "sha256": "48fdee3160778be6ab4896e0917032f9cc90d44fdf121d5c8b4ba68c9c9e2301",
+      "size": 1620
+    },
+    {
+      "path": "object-lock-observation.json",
+      "sha256": "d87b2d3d569d8bf5028b5684ea35b02a01d6b8339d55ba286c28252a4b886b37",
+      "size": 28491
+    },
+    {
+      "path": "offhost-restore-drill.json",
+      "sha256": "d94e5f33c0ef001a882ae7ffc06d969a932b35a2e6bd05acf10cff019b661cee",
+      "size": 4879
+    },
+    {
+      "path": "redaction-scan.json",
+      "sha256": "3be9f07b86aa27d7ec93019707e5e74d2fbb6fa546fdcaab11ad7f30266e1c12",
+      "size": 445
+    }
+  ],
+  "redaction_scan": {
+    "files_scanned": 21,
+    "files_with_findings": {},
+    "finding_counts": {
+      "aws_access_keys": 0,
+      "bearer_tokens": 0,
+      "host_identity_paths_or_emails": 0,
+      "local_absolute_paths": 0,
+      "local_demo_credentials": 0,
+      "private_key_markers": 0,
+      "privileged_json_fields": 0,
+      "provider_api_keys": 0,
+      "system_temp_paths": 0,
+      "unredacted_image_payloads": 0
+    },
+    "schema_version": "pixelgym-d510-redaction-scan-v1"
+  },
+  "referenced_artifacts": [
+    {
+      "path": "artifacts/decisions/d5.10.json",
+      "sha256": "4bd23bad6a2271d3d12a22c4b4972982f9fcf84a9dbc51cf5836fabb048d2cda",
+      "size": 405
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/REVIEW-NOTE.md",
+      "sha256": "350e67bed4c35c9852dcda65cc11430f4b8b02e1e849a2a4633c8c1568b54e95",
+      "size": 7132
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/restore-drill.json",
+      "sha256": "a75be8ca9a505fc3264e85ad43c73e14282dfee43eeab08dc66edc3c3572d87d",
+      "size": 4104
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/REVIEW-NOTE.md",
+      "sha256": "ebaab53abb497bd6974f8609f40a6fd153c3e9a464b1f0730b8e9668702854c8",
+      "size": 5037
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/object-lock-observation.json",
+      "sha256": "d87b2d3d569d8bf5028b5684ea35b02a01d6b8339d55ba286c28252a4b886b37",
+      "size": 28491
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/offhost-restore-drill.json",
+      "sha256": "d94e5f33c0ef001a882ae7ffc06d969a932b35a2e6bd05acf10cff019b661cee",
+      "size": 4879
+    },
+    {
+      "path": "artifacts/grounding-v5-d510/human-gate.json",
+      "sha256": "ba206c1bd2ff176389245c1cf6acc4f8db4937ea6005a1356638a1c424559884",
+      "size": 9662
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/pilot-report.json",
+      "sha256": "78f422c7bfa647f6b4d18ba32af86a13aab9ae77d174f55ef3478e1216497590",
+      "size": 9221
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/report.json",
+      "sha256": "1d0cac6b3332a580b6e6e4cabf4a8bbfdcbc7465d14cd077fd692d629075eaf6",
+      "size": 476069
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.json",
+      "sha256": "97b925795549a6c5a69b5ad1a70bd75b508fd555c821bda5bcac6109498ad894",
+      "size": 27694
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-replication-results/pilot-report.json",
+      "sha256": "4ade5090413b522561a078933b7987be2fff5a6aed7400352d4de8034404d6e5",
+      "size": 7483
+    },
+    {
+      "path": "artifacts/grounding-v5-d59-replication-results/report.json",
+      "sha256": "ec96890af793dee40d582040dba8e53ad28facf1659189fa4d0db038b43e20d8",
+      "size": 435177
+    },
+    {
+      "path": "docs/evidence-retention.md",
+      "sha256": "c7e150b228b79530318046ec649b887a84331f5dcc18ff6594689fa1dd572aae",
+      "size": 17141
+    },
+    {
+      "path": "docs/v5-benchmark-design.md",
+      "sha256": "43fb90673248ec16829116e61f4357d68619e0f4fbd100bd2d869af815f06304",
+      "size": 11974
+    },
+    {
+      "path": "pixelgym/grounding/v5/retention.py",
+      "sha256": "6f91d26f8a3ddf5ff42bd8ae1a8ba925d9b06118dcf760c9525ebd699cf16de3",
+      "size": 12967
+    },
+    {
+      "path": "scripts/observe_b2_object_lock.py",
+      "sha256": "c6a13e3dc128d202035610d0426c35bfa01113ff254eaeb10110ce7f14cc47ed",
+      "size": 4357
+    },
+    {
+      "path": "scripts/report_grounding_v5_d59_replication.py",
+      "sha256": "f03f7197fddfc31e46beb80a3fa95d5ee82439ccb3ada4a98953118d9f76800c",
+      "size": 20014
+    },
+    {
+      "path": "scripts/restore_grounding_v5_d510.py",
+      "sha256": "d1c1c2b55dce91ecf335a4f896420ef1e325e18e487950b39fc9237f9f87f849",
+      "size": 5481
+    },
+    {
+      "path": "scripts/retain_v5_evidence.py",
+      "sha256": "aafd44ec3aecdb98526e393de9f29c5ffb4d4ff92767924bee498a1caf106f37",
+      "size": 3086
+    },
+    {
+      "path": "tests/unit/test_grounding_v5_d510_restore.py",
+      "sha256": "2059b94b56467eeca75af85244a4da3899b423d547557cd83b9caf1bd72ecbc7",
+      "size": 2922
+    },
+    {
+      "path": "tests/unit/test_observe_b2_object_lock.py",
+      "sha256": "137a73099770ea335bb53dc7c255243b83e044b9d763a58d1e5d1a2470bb17d0",
+      "size": 2074
+    }
+  ],
+  "schema_version": "pixelgym-d510-evidence-manifest-v1",
+  "verdict": null,
+  "verdict_owner": "project owner",
+  "withdrawn_records": [],
+  "worktree_status_observations": {
+    "commands/01-worktree-status.json": "?? artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/\n?? scripts/observe_b2_object_lock.py\n",
+    "commands/11-worktree-status-after.json": " M scripts/README.md\n?? artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/\n?? scripts/observe_b2_object_lock.py\n?? tests/unit/test_observe_b2_object_lock.py\n"
+  }
+}
