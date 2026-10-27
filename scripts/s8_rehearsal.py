@@ -30,8 +30,8 @@ from pixelgym.platform.s8_rehearsal import (
     AsgiCaller,
     LoopbackCaller,
     Rehearsal,
-    _ledger_state,
     inspect_rehearsal,
+    ledger_state,
     prepare,
     render_report,
     seal,
@@ -60,6 +60,54 @@ def no_inet_sockets() -> Iterator[None]:
         socket.socket = original  # type: ignore[misc]
 
 
+_LOOPBACK_HOSTS = frozenset({"127.0.0.1", "::1"})
+_INET_FAMILIES = frozenset({socket.AF_INET, socket.AF_INET6})
+
+
+def is_loopback_address(address: object) -> bool:
+    """True only for an internet address tuple whose host is a loopback literal.
+
+    Host names, including ``localhost``, are refused so no resolver is ever consulted."""
+    return isinstance(address, tuple) and bool(address) and address[0] in _LOOPBACK_HOSTS
+
+
+@contextmanager
+def loopback_only_sockets() -> Iterator[None]:
+    """Permit internet-family sockets only for loopback binds, connects, and datagrams.
+
+    ``--listener-port`` needs one ``127.0.0.1`` listener and one client connection, so the
+    constructor stays open and every address-taking call is checked before the system call.
+    AF_UNIX sockets are untouched."""
+    original = socket.socket
+
+    class Guarded(original):  # type: ignore[valid-type,misc]
+        def _check(self, address: object) -> None:
+            if self.family in _INET_FAMILIES and not is_loopback_address(address):
+                raise RuntimeError("S8 rehearsal may use internet sockets only for loopback")
+
+        def bind(self, address: Any) -> None:
+            self._check(address)
+            super().bind(address)
+
+        def connect(self, address: Any) -> None:
+            self._check(address)
+            super().connect(address)
+
+        def connect_ex(self, address: Any) -> int:
+            self._check(address)
+            return int(super().connect_ex(address))
+
+        def sendto(self, *args: Any) -> int:
+            self._check(args[-1])
+            return int(super().sendto(*args))
+
+    socket.socket = Guarded  # type: ignore[misc]
+    try:
+        yield
+    finally:
+        socket.socket = original  # type: ignore[misc]
+
+
 def verify(state: Path) -> dict[str, Any]:
     """Recompute the semantic verification from stored bytes; the directory is unchanged."""
     verify_seal(state)
@@ -75,10 +123,12 @@ def verify(state: Path) -> dict[str, Any]:
             content_digest(read_json(qualification / "seal.json"))
             == plan["qualification_seal_sha256"]
         )
+    # No digest of the rendered report: the acceptance subprocess runs this command before
+    # acceptance-checks.json exists, and the report includes that file, so a report digest
+    # sealed in the acceptance record could never be re-derived by a later verify.
     return {
         "verification_sha256": content_digest(observed),
         "lifecycle_sha256": observed["lifecycle_sha256"],
-        "report_sha256": content_digest(stored_report(state)),
         "fake_sends": observed["fake_sends"],
         "campaign_total": observed["campaign_total"],
         "qualification_seal_verified": qualification_seal_verified,
@@ -128,7 +178,7 @@ def finalize(root: Path, state: Path) -> dict[str, Any]:
         write_json(state / "verification.json", verification)
     except BaseException as exc:
         lifecycle = read_json(state / "lifecycle.json")
-        counts, _ = _ledger_state(state / "send-budget.sqlite")
+        counts, _ = ledger_state(state / "send-budget.sqlite")
         write_json(
             state / "failure.json",
             {
@@ -198,7 +248,8 @@ def main() -> None:
             rehearsal = Rehearsal(
                 root, state, caller_factory=lambda app: LoopbackCaller(app, port=port)
             )
-            lifecycle = rehearsal.run()
+            with loopback_only_sockets():
+                lifecycle = rehearsal.run()
         with no_network():
             checks = finalize(root, state)
         output = {

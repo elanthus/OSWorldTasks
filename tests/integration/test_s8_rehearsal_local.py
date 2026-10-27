@@ -97,7 +97,9 @@ def test_real_sandbox_and_loopback_listener_rehearsal(tmp_path: Path) -> None:
     rehearsal = Rehearsal(
         REPOSITORY_ROOT, state, caller_factory=lambda app: LoopbackCaller(app, port=port)
     )
-    lifecycle = rehearsal.run()
+    # The same loopback-only guard the CLI applies with --listener-port.
+    with cli.loopback_only_sockets():
+        lifecycle = rehearsal.run()
     assert lifecycle["fake_sends"] == {"qualification": 77, "A": 2, "B": 24, "smoke": 6}
     assert lifecycle["version_attempts"] == {"A": 2, "B": 24}
     with s7_serving.no_network():

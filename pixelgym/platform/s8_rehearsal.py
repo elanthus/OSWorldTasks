@@ -19,6 +19,7 @@ from __future__ import annotations
 import base64
 import io
 import json
+import shutil
 import sqlite3
 import time
 from collections.abc import Callable, Iterator, Mapping
@@ -179,7 +180,7 @@ def backup_ledger(source: Path, target: Path) -> dict[str, Any]:
     actual = file_identity(target)
     if actual != expected:
         raise ValueError("S8 ledger backup differs from the sealed qualification ledger")
-    counts, campaign = _ledger_state(target)
+    counts, campaign = ledger_state(target)
     if (
         counts != {"qualification": QUALIFICATION_CAP}
         or campaign["paused"] != 1
@@ -195,7 +196,7 @@ def backup_ledger(source: Path, target: Path) -> dict[str, Any]:
     }
 
 
-def _ledger_state(path: Path) -> tuple[dict[str, int], dict[str, Any]]:
+def ledger_state(path: Path) -> tuple[dict[str, int], dict[str, Any]]:
     with closing(sqlite3.connect(path.resolve().as_uri() + "?mode=ro&immutable=1", uri=True)) as db:
         counts = dict(db.execute("SELECT phase, count(*) FROM sends GROUP BY phase"))
         paused, approval = db.execute("SELECT paused, activation_approval FROM campaign").fetchone()
@@ -231,49 +232,56 @@ def prepare(root: Path, qualification: Path, state: Path, *, approval_path: Path
     lock = read_json(qualification / "runtime-lock.json")
     policy = policy_document()
     state.mkdir(mode=0o700, parents=True)
-    write_json(state / "approval.json", document)
-    receipt = backup_ledger(qualification / "send-budget.sqlite", state / "send-budget.sqlite")
-    write_json(state / "ledger-backup.json", receipt)
-    packages = {}
-    for role in ("A", "B"):
-        package = read_json(qualification / f"packages/{role}/package.json")
-        packages[role] = {
-            "policy_id": package["policy_id"],
-            "package_sha256": content_digest(package),
-            "gate_report_sha256": content_digest(
-                read_json(qualification / f"packages/{role}/gate-report.json")
-            ),
-            "max_steps": package["max_steps"],
-            "deployment_attempt_cap": policy["deployment_attempt_caps"][role],
-            "deployment_tier": "demo",
+    try:
+        write_json(state / "approval.json", document)
+        receipt = backup_ledger(qualification / "send-budget.sqlite", state / "send-budget.sqlite")
+        write_json(state / "ledger-backup.json", receipt)
+        packages = {}
+        for role in ("A", "B"):
+            package = read_json(qualification / f"packages/{role}/package.json")
+            packages[role] = {
+                "policy_id": package["policy_id"],
+                "package_sha256": content_digest(package),
+                "gate_report_sha256": content_digest(
+                    read_json(qualification / f"packages/{role}/gate-report.json")
+                ),
+                "max_steps": package["max_steps"],
+                "deployment_attempt_cap": policy["deployment_attempt_caps"][role],
+                "deployment_tier": "demo",
+            }
+        plan = {
+            "schema_version": PLAN_SCHEMA,
+            "evidence_label": EVIDENCE_LABEL,
+            "qualification_path": str(qualification),
+            "qualification_seal_sha256": content_digest(read_json(qualification / "seal.json")),
+            "qualification_plan_sha256": content_digest(plan_q),
+            "run_reference": plan_q["run_reference"] + "/s8-rehearsal",
+            "approval_sha256": binding["approval_sha256"],
+            "actor": binding["actor"],
+            "source_revision": source["revision"],
+            "source_binding_sha256": content_digest(source),
+            "runtime_lock_sha256": content_digest(lock),
+            "gate_policy_sha256": POLICY_SHA256,
+            "packages": packages,
+            "seed": SEED,
+            "golden_actions_sha256": content_digest(plan_q["actions"]["B"]),
+            "golden_action_count": len(plan_q["actions"]["B"]),
+            "phase_caps": policy["phase_caps"],
+            "campaign_cap": policy["campaign_cap"],
+            "expected_sends": EXPECTED_SENDS,
+            "interruption_boundary": INTERRUPTION_BOUNDARY,
+            "lifecycle_steps": list(STEP_NAMES),
+            "activation_approved": True,
+            "publication_approved": False,
+            "real_provider_cap": 0,
         }
-    plan = {
-        "schema_version": PLAN_SCHEMA,
-        "evidence_label": EVIDENCE_LABEL,
-        "qualification_path": str(qualification),
-        "qualification_seal_sha256": content_digest(read_json(qualification / "seal.json")),
-        "qualification_plan_sha256": content_digest(plan_q),
-        "run_reference": plan_q["run_reference"] + "/s8-rehearsal",
-        "approval_sha256": binding["approval_sha256"],
-        "actor": binding["actor"],
-        "source_revision": source["revision"],
-        "source_binding_sha256": content_digest(source),
-        "runtime_lock_sha256": content_digest(lock),
-        "gate_policy_sha256": POLICY_SHA256,
-        "packages": packages,
-        "seed": SEED,
-        "golden_actions_sha256": content_digest(plan_q["actions"]["B"]),
-        "golden_action_count": len(plan_q["actions"]["B"]),
-        "phase_caps": policy["phase_caps"],
-        "campaign_cap": policy["campaign_cap"],
-        "expected_sends": EXPECTED_SENDS,
-        "interruption_boundary": INTERRUPTION_BOUNDARY,
-        "lifecycle_steps": list(STEP_NAMES),
-        "activation_approved": True,
-        "publication_approved": False,
-        "real_provider_cap": 0,
-    }
-    write_json(state / "plan.json", plan)
+        write_json(state / "plan.json", plan)
+    except BaseException:
+        # The directory did not exist before this call. A failure after creating it, for
+        # example the ledger pause check, must not leave a partial directory that a retry
+        # refuses as "already exists".
+        shutil.rmtree(state, ignore_errors=True)
+        raise
     return plan
 
 
@@ -1103,9 +1111,11 @@ class Rehearsal:
             before = self.version_attempts()["B"]
             observations["redeploy_B"] = self.deploy("B", "S8 step 5: redeploy the same B version")
             self.deployments["B-redeploy"] = observations["redeploy_B"]["deployment_id"]
+            cap = self.plan["packages"]["B"]["deployment_attempt_cap"]
+            golden_count = self.plan["golden_action_count"]
             self.expect(
                 self.deployments["B-redeploy"] != self.deployments["B"]
-                and self.version_attempts()["B"] == before,
+                and self.version_attempts()["B"] == before == golden_count,
                 "redeploy changed B's count or reused the deployment id",
             )
             env = self.new_environment("s8-b-cap-probe")
@@ -1123,7 +1133,9 @@ class Rehearsal:
             reply = self.act(episode_id, env.screenshot)
             self.expect(reply.status == 200 and reply.body["sealed_failure"] is None, "probe act")
             sends = [self.version_attempts()["B"]]
-            for _ in range(3):
+            # Probe up to the cap: the acts after the golden episode's sends, less the
+            # one already issued above, then one more act that must seal without a send.
+            for _ in range(cap - golden_count - 1):
                 env.dispatch(reply.body["intent_id"], reply.body["action"])
                 reply = self.act(
                     episode_id,
@@ -1164,15 +1176,15 @@ class Rehearsal:
                 "close": closed.body,
             }
             self.expect(
-                sends == [21, 22, 23, 24]
+                sends == list(range(golden_count + 1, cap + 1))
                 and sealed.status == 200
                 and sealed.body.get("sealed_failure") == "cap_reached"
-                and after_seal == 24
+                and after_seal == cap
                 and all(r.status == 429 for r in refused)
                 and all(r.code() == "deployment_attempt_cap_reached" for r in refused)
-                and self.version_attempts()["B"] == 24
-                and self.counts()["B"] == 24,
-                "B cap did not seal at exactly 24 before a fifth send",
+                and self.version_attempts()["B"] == cap
+                and self.counts()["B"] == cap,
+                f"B cap did not seal at exactly {cap} before a further send",
             )
 
     def step_6(self) -> None:
@@ -1492,7 +1504,7 @@ def inspect_rehearsal(state: Path) -> dict[str, Any]:
     ):
         raise ValueError("S8 lifecycle bindings, authority, or accounting differ")
     read_json(state / "ledger-backup.json")
-    counts, campaign = _ledger_state(state / "send-budget.sqlite")
+    counts, campaign = ledger_state(state / "send-budget.sqlite")
     caps = policy_document()["phase_caps"]
     if (
         counts != lifecycle["fake_sends"]
@@ -1607,21 +1619,21 @@ def inspect_rehearsal(state: Path) -> dict[str, Any]:
         ]
         cap_probe = lifecycle["episodes"]["s8-b-cap-probe"]
         sealed = journal.event(f"{cap_probe}/episode_sealed")
+    # Journal-derived only. The lifecycle's own ``additional_sends`` and ``same_deployment``
+    # observations are self-reports; the single attempt and intent at step 0 of the golden
+    # episode, together with the reservation and deployment-history checks above, are the
+    # independent evidence that recovery sent nothing extra on the same deployment.
     recovery = {
         "attempt_started": first_step.count("attempt_started"),
         "canonical_response_persisted": first_step.count("canonical_response_persisted"),
         "intent_issued": first_step.count("intent_issued"),
-        "additional_sends": lifecycle["steps"][2]["observations"]["recovery"]["additional_sends"],
-        "same_deployment": lifecycle["steps"][2]["observations"]["restore"]["same_deployment"],
     }
     if recovery != {
         "attempt_started": 1,
         "canonical_response_persisted": 1,
         "intent_issued": 1,
-        "additional_sends": 0,
-        "same_deployment": True,
     }:
-        raise ValueError("S8 recovery evidence shows a duplicate send or a changed deployment")
+        raise ValueError("S8 recovery evidence shows a duplicate send")
     if sealed is None or sealed.payload.get("sealed_failure") != "cap_reached":
         raise ValueError("S8 cap probe was not sealed as cap_reached")
     replays, server_steps = [], {}
@@ -1657,9 +1669,7 @@ def inspect_rehearsal(state: Path) -> dict[str, Any]:
         raise ValueError("S8 golden or cap-probe outcomes differ from the plan")
     store = LocalImmutableStore(state / "immutable")
     operational = {}
-    for ref, episode_id in lifecycle["episodes"].items():
-        if ref.startswith("s8-b-after-cap"):
-            continue
+    for episode_id in lifecycle["episodes"].values():
         prefix = f"serving-episode-records/{episode_id}"
         present = {
             name: store.get_reference(f"{prefix}/{name}") is not None
@@ -1717,7 +1727,7 @@ def stored_report(state: Path) -> dict[str, Any]:
     }
     if (state / "failure.json").exists():
         failure = read_json(state / "failure.json")
-        counts, _ = _ledger_state(state / "send-budget.sqlite")
+        counts, _ = ledger_state(state / "send-budget.sqlite")
         if counts != failure["fake_sends"]:
             raise ValueError("S8 stopped lifecycle accounting differs from its durable ledger")
         return {
