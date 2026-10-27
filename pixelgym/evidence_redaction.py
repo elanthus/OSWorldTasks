@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import getpass
 import re
 import tempfile
 from collections.abc import Iterable, Sequence
@@ -28,7 +29,19 @@ def standard_path_replacements(paths: Iterable[Path]) -> list[PathReplacement]:
         replacements.append((Path.home(), "<home>"))
     except RuntimeError:
         pass
-    replacements.append((Path(tempfile.gettempdir()), "<system-temp>"))
+    system_temp = Path(tempfile.gettempdir())
+    # pytest's default basetemp is ``<system-temp>/pytest-of-<username>``, so the
+    # username survives the plain temp-directory replacement one component deeper.
+    # Longer replacements apply first, so this one wins over ``<system-temp>``.
+    try:
+        username = getpass.getuser()
+    except (KeyError, ImportError, OSError):
+        username = None
+    if username:
+        replacements.append(
+            (system_temp / f"pytest-of-{username}", "<system-temp>/pytest-of-<user>")
+        )
+    replacements.append((system_temp, "<system-temp>"))
     replacements.extend(indexed_path_replacements(paths))
     return replacements
 
