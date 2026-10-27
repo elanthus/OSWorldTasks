@@ -37,11 +37,16 @@ def check_record(record: dict[str, Any]) -> None:
             or copy["file_count"] != archive["file_count"]
         ):
             raise ValueError("restored copy differs from the archive receipt")
-    if record["remote_copy"]["manifest_digest"] != archive["manifest_digest"]:
+    remote = record["remote_copy"]
+    if remote["manifest_digest"] != archive["manifest_digest"]:
         raise ValueError("remote receipt is bound to a different archive")
-    budget = record["remote_copy"]["budget_observation"]
+    if remote["fresh_git_and_lfs_cache"] is not True or remote["real_provider_requests"] != 0:
+        raise ValueError("remote restore did not use a fresh cache without provider requests")
+    budget = remote["budget_observation"]
     if budget["budget_usd"] != 0 or budget["stop_usage"] is not True:
         raise ValueError("remote copy was not made under a $0 stop-usage observation")
+    if budget["repository"] != remote["repository"]:
+        raise ValueError("budget observation names a different repository")
     checks = record["checks"]
     if [c["label"] for c in checks] != ["original", "local-restore", "remote-restore"]:
         raise ValueError("retention record must hold the three ordered verifier checks")
@@ -62,11 +67,14 @@ def check_record(record: dict[str, Any]) -> None:
         if output["source_revision"] != record["qualified_source_revision"]:
             raise ValueError("verifier source revision differs from the record")
         outputs.append(json.dumps(output, sort_keys=True))
-    identical = len(set(outputs)) == 1
-    if identical is not record["digests_identical_across_checks"]:
-        raise ValueError("stored identical-digests flag differs from the check outputs")
-    if record["milestone_verdict"] is not None or record["activation_performed"] is not False:
-        raise ValueError("retention record must not carry a verdict or activation")
+    if len(set(outputs)) != 1 or record["digests_identical_across_checks"] is not True:
+        raise ValueError("verifier outputs are not identical across checks")
+    if (
+        record["milestone_verdict"] is not None
+        or record["activation_performed"] is not False
+        or record["publication_of_qualification_content"] is not False
+    ):
+        raise ValueError("retention record must not carry a verdict, activation, or publication")
 
 
 def _row(*cells: object) -> str:

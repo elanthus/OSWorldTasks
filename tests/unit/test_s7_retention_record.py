@@ -45,10 +45,17 @@ def fixture_record() -> dict[str, Any]:
         "archive": {k: v for k, v in copy_receipt.items() if k != "restored_file_count"},
         "local_restore": dict(copy_receipt),
         "remote_copy": {
-            "budget_observation": {"budget_usd": 0, "stop_usage": True, "observed_at_utc": "t"},
+            "budget_observation": {
+                "budget_usd": 0,
+                "observed_at_utc": "t",
+                "repository": "owner/private",
+                "stop_usage": True,
+            },
             "commit": "0" * 40,
+            "fresh_git_and_lfs_cache": True,
             "lfs_object": {"size": 5},
             "manifest_digest": digest,
+            "real_provider_requests": 0,
             "repository": "owner/private",
             "restored_archive": dict(copy_receipt),
         },
@@ -80,8 +87,12 @@ def test_render_is_deterministic_and_scopes_the_fake_send_claim() -> None:
         (lambda r: r["checks"][1].update(exit_status=1), "incomplete or failed"),
         (lambda r: r["checks"][2]["output"].update(real_provider_requests=1), "boundary"),
         (lambda r: r["checks"][2]["output"].update(verification_sha256="x"), "identical"),
+        (lambda r: r.update(digests_identical_across_checks=False), "identical"),
+        (lambda r: r["remote_copy"].update(fresh_git_and_lfs_cache=False), "fresh cache"),
+        (lambda r: r["remote_copy"]["budget_observation"].update(repository="o/x"), "repository"),
         (lambda r: r["remote_copy"]["budget_observation"].update(stop_usage=False), "stop-usage"),
         (lambda r: r.update(milestone_verdict="PASS"), "verdict"),
+        (lambda r: r.update(publication_of_qualification_content=True), "publication"),
         (lambda r: r["checks"].pop(), "three ordered"),
         (lambda r: r["checks"][0]["output"].update(source_revision="4" * 40), "revision"),
     ],
@@ -93,7 +104,6 @@ def test_check_record_fails_closed(damage: Any, match: str) -> None:
         check_record(record)
 
 
-@pytest.mark.skipif(not PUBLIC.exists(), reason="public record not checked in")
 def test_checked_in_report_matches_its_record() -> None:
     record = json.loads((PUBLIC / "recovery.json").read_bytes())
     assert render(record) == (PUBLIC / "REPORT.md").read_text()
