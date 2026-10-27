@@ -18,7 +18,6 @@ exclude = [
     "artifacts/grounding-*.json",
     "artifacts/grounding-*.jsonl",
     "artifacts/grounding-*.md",
-    "artifacts/resume-bullets.md",
     "artifacts/validation-report.json",
     "artifacts/validation-report.md",
     "tests/integration/fixtures/*.json",

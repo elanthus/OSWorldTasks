@@ -33,6 +33,12 @@ jobs:
       - name: Install development dependencies
         run: python -m pip install -e ".[dev]"
 
+      # Pinned here rather than in pyproject.toml: pyproject.toml is digested into every v5
+      # policy manifest, so a dependency edit there supersedes prepared evidence plans. The
+      # pin keeps a new ruff release from changing the `ruff format --check` result.
+      - name: Pin Ruff
+        run: python -m pip install "ruff==0.16.4"
+
       - name: Run Ruff
         run: python -m ruff check .
 
