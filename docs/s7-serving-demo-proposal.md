@@ -101,6 +101,13 @@ restore drill, and verified private LFS copy are recorded in the
 [successor retention record](../artifacts/evidence-retention-s7-20261026-successor/REPORT.md). Activation, the full serving
 rehearsal, publication, and milestone decisions remain separate owner gates.
 
+## S8 driver status
+
+The rehearsal below is implemented as `python -m scripts.s8_rehearsal` with `prepare`, `run`,
+`verify`, and `report` commands ([S8 rehearsal driver](s8-rehearsal.md)). The driver consumes an
+owner approval document bound to the exact sealed packages and refuses to fabricate approval or
+terms. It has not been executed; S8 remains a human-owned gate.
+
 ## Decisions requested
 
 Approve this specification before generating qualification outputs or configuring an approved
