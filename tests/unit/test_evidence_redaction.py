@@ -22,7 +22,6 @@ def test_standard_replacements_redact_pytest_basetemp_username(
     # Regression: two D5.10 command records kept ``pytest-of-<username>`` because only
     # the temp directory itself was replaced.
     monkeypatch.setattr("pixelgym.evidence_redaction.tempfile.gettempdir", lambda: "/tmp")
-    monkeypatch.setattr("pixelgym.evidence_redaction.getpass.getuser", lambda: "alice")
     replacements = standard_path_replacements([])
 
     assert redact_evidence_text("/tmp/pytest-of-alice/pytest-3/popen-gw0/t0", replacements) == (
@@ -31,13 +30,20 @@ def test_standard_replacements_redact_pytest_basetemp_username(
     assert redact_evidence_text("/tmp/other-run", replacements) == "<system-temp>/other-run"
 
 
-def test_standard_replacements_survive_unknown_user(monkeypatch: pytest.MonkeyPatch) -> None:
-    def _no_user() -> str:
-        raise OSError("no login name")
+def test_pytest_basetemp_redaction_is_user_independent_and_keeps_same_line_text() -> None:
+    # The child that produced the output may have run as another user, and the user
+    # lookup may be unavailable; neither case may leak the name or eat trailing text.
+    replacements = [(Path("/tmp"), "<system-temp>")]
 
-    monkeypatch.setattr("pixelgym.evidence_redaction.getpass.getuser", _no_user)
-
-    assert any(label == "<system-temp>" for _path, label in standard_path_replacements([]))
+    assert redact_evidence_text("/tmp/pytest-of-bob failed to initialize", replacements) == (
+        "<system-temp>/pytest-of-<user> failed to initialize"
+    )
+    assert redact_evidence_text("'/tmp/pytest-of-c.d-e/pytest-1' x", replacements) == (
+        "'<system-temp>/pytest-of-<user>/pytest-1' x"
+    )
+    assert redact_evidence_text("/tmp/pytest-offline", replacements) == (
+        "<system-temp>/pytest-offline"
+    )
 
 
 def test_shared_redactor_removes_known_local_demo_secrets() -> None:
