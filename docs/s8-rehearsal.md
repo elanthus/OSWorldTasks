@@ -72,6 +72,11 @@ boundary hook on the live `ServingEpisodeHost`; no serving code changes for the 
 caller's transport (`in-process-asgi` or `loopback-listener:127.0.0.1:PORT`) is recorded per
 app construction.
 
+The default `run` denies every internet-family socket in the driver process. With
+`--listener-port`, that guard is off so the listener can bind `127.0.0.1`; the driver process
+then has no in-process socket denial, and the no-network claim for that mode rests on the
+worker's OS sandbox and egress proxy alone, which cover the policy worker, not the driver.
+
 ## Evidence layout
 
 ```text

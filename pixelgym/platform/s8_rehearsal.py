@@ -365,6 +365,8 @@ class LoopbackCaller:
         finally:
             self.server.should_exit = True
             self.thread.join(timeout=10)
+            if self.thread.is_alive():
+                raise RuntimeError("loopback listener did not stop")
 
 
 CallerFactory = Callable[[Any], Caller]
@@ -1718,7 +1720,12 @@ def stored_report(state: Path) -> dict[str, Any]:
         counts, _ = _ledger_state(state / "send-budget.sqlite")
         if counts != failure["fake_sends"]:
             raise ValueError("S8 stopped lifecycle accounting differs from its durable ledger")
-        return {**report, "lifecycle_complete": False, "failure": failure, "fake_sends": counts}
+        return {
+            **report,
+            "lifecycle_complete": bool(failure["lifecycle_complete"]),
+            "failure": failure,
+            "fake_sends": counts,
+        }
     lifecycle = read_json(state / "lifecycle.json")
     verification = (
         read_json(state / "verification.json") if (state / "verification.json").exists() else None
@@ -1783,11 +1790,17 @@ def render_report(report: Mapping[str, Any]) -> str:
         ),
         "",
     ]
-    if not report["lifecycle_complete"]:
+    if "failure" in report:
         failure = report["failure"]
         lines.extend(
             [
-                "Lifecycle stopped; the state directory retains its evidence and consumed sends.",
+                (
+                    "Lifecycle completed; a later stage stopped. The state directory retains its "
+                    "evidence and consumed sends."
+                    if report["lifecycle_complete"]
+                    else "Lifecycle stopped; the state directory retains its evidence and "
+                    "consumed sends."
+                ),
                 "",
                 f"Stopped at: `{failure['stage']}`. Cause: {failure['cause']}.",
                 "",
