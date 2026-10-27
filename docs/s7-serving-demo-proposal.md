@@ -97,8 +97,8 @@ verification, and the stored verification record's binding to those results and 
 is not replayed and its packages are not loaded. The private successor freeze binds revision
 `3b2865877aa784cfcb12066fcccc3f617b657ad7`; review repairs after it move this branch past that
 revision, so its exact packages load only from that checkout, as with v3. Its local archive,
-restore drill, and verified private LFS copy are recorded in
-[artifacts/evidence-retention-s7-20261026-successor](../artifacts/evidence-retention-s7-20261026-successor/REPORT.md). Activation, the full serving
+restore drill, and verified private LFS copy are recorded in the
+[successor retention record](../artifacts/evidence-retention-s7-20261026-successor/REPORT.md). Activation, the full serving
 rehearsal, publication, and milestone decisions remain separate owner gates.
 
 ## Decisions requested
@@ -113,7 +113,7 @@ gate-policy digest. The proposed choices are:
 | Evidence class | Existing `calibration` class and required `d56-calibration` run-kind label, with a new S7 run reference and an explicit scripted-validation disclosure |
 | Gate policy | `s7-scripted-serving-controls-v1`, with the exact rules below; no model accuracy, cost-performance, or latency-performance threshold |
 | Serving terms | `demo` tier only; A: 4 fake attempts per exact version; B: 24; one active episode at a time |
-| Bound | 77 qualification sends and 111 total per freeze; the owner-approved stopped predecessors plus final freeze have cumulative ceilings of 150/184. No automatic rerun, cap increase, package revision, or threshold adjustment; one later rehearsal remains separately gated |
+| Bound | 77 qualification sends and 111 total per freeze. The 150/184 cumulative ceilings applied to the predecessor freeze only; the 2026-10-26 successor freeze carries cumulative ceilings of 227/261. No automatic rerun, cap increase, package revision, or threshold adjustment; one later rehearsal remains separately gated |
 | Infrastructure | Existing local Python environment, filesystem put-once store, SQLite ledger, and Darwin policy sandbox; HTTP listeners on `127.0.0.1` only |
 | Recovery | Original run, one local archive copy and one private LFS copy with fresh-cache restore, subject to a fresh budget observation and GitHub's unchanged $0 stop-usage setting |
 

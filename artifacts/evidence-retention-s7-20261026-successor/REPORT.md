@@ -1,7 +1,9 @@
 # S7 successor qualification: local retention record
 
-Projected from stored receipts and verifier outputs. No model was called, no fake send was made,
-no activation or publication was performed, and no milestone verdict is declared.
+Rendered by `scripts/render_s7_retention_record.py` from `recovery.json`, which the
+operator assembled from private receipts and verifier outputs. No model was called, and
+the verifier replayed stored caller actions without making any additional fake send. No
+activation or publication was performed, and no milestone verdict is declared.
 
 Run `s7-20261026-successor`, qualified source revision `3b2865877aa784cfcb12066fcccc3f617b657ad7`.
 
@@ -21,12 +23,14 @@ packed object 17613967 bytes. Budget observed at
 | local-restore | 0 | {"qualification": 77} | 227 | `sha256:cb2eab8ba875…` | `sha256:8b7cd9464ebc…` | True |
 | remote-restore | 0 | {"qualification": 77} | 227 | `sha256:cb2eab8ba875…` | `sha256:8b7cd9464ebc…` | True |
 
+The fake-send column is the qualification's stored count, not sends made during
+verification.
 Digests identical across checks: True.
 
-Each check ran the retained serving verifier in an isolated interpreter (`env -i`, `python -I -B`)
-against the bundle's own hash-bound source snapshot. It verifies the seal, source binding, and
-stored results, replays stored caller actions, regenerates the report from stored results only,
-and confirms the inspection left the bundle unchanged.
+Each check ran the retained serving verifier in an isolated interpreter (`env -i`,
+`python -I -B`) against the bundle's own hash-bound source snapshot. It verifies the
+seal, source binding, and stored results, replays stored caller actions, regenerates the
+report from stored results only, and confirms the inspection left the bundle unchanged.
 
 Limitations:
 - original run and local archive share one disk; the verified private LFS copy is the independent recovery path
