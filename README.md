@@ -237,7 +237,7 @@ a broad agent benchmark.
   are enforced.
 - [Platform design](docs/platform-design.md) — Milestone 4 platform and v5 stateful serving.
 - [v5 benchmark design](docs/v5-benchmark-design.md) — contract, analysis plan, and current status
-  of the unfinished benchmark.
+  of the v5 benchmark.
 - [Development process](docs/development-process.md) — branch, review, and human-gate process,
   including defects that escaped review.
 - [Glossary](docs/glossary.md) — D-numbers, grounding versions, and codenames.
