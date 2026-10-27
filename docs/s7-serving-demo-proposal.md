@@ -81,10 +81,11 @@ The retained completed qualification and exact package/report digests bind revis
 `e6d61aea96a3b78fb0df9db65805cdc2cc8e3d03`. The current PR includes later worker-cleanup,
 review fixes, and main-branch changes. `verify_worker_binding` requires the exact bound Git
 revision and refuses those retained packages from this head or any later main checkout. It also
-requires host `pixelgym` imports to resolve under the declared source checkout. No rebinding or
-new qualification is authorized here. The owner must resolve the source/version mismatch before
-activation; the old checkout lacks these later repairs. Keep frozen evidence unchanged and use
-separately approved successor evidence if qualifying repaired source becomes necessary.
+requires host `pixelgym` imports to resolve under the declared source checkout. At the time of
+that PR, no rebinding or new qualification was authorized, and the owner still had to resolve the
+source/version mismatch before activation; the old checkout lacks these later repairs. Frozen
+evidence stays unchanged. That restriction is historical: the current approval status is the
+successor qualification recorded below.
 
 On 2026-10-26 the owner resolved that mismatch by approving a fresh successor qualification of
 the repaired source with a further 77 fake sends. The predecessor loader now accepts a completed
@@ -92,8 +93,11 @@ sealed qualification as well as stopped ones, so the successor freeze declares a
 archives (0 + 73 + 77 = 150 prior sends) and carries cumulative ceilings of **227** qualification
 and **261** campaign sends. A completed predecessor is counted from its stored bytes only: seal,
 plan, source snapshot, results-to-ledger agreement, and the presence of packages and stored
-verification. It is not replayed and its packages are not loaded. Activation, the full serving
-rehearsal, publication, and milestone decisions remain separate owner gates.
+verification, and the stored verification record's binding to those results and that source. It
+is not replayed and its packages are not loaded. The private successor freeze binds revision
+`3b2865877aa784cfcb12066fcccc3f617b657ad7`; review repairs after it move this branch past that
+revision, so its exact packages load only from that checkout, as with v3. Activation, the full
+serving rehearsal, publication, and milestone decisions remain separate owner gates.
 
 ## Decisions requested
 

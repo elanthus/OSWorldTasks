@@ -542,36 +542,38 @@ def completed_archive(root: Path, count: int, *, nested: bool, name: str = "done
 
     run = root / name / "qualification" if nested else root / name
     write_json(run / "source/fixture.json", {"fixture": "completed source " + name})
-    write_json(
-        run / "source-binding.json",
-        {
-            "revision": "4" * 40,
-            "files": {
-                "fixture.json": content_digest_bytes((run / "source/fixture.json").read_bytes())
-            },
-        },
-    )
+    source = {
+        "revision": "4" * 40,
+        "files": {"fixture.json": content_digest_bytes((run / "source/fixture.json").read_bytes())},
+    }
+    write_json(run / "source-binding.json", source)
     plan = {
         "fixture": name + str(count),
         "schema_version": "pixelgym-s7-qualification-plan-v1",
         "evidence_label": EVIDENCE_LABEL,
         "gate_policy_sha256": POLICY_SHA256,
+        "source_binding_sha256": content_digest(source),
     }
     write_json(run / "plan.json", plan)
+    results = {
+        "schema_version": "pixelgym-s7-qualification-results-v1",
+        "activation_performed": False,
+        "publication_performed": False,
+        "real_provider_requests": 0,
+        "provider_control_requests": 0,
+        "monetary_spend_usd": 0,
+        "plan_sha256": content_digest(plan),
+        "fake_sends": {"qualification": count},
+    }
+    write_json(run / "results.json", results)
     write_json(
-        run / "results.json",
+        run / "verification.json",
         {
-            "schema_version": "pixelgym-s7-qualification-results-v1",
-            "activation_performed": False,
-            "publication_performed": False,
-            "real_provider_requests": 0,
-            "provider_control_requests": 0,
-            "monetary_spend_usd": 0,
-            "plan_sha256": content_digest(plan),
-            "fake_sends": {"qualification": count},
+            "schema_version": "pixelgym-s7-verification-v1",
+            "results_sha256": content_digest(results),
+            "source_binding_sha256": content_digest(source),
         },
     )
-    write_json(run / "verification.json", {"fixture": "stored verification"})
     write_json(run / "packages/A.json", {"fixture": "package"})
     budget = S7SendBudget(run / "send-budget.sqlite")
     for index in range(count):
@@ -602,11 +604,11 @@ def test_completed_and_stopped_predecessors_accumulate_into_one_allowance(
     assert accounting["campaign_allowance"] == 261
     assert verify_predecessors(run, accounting) == 150
     assert (run / "predecessors/1/run/review/report.json").exists()
-    flat = completed_archive(tmp_path / "flat", 5, nested=False)
+    flat = completed_archive(tmp_path / "flat", 77, nested=False)
     flat_run = tmp_path / "flat-successor"
-    flat_accounting = freeze_predecessors(flat_run, (approved_archive(flat),), expected_sends=5)
+    flat_accounting = freeze_predecessors(flat_run, (approved_archive(flat),), expected_sends=77)
     assert flat_accounting["records"][0]["path"] == "predecessors/0/run"
-    assert verify_predecessors(flat_run, flat_accounting) == 5
+    assert verify_predecessors(flat_run, flat_accounting) == 77
 
 
 @pytest.mark.parametrize(
@@ -617,6 +619,9 @@ def test_completed_and_stopped_predecessors_accumulate_into_one_allowance(
         ("plan", "different plan"),
         ("ledger", "durable ledger"),
         ("spend", "zero-spend"),
+        ("short", "approved send count"),
+        ("source", "not bound to its source"),
+        ("verification", "not bound to the completed results"),
         ("neither", "neither a failure record"),
     ],
 )
@@ -627,7 +632,8 @@ def test_completed_predecessor_refuses_conflicting_or_unbound_evidence(
 
     from pixelgym.platform.s7_predecessors import completed_count, predecessor_count
 
-    completed_archive(tmp_path, 3, nested=False)
+    sends = {"short": 3, "ledger": 76}.get(damage, 77)
+    completed_archive(tmp_path, sends, nested=False)
     run = tmp_path / "done"
     (run / "seal.json").unlink()
 
@@ -642,10 +648,17 @@ def test_completed_predecessor_refuses_conflicting_or_unbound_evidence(
     elif damage == "plan":
         rewrite("plan.json", {**read_json(run / "plan.json"), "fixture": "edited"})
     elif damage == "ledger":
-        S7SendBudget(run / "send-budget.sqlite").reserve("qualification", "extra")
+        results = read_json(run / "results.json")
+        rewrite("results.json", {**results, "fake_sends": {"qualification": 77}})
     elif damage == "spend":
         rewrite("results.json", {**read_json(run / "results.json"), "monetary_spend_usd": 1})
-    else:
+    elif damage == "source":
+        rewrite(
+            "source-binding.json", {**read_json(run / "source-binding.json"), "revision": "5" * 40}
+        )
+    elif damage == "verification":
+        rewrite("verification.json", {"fixture": "unbound verification"})
+    elif damage == "neither":
         (run / "results.json").unlink()
     seal(run)
     # A failure record routes through the stopped path; completed_count itself must refuse it.

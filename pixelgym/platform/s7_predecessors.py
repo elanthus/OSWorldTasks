@@ -10,7 +10,12 @@ from typing import Any
 
 from pixelgym.grounding.v5.contracts import content_digest
 from pixelgym.grounding.v5.retention import restore_archive, verify_archive
-from pixelgym.platform.s7_policy import EVIDENCE_LABEL, POLICY_SHA256, policy_document
+from pixelgym.platform.s7_policy import (
+    EVIDENCE_LABEL,
+    POLICY_SHA256,
+    QUALIFICATION_CAP,
+    policy_document,
+)
 from pixelgym.platform.s7_source import verify_snapshot, write_json
 
 
@@ -67,6 +72,9 @@ def predecessor_count(run: Path) -> int:
 def completed_count(run: Path) -> int:
     """Read completed sealed evidence; stored bytes only, no replay or package load."""
     plan = _verified_plan(run)
+    source = _read(run / "source-binding.json")
+    if plan.get("source_binding_sha256") != content_digest(source):
+        raise ValueError("S7 completed plan is not bound to its source")
     results = _read(run / "results.json")
     if (
         results.get("schema_version") != "pixelgym-s7-qualification-results-v1"
@@ -79,12 +87,20 @@ def completed_count(run: Path) -> int:
         raise ValueError("S7 predecessor is not a completed zero-spend qualification")
     if (run / "failure.json").exists() or not (run / "packages").is_dir():
         raise ValueError("completed qualification lacks packages or retains a failure record")
+    if results["fake_sends"] != {"qualification": QUALIFICATION_CAP}:
+        raise ValueError("S7 completed qualification does not record the approved send count")
     if results["plan_sha256"] != content_digest(plan):
         raise ValueError("S7 completed results are bound to a different plan")
     counts = _ledger_counts(run)
     if set(counts) - {"qualification"} or results["fake_sends"] != counts:
         raise ValueError("S7 predecessor accounting differs from its durable ledger")
-    _read(run / "verification.json")
+    verification = _read(run / "verification.json")
+    if (
+        verification.get("schema_version") != "pixelgym-s7-verification-v1"
+        or verification.get("results_sha256") != content_digest(results)
+        or verification.get("source_binding_sha256") != content_digest(source)
+    ):
+        raise ValueError("S7 stored verification is not bound to the completed results")
     return counts.get("qualification", 0)
 
 
