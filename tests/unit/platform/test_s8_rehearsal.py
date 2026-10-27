@@ -176,6 +176,66 @@ def test_prepare_backs_up_ledger_and_binds_approval(
         )
 
 
+def test_loopback_only_guard_refuses_non_loopback_before_any_syscall() -> None:
+    assert cli.is_loopback_address(("127.0.0.1", 0)) and cli.is_loopback_address(("::1", 0, 0, 0))
+    assert not cli.is_loopback_address(("localhost", 0))
+    assert not cli.is_loopback_address(("0.0.0.0", 0))
+    assert not cli.is_loopback_address("127.0.0.1")
+    original = socket.socket
+    with cli.loopback_only_sockets():
+        # Constructors stay open for the listener; every address-taking call is checked
+        # before the system call, so nothing here binds or reaches a network.
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            with pytest.raises(RuntimeError, match="only for loopback"):
+                sock.bind(("0.0.0.0", 0))
+            with pytest.raises(RuntimeError, match="only for loopback"):
+                sock.connect(("203.0.113.1", 80))
+            with pytest.raises(RuntimeError, match="only for loopback"):
+                sock.connect_ex(("localhost", 80))
+        with (
+            socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock,
+            pytest.raises(RuntimeError, match="only for loopback"),
+        ):
+            sock.sendto(b"x", ("203.0.113.1", 9))
+        left, right = socket.socketpair()
+        with left, right:
+            left.sendall(b"ok")
+            assert right.recv(2) == b"ok"
+    assert socket.socket is original
+    with cli.no_inet_sockets(), pytest.raises(RuntimeError, match="cannot open internet"):
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+
+def test_prepare_failure_after_mkdir_leaves_no_partial_directory(
+    qualified_fixture: Path,  # noqa: F811
+    tmp_path: Path,
+) -> None:
+    approval = tmp_path / "approval.json"
+    approval.write_bytes(json.dumps(approval_document(qualified_fixture)).encode())
+    state = tmp_path / "state"
+
+    def fault(source: Path, target: Path) -> dict[str, Any]:
+        raise RuntimeError("fixture ledger fault")
+
+    with pytest.MonkeyPatch.context() as patch:
+        synthetic_host(patch)
+        patch.setattr("pixelgym.platform.s8_rehearsal.backup_ledger", fault)
+        with pytest.raises(RuntimeError, match="fixture ledger fault"):
+            prepare(
+                qualified_fixture.parent / "checkout",
+                qualified_fixture,
+                state,
+                approval_path=approval,
+            )
+    assert not state.exists()
+    with pytest.MonkeyPatch.context() as patch:
+        synthetic_host(patch)
+        prepare(
+            qualified_fixture.parent / "checkout", qualified_fixture, state, approval_path=approval
+        )
+    assert (state / "plan.json").is_file()
+
+
 @pytest.mark.parametrize(
     ("change", "match"),
     [
@@ -495,7 +555,12 @@ def test_stored_verification_replays_caller_actions_and_binds_lifecycle(
         for r in verification["replays"]
         for d in r["screenshot_differences"]
     )
-    assert verification["recovery"]["additional_sends"] == 0
+    # Journal-derived only; the lifecycle's own recovery observations are not repeated here.
+    assert verification["recovery"] == {
+        "attempt_started": 1,
+        "canonical_response_persisted": 1,
+        "intent_issued": 1,
+    }
     assert [f["event_type"] for f in verification["refused_transitions"]] == [
         "deployment.deploy_failed",
         "deployment.rollback_failed",
@@ -538,6 +603,9 @@ def test_acceptance_checks_record_raw_command_status_and_output(
     assert check["command"][1:4] == ["-m", "scripts.s8_rehearsal", "verify"]
     assert check["exit_status"] == 0, check["stderr"]
     assert '"verification_sha256"' in check["stdout"]
+    # The subprocess runs before acceptance-checks.json exists, so a digest of the rendered
+    # report sealed here could never be re-derived; verify must not print one.
+    assert "report_sha256" not in check["stdout"]
     assert check["elapsed_seconds"] > 0
     verify_seal(rehearsed.state)
 

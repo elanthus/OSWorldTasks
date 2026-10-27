@@ -73,9 +73,11 @@ caller's transport (`in-process-asgi` or `loopback-listener:127.0.0.1:PORT`) is 
 app construction.
 
 The default `run` denies every internet-family socket in the driver process. With
-`--listener-port`, that guard is off so the listener can bind `127.0.0.1`; the driver process
-then has no in-process socket denial, and the no-network claim for that mode rests on the
-worker's OS sandbox and egress proxy alone, which cover the policy worker, not the driver.
+`--listener-port`, the driver instead runs under a loopback-only guard: internet-family
+sockets may bind, connect, or send datagrams only to the literals `127.0.0.1` and `::1`, checked
+before the system call, and host names (including `localhost`) are refused so no resolver is
+consulted. Both guards are in-process Python guards on the driver, not an OS boundary; the
+policy worker's OS sandbox and egress proxy are the enforced boundary either way.
 
 ## Evidence layout
 
