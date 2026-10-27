@@ -96,8 +96,11 @@ plan, source snapshot, results-to-ledger agreement, and the presence of packages
 verification, and the stored verification record's binding to those results and that source. It
 is not replayed and its packages are not loaded. The private successor freeze binds revision
 `3b2865877aa784cfcb12066fcccc3f617b657ad7`; review repairs after it move this branch past that
-revision, so its exact packages load only from that checkout, as with v3. Activation, the full
-serving rehearsal, publication, and milestone decisions remain separate owner gates.
+revision, so its exact packages load only from that checkout, as with v3. Its local archive and
+restore drill are recorded in
+[artifacts/evidence-retention-s7-20261026-successor](../artifacts/evidence-retention-s7-20261026-successor/REPORT.md);
+the private remote copy awaits a fresh owner budget observation. Activation, the full serving
+rehearsal, publication, and milestone decisions remain separate owner gates.
 
 ## Decisions requested
 
