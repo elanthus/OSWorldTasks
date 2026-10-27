@@ -123,6 +123,7 @@ def rehearsed(qualified_fixture: Path, tmp_path_factory: Any) -> SimpleNamespace
             qualified_fixture.parent / "checkout",
             state,
             preparer_factory=unit_preparer(launcher),
+            require_os_sandbox=False,
         )
         with cli.no_inet_sockets():
             lifecycle = rehearsal.run()
@@ -425,6 +426,46 @@ def test_every_fake_send_is_reserved_durably_within_caps(rehearsed: SimpleNamesp
     assert budget.counts() == counts
 
 
+def test_unenforced_fixture_workers_are_recorded_honestly(rehearsed: SimpleNamespace) -> None:
+    proofs = rehearsed.lifecycle["worker_proofs"]
+    assert [p["event"] for p in proofs] == [
+        "deploy A",
+        "deploy B",
+        "restore_active B",
+        "deploy B",
+        "rollback A",
+    ]
+    assert all(p["os_sandbox_applied"] is False for p in proofs)
+    assert {p["mechanism"] for p in proofs} == {"unit_test_unenforced"}
+    assert rehearsed.lifecycle["os_sandbox_required"] is False
+    assert rehearsed.lifecycle["caller_kinds"] == ["in-process-asgi", "in-process-asgi"]
+    assert rehearsed.lifecycle["actor_verification_source"] == "legacy_unverified"
+    verification = read_json(rehearsed.state / "verification.json")
+    assert verification["worker_enforcement"]["all_enforced"] is False
+    assert verification["worker_enforcement"]["worker_count"] == 5
+
+
+def test_required_os_sandbox_refuses_an_unenforced_worker_and_seals_the_stop(
+    qualified_fixture: Path,  # noqa: F811
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    launcher = LocalWorkerLauncher()
+    synthetic_host(monkeypatch)
+    state = prepared_state(qualified_fixture, tmp_path, "enforced")
+    rehearsal = Rehearsal(
+        qualified_fixture.parent / "checkout", state, preparer_factory=unit_preparer(launcher)
+    )
+    with cli.no_inet_sockets(), pytest.raises(RehearsalStopped, match="OS sandbox"):
+        rehearsal.run()
+    failure = read_json(state / "failure.json")
+    assert failure["stage"] == STEP_NAMES[1] and failure["os_sandbox_required"] is True
+    assert failure["worker_proofs"][0]["os_sandbox_applied"] is False
+    assert failure["fake_sends"] == {"qualification": 77, "smoke": 1}
+    assert all(p.poll() is not None for p in launcher.processes)
+    verify_seal(state)
+
+
 def test_cleanup_stopped_every_worker_and_environment(rehearsed: SimpleNamespace) -> None:
     assert rehearsed.launcher.processes and all(
         process.poll() is not None for process in rehearsed.launcher.processes
@@ -606,7 +647,10 @@ def test_stopped_lifecycle_retains_sealed_evidence_and_stops_workers(
 
     monkeypatch.setattr(Rehearsal, "step_3", fault)
     rehearsal = Rehearsal(
-        qualified_fixture.parent / "checkout", state, preparer_factory=unit_preparer(launcher)
+        qualified_fixture.parent / "checkout",
+        state,
+        preparer_factory=unit_preparer(launcher),
+        require_os_sandbox=False,
     )
     with cli.no_inet_sockets(), pytest.raises(RuntimeError, match="fixture fault"):
         rehearsal.run()
@@ -620,8 +664,8 @@ def test_stopped_lifecycle_retains_sealed_evidence_and_stops_workers(
     assert rehearsal.stack is None
     assert launcher.processes and all(p.poll() is not None for p in launcher.processes)
     assert all(env.closed for env in rehearsal.environments)
-    assert not (state / "lifecycle.json").exists() and not (state / "seal.json").exists()
-    s8_rehearsal.seal(state)
+    assert not (state / "lifecycle.json").exists()
+    verify_seal(state)
     with no_network():
         report = stored_report(state)
         rendered = render_report(report)

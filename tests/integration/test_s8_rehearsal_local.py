@@ -111,3 +111,10 @@ def test_real_sandbox_and_loopback_listener_rehearsal(tmp_path: Path) -> None:
     # launched by the Darwin sandbox launcher through the unchanged S7 preparer.
     workers = read_json(qualification / "results.json")["workers"]
     assert all(w["mechanism"] == "darwin_sandbox_exec" for w in workers)
+    proofs = lifecycle["worker_proofs"]
+    assert len(proofs) == 5 and all(p["mechanism"] == "darwin_sandbox_exec" for p in proofs)
+    assert all(p["os_sandbox_applied"] is True for p in proofs)
+    assert lifecycle["os_sandbox_required"] is True
+    assert lifecycle["caller_kinds"] == [f"loopback-listener:127.0.0.1:{port}"] * 2
+    verification = read_json(state / "verification.json")
+    assert verification["worker_enforcement"]["all_enforced"] is True

@@ -59,6 +59,19 @@ rollback toward B is stopped by the lineage rule before the preparer runs, so it
 smoke; the refused redeploy demonstrates the exhaustion check and consumes the sixth smoke.
 Nothing is sent to fill unused allowance.
 
+## Worker enforcement and the interruption hook
+
+`run` requires an OS-enforced worker for every deployment, restore, and rollback and retains
+each worker's mechanism and sandbox-profile digest in `lifecycle.json` (`worker_proofs`). The
+unit tests run the driver with `require_os_sandbox=False` and an unenforced local launcher; that
+flag is recorded in the lifecycle and the verification record (`worker_enforcement`), so an
+unenforced run can never be mistaken for isolation evidence. The CLI exposes no way to relax it.
+
+The step-3 interruption is injected through the serving host's existing `interrupt_after`
+boundary hook on the live `ServingEpisodeHost`; no serving code changes for the rehearsal. The
+caller's transport (`in-process-asgi` or `loopback-listener:127.0.0.1:PORT`) is recorded per
+app construction.
+
 ## Evidence layout
 
 ```text

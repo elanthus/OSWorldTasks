@@ -45,7 +45,11 @@ from pixelgym.grounding.v5.retention import _checkout, write_private
 from pixelgym.grounding.v5.retention_validation import SEED
 from pixelgym.platform import s7_runtime, s7_source
 from pixelgym.platform.contracts import ArtifactRef
-from pixelgym.platform.control_store import ControlStore, TransitionError
+from pixelgym.platform.control_store import (
+    ACTOR_VERIFICATION_SOURCE_KEY,
+    ControlStore,
+    TransitionError,
+)
 from pixelgym.platform.deployment import DeploymentCoordinator
 from pixelgym.platform.deployment_smoke import DeploymentSmokeError
 from pixelgym.platform.immutable_store import LocalImmutableStore
@@ -288,6 +292,8 @@ class Reply:
 
 
 class Caller(Protocol):
+    kind: str
+
     def post(self, path: str, body: Mapping[str, Any]) -> Reply: ...
 
     def get(self, path: str) -> Reply: ...
@@ -297,6 +303,8 @@ class Caller(Protocol):
 
 class AsgiCaller:
     """In-process ASGI caller; opens no socket."""
+
+    kind = "in-process-asgi"
 
     def __init__(self, app: Any) -> None:
         from fastapi.testclient import TestClient
@@ -325,6 +333,7 @@ class LoopbackCaller:
 
         import uvicorn
 
+        self.kind = f"loopback-listener:127.0.0.1:{port}"
         config = uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning")
         self.server = uvicorn.Server(config)
         self.thread = threading.Thread(target=self.server.run, daemon=True)
@@ -593,8 +602,12 @@ class Rehearsal:
         *,
         preparer_factory: PreparerFactory = default_preparer,
         caller_factory: CallerFactory = AsgiCaller,
+        require_os_sandbox: bool = True,
     ) -> None:
         self.root, self.state = root.resolve(), state.resolve()
+        self.require_os_sandbox = require_os_sandbox
+        self.worker_proofs: list[dict[str, Any]] = []
+        self.caller_kinds: list[str] = []
         self.plan = read_json(self.state / "plan.json")
         self.qualification = Path(self.plan["qualification_path"])
         self.preparer_factory = preparer_factory
@@ -780,6 +793,27 @@ class Rehearsal:
             "state": control.get_stateful_candidate(candidate_id).state.value,
         }
 
+    def worker_proof(self, event: str) -> dict[str, Any]:
+        """Retain the active worker's OS-enforcement proof; refuse an unenforced worker."""
+        assert self.stack is not None
+        active = self.stack.stateful.active
+        self.expect(active is not None, "no active stateful deployment holds a worker")
+        assert active is not None
+        policy = active.prepared.loaded.policy
+        proof = {
+            "event": event,
+            "deployment_id": active.identity.deployment_id,
+            "os_sandbox_applied": bool(policy.os_sandbox_applied),
+            "mechanism": policy.sandbox_mechanism,
+            "profile_sha256": policy.sandbox_profile_digest,
+        }
+        self.worker_proofs.append(proof)
+        self.expect(
+            not self.require_os_sandbox or proof["os_sandbox_applied"] is True,
+            "the serving worker lacks OS sandbox enforcement",
+        )
+        return proof
+
     def deploy(self, role: str, reason: str) -> dict[str, Any]:
         assert self.stack is not None
         deployment = self.stack.coordinator.deploy(
@@ -789,6 +823,7 @@ class Rehearsal:
             "deployment_id": deployment.deployment_id,
             "candidate_id": deployment.candidate_id,
             "generation": deployment.generation,
+            "worker": self.worker_proof(f"deploy {role}"),
         }
 
     def restart(self) -> None:
@@ -799,7 +834,7 @@ class Rehearsal:
         self.stack = self.make_stack()
 
     def make_stack(self) -> Stack:
-        return build_stack(
+        stack = build_stack(
             root=self.root,
             state=self.state,
             qualification=self.qualification,
@@ -808,6 +843,8 @@ class Rehearsal:
             preparer_factory=self.preparer_factory,
             caller_factory=self.caller_factory,
         )
+        self.caller_kinds.append(stack.caller.kind)
+        return stack
 
     def noop_episode(self, observations: dict[str, Any], ref: str) -> None:
         """One A episode: create, act, dispatch the NOOP, close with the observed result."""
@@ -972,6 +1009,7 @@ class Rehearsal:
                 "deployment_id": restored.deployment_id,
                 "same_deployment": restored.deployment_id == self.deployments["B"],
                 "fake_sends_after_restore": self.counts(),
+                "worker": self.worker_proof("restore_active B"),
             }
             before_recovery = self.counts()
             recovered = self.act(episode_id, env.screenshot)
@@ -1147,6 +1185,7 @@ class Rehearsal:
                 "deployment_id": rolled.deployment_id,
                 "candidate_id": rolled.candidate_id,
                 "action": rolled.action,
+                "worker": self.worker_proof("rollback A"),
                 "new_deployment_id": rolled.deployment_id != self.deployments["A"],
                 "a_attempts_before": a_before,
                 "a_attempts_after": self.version_attempts()["A"],
@@ -1287,7 +1326,10 @@ class Rehearsal:
             "plan_sha256": content_digest(self.plan),
             "approval_sha256": self.plan["approval_sha256"],
             "actor": self.actor,
-            "actor_verification_source": "legacy_unverified",
+            "actor_verification_source": self.actor_verification_source(),
+            "os_sandbox_required": self.require_os_sandbox,
+            "worker_proofs": self.worker_proofs,
+            "caller_kinds": self.caller_kinds,
             "candidates": self.candidates,
             "deployments": self.deployments,
             "episodes": self.episodes,
@@ -1298,7 +1340,22 @@ class Rehearsal:
             **self.accounting(),
         }
 
+    def actor_verification_source(self) -> str | None:
+        """How the control ledger attributed the recorded actor; read from the closed ledger."""
+        if not (self.state / "control.sqlite").exists():
+            return None
+        with closing(_read_only(self.state / "control.sqlite")) as db:
+            row = db.execute(
+                "SELECT details_json FROM audit_events WHERE event_type = 'candidate.approved' "
+                "ORDER BY rowid LIMIT 1"
+            ).fetchone()
+        if row is None:
+            return None
+        value = json.loads(row[0]).get(ACTOR_VERIFICATION_SOURCE_KEY)
+        return str(value) if value is not None else None
+
     def record_failure(self, cause: BaseException, started: float) -> None:
+        """Retain a sealed terminal failure after writers stop; never reset its ledger."""
         write_json(
             self.state / "failure.json",
             {
@@ -1309,6 +1366,9 @@ class Rehearsal:
                 "message": str(cause) if isinstance(cause, RehearsalStopped) else None,
                 "completed_steps": self.steps,
                 "stopped_step": self.stopped_step,
+                "os_sandbox_required": self.require_os_sandbox,
+                "worker_proofs": self.worker_proofs,
+                "caller_kinds": self.caller_kinds,
                 "candidates": self.candidates,
                 "deployments": self.deployments,
                 "episodes": self.episodes,
@@ -1317,6 +1377,10 @@ class Rehearsal:
                 **self.accounting(),
             },
         )
+        try:
+            seal(self.state)
+        except Exception as sealing:  # noqa: BLE001 - the original failure must surface.
+            cause.add_note(f"S8 failure evidence was not sealed: {type(sealing).__name__}")
 
 
 def seal(state: Path) -> dict[str, Any]:
@@ -1503,6 +1567,29 @@ def inspect_rehearsal(state: Path) -> dict[str, Any]:
                 e.payload["idempotency_key"] for e in events if e.kind == "attempt_started"
             )
             integrity[role] = journal.integrity_report()
+    proofs = lifecycle["worker_proofs"]
+    enforcement = {
+        "os_sandbox_required": lifecycle["os_sandbox_required"],
+        "worker_count": len(proofs),
+        "all_enforced": bool(proofs)
+        and all(
+            p["os_sandbox_applied"] is True
+            and p["mechanism"] == "darwin_sandbox_exec"
+            and isinstance(p["profile_sha256"], str)
+            and p["profile_sha256"].startswith("sha256:")
+            for p in proofs
+        ),
+        "mechanisms": sorted({p["mechanism"] for p in proofs}),
+        "caller_kinds": lifecycle["caller_kinds"],
+    }
+    if [p["event"] for p in proofs] != [
+        "deploy A",
+        "deploy B",
+        "restore_active B",
+        "deploy B",
+        "rollback A",
+    ] or (lifecycle["os_sandbox_required"] and not enforcement["all_enforced"]):
+        raise ValueError("S8 worker enforcement proofs are missing or unenforced")
     if attempts != lifecycle["version_attempts"] or attempts != {
         "A": EXPECTED_SENDS["A"],
         "B": EXPECTED_SENDS["B"],
@@ -1590,6 +1677,7 @@ def inspect_rehearsal(state: Path) -> dict[str, Any]:
         "fake_sends": counts,
         "campaign_total": sum(counts.values()),
         "version_attempts": attempts,
+        "worker_enforcement": enforcement,
         "journal_integrity": integrity,
         "deployment_history": history,
         "final_active_deployment_id": pointer[0],
@@ -1743,6 +1831,16 @@ def render_report(report: Mapping[str, Any]) -> str:
                 f"(verification source: {lifecycle['actor_verification_source']}; a local "
                 "audit actor is not authenticated human identity; the owner approval record "
                 "is the authority)."
+            ),
+            "",
+            (
+                f"Worker OS sandbox required: {lifecycle['os_sandbox_required']}. Worker proofs: "
+                + "; ".join(
+                    f"{p['event']} {p['mechanism']} applied={p['os_sandbox_applied']} "
+                    f"profile={p['profile_sha256']}"
+                    for p in lifecycle["worker_proofs"]
+                )
+                + f". Caller: {', '.join(lifecycle['caller_kinds'])}."
             ),
             "",
             f"Lifecycle elapsed: {lifecycle['elapsed_seconds']} s.",
