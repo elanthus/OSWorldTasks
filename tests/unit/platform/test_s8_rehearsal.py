@@ -159,9 +159,7 @@ def test_prepare_backs_up_ledger_and_binds_approval(
     assert receipt["counts"] == {"qualification": 77} and receipt["paused"] is True
     assert receipt["source_identity"] == receipt["backup_identity"]
     assert S7SendBudget(state / "send-budget.sqlite").counts() == {"qualification": 77}
-    assert inventory(qualified_fixture) == read_json(qualified_fixture / "seal.json") | {
-        "files": inventory(qualified_fixture)["files"]
-    }
+    verify_seal(qualified_fixture)
     with pytest.raises(ValueError, match="outside Git"):
         prepare(
             qualified_fixture.parent / "checkout",

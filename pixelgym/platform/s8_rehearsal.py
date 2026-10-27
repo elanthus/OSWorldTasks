@@ -328,7 +328,6 @@ class LoopbackCaller:
     """Real HTTP listener bound to 127.0.0.1 only; exercised by the opt-in integration test."""
 
     def __init__(self, app: Any, *, port: int) -> None:
-        import http.client
         import threading
 
         import uvicorn
@@ -343,15 +342,23 @@ class LoopbackCaller:
             if time.monotonic() > deadline or not self.thread.is_alive():
                 raise RuntimeError("loopback listener did not start")
             time.sleep(0.01)
-        self.connection = http.client.HTTPConnection("127.0.0.1", port, timeout=30)
+        self.port = port
 
     def _request(self, method: str, path: str, body: bytes | None) -> Reply:
-        self.connection.request(
-            method, path, body=body, headers={"Content-Type": "application/json"}
-        )
-        response = self.connection.getresponse()
-        data = response.read()
-        return Reply(response.status, json.loads(data), dict(response.getheaders()))
+        import http.client
+
+        # One connection per request: uvicorn closes idle keep-alive connections, and a
+        # stale reused connection would end the one-shot campaign with a transport error.
+        connection = http.client.HTTPConnection("127.0.0.1", self.port, timeout=30)
+        try:
+            connection.request(
+                method, path, body=body, headers={"Content-Type": "application/json"}
+            )
+            response = connection.getresponse()
+            data = response.read()
+            return Reply(response.status, json.loads(data), dict(response.getheaders()))
+        finally:
+            connection.close()
 
     def post(self, path: str, body: Mapping[str, Any]) -> Reply:
         return self._request("POST", path, json.dumps(dict(body)).encode())
@@ -360,13 +367,10 @@ class LoopbackCaller:
         return self._request("GET", path, None)
 
     def close(self) -> None:
-        try:
-            self.connection.close()
-        finally:
-            self.server.should_exit = True
-            self.thread.join(timeout=10)
-            if self.thread.is_alive():
-                raise RuntimeError("loopback listener did not stop")
+        self.server.should_exit = True
+        self.thread.join(timeout=10)
+        if self.thread.is_alive():
+            raise RuntimeError("loopback listener did not stop")
 
 
 CallerFactory = Callable[[Any], Caller]
