@@ -41,6 +41,12 @@ import gymnasium as gym
 import numpy as np
 import PIL
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    # Run as `python scripts/measure_fake_throughput.py`, sys.path[0] is `scripts/`, so the repo
+    # root (and with it `tests.support`) is not importable yet.
+    sys.path.insert(0, str(REPO_ROOT))
+
 from pixelgym.backends.fake import FakeBackend
 from pixelgym.env import PixelGuiEnv
 from pixelgym.registration import VENDOR_FORM_ID
