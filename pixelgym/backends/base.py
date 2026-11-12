@@ -126,14 +126,25 @@ class Backend(Protocol):
     def click(self, x: int, y: int) -> None:
         """Click at pixel `(x, y)`. `x` is in `[0, width)`, `y` in
         `[0, height)` -- already validated by `PixelGuiEnv` against the
-        action space before this is called."""
+        action space before this is called.
+
+        Must return only once the application has finished processing the
+        click, including recording any submission it caused, so that the
+        `screenshot()` and `read_submissions()` calls `PixelGuiEnv.step` makes
+        next observe its full effect. A backend must establish this from a
+        positive signal, never from elapsed time or frame stability alone.
+        """
         ...
 
     def key(self, key: str) -> None:
         """Send one keystroke. `key` is a literal member of
         `pixelgym.actions.KEY_ALLOWLIST` (a printable character, or one of
         the named keys such as ``"Tab"`` or ``"Enter"``), already resolved
-        by `PixelGuiEnv` from the action's allowlist index."""
+        by `PixelGuiEnv` from the action's allowlist index.
+
+        The same completion rule as `click` applies: return only once the
+        keystroke, and any submission it caused, has been fully processed.
+        """
         ...
 
     def read_submissions(self) -> Sequence[Submission]:

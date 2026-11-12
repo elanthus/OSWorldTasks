@@ -223,9 +223,10 @@ def _render_country(painter: _Painter, state: FormState, layout: Layout) -> None
 
 def _render_payment_terms(painter: _Painter, state: FormState, layout: Layout) -> None:
     painter.label(layout.labels[WidgetId.PAYMENT_TERMS], _LABELS["payment_terms"])
-    focused = state.focus is WidgetId.PAYMENT_TERMS
     radius = _scaled(6, painter.scale)
     for index, rect in enumerate(layout.payment_options):
+        # Exactly one radio holds keyboard focus, as in the browser; it can be unchecked.
+        focused = state.focus is WidgetId.PAYMENT_TERMS and index == state.payment_focus_index
         center_x = rect.x + painter.inset + radius
         _, center_y = rect.center
         circle = (

@@ -24,6 +24,8 @@ _HEREDOC_HEAD = "python3 - <<'PY'\n"
 _HEREDOC_TAIL = "PY\n"
 _SEED = 4242
 _SCREEN = (1920, 1080)
+# Programs written after the migration have no former literal to reproduce.
+_ADDED_AFTER_MIGRATION = {"input_ack"}
 
 
 def _old_literals() -> dict[str, str]:
@@ -102,7 +104,7 @@ def _rendered() -> dict[str, str]:
 def test_every_former_literal_is_reproduced_byte_for_byte() -> None:
     old = _old_literals()
     new = _rendered()
-    assert sorted(old) == sorted(osworld_task._GUEST_PROGRAM_NAMES)
+    assert sorted(old) == sorted(set(osworld_task._GUEST_PROGRAM_NAMES) - _ADDED_AFTER_MIGRATION)
     for name in old:
         assert new[name].encode("utf-8") == old[name].encode("utf-8"), name
 

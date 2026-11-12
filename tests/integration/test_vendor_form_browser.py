@@ -30,6 +30,7 @@ from pixelgym.tasks.vendor_form.ui import (
     DESIGN_HEIGHT,
     DESIGN_WIDTH,
     INCOMPLETE_SUBMISSION_MESSAGE,
+    LABELED_CONTROLS,
     TAB_ORDER,
     TEXT_WIDGETS,
     Layout,
@@ -166,6 +167,14 @@ def _assert_layout_matches_browser(page: Any, task: dict) -> tuple[Layout, list[
     for widget in WidgetId:
         _assert_rect_matches_browser(widget.value, browser_widgets[widget], layout.controls[widget])
 
+    # Clicking a `<label for=...>` focuses its control, and the fake models that click, so the
+    # label's block hit region is part of the geometry contract too.
+    for widget in LABELED_CONTROLS:
+        label = page.locator(f'#vendor-form label[for="{widget.value}"]')
+        _assert_rect_matches_browser(
+            f"label[for={widget.value}]", _bounding_rect(label), layout.labels[widget]
+        )
+
     payment_values = task["options"]["payment_terms"]
     assert len(browser_options) == len(payment_values) == len(layout.payment_options)
     _assert_fixed_width_controls_do_not_clip(page, payment_values)
@@ -229,6 +238,17 @@ def test_fake_layout_matches_browser_control_hit_regions() -> None:
             for index, option in enumerate(layout.payment_options):
                 assert _semantic_control_at(page, option.center) == f"payment_terms_{index}", (
                     f"payment_terms[{index}]: Layout center does not hit the browser radio"
+                )
+            for widget in LABELED_CONTROLS:
+                label_for = page.evaluate(
+                    """([x, y]) => {
+                      const label = document.elementFromPoint(x, y).closest("label");
+                      return label ? label.htmlFor : null;
+                    }""",
+                    list(layout.labels[widget].center),
+                )
+                assert label_for == widget.value, (
+                    f"label[for={widget.value}]: Layout label center does not hit the browser label"
                 )
         finally:
             browser.close()

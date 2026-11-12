@@ -119,17 +119,250 @@
         throw new Error("page-ready report failed");
       }
       var ready = await response.json();
-      if (ready.ready !== true) {
+      if (ready.ready !== true || typeof ready.page !== "number") {
         throw new Error("page-ready report was not acknowledged");
       }
+      pageToken = ready.page;
       document.body.dataset.pixelgymReady = "true";
     } catch (_error) {
       markInitializationError(failureStage);
     }
   }
 
+  // -- Input contract (ui.INPUT_CONTRACT_VERSION) ---------------------------------------------
+  //
+  // The fake backend models this page from Python (pixelgym/tasks/vendor_form/ui.py). Wherever
+  // native Chromium behaviour depends on the platform, a timer, or state that is invisible in
+  // pixels, this page pins it to the shared rule instead:
+  // - Tab walks TAB_ORDER; Tab from Submit leaves the form and a further Tab does nothing until
+  //   a control gains focus again. No native sequential-navigation starting point applies.
+  // - Text inputs keep one collapsed caret at the end of the value (the caret is transparent,
+  //   so a movable caret would be hidden state). Arrow keys are inert in text inputs.
+  // - The country select handles ArrowUp/ArrowDown (clamped, never back onto the placeholder),
+  //   ignores ArrowLeft/ArrowRight, and treats each printable key as a fresh first-letter
+  //   search. Native arrows open the popup on macOS and native type-ahead is timed.
+  // Keep this text synchronized with ui.INPUT_CONTRACT_VERSION.
+  var INPUT_CONTRACT_VERSION = "pixelgym-vendor-form-input-v2";
+  var TAB_ORDER = [
+    "company_name",
+    "contact_email",
+    "contact_phone",
+    "tax_id",
+    "country",
+    "payment_terms",
+    "expedited_onboarding",
+    "submit-button",
+  ];
+  var tabExitedForm = false;
+
+  function isTextInput(element) {
+    return Boolean(element) && element.tagName === "INPUT" && element.type === "text";
+  }
+
+  function pinCaretToEnd(element) {
+    var end = element.value.length;
+    if (element.selectionStart !== end || element.selectionEnd !== end) {
+      element.setSelectionRange(end, end);
+    }
+  }
+
+  function tabStopOf(element) {
+    if (!element || element === document.body) {
+      return null;
+    }
+    if (element.type === "radio" && element.name === "payment_terms") {
+      return "payment_terms";
+    }
+    return TAB_ORDER.indexOf(element.id) === -1 ? null : element.id;
+  }
+
+  function focusTabStop(stop) {
+    if (stop === "payment_terms") {
+      var radios = document.querySelectorAll('input[name="payment_terms"]');
+      var checked = document.querySelector('input[name="payment_terms"]:checked');
+      (checked || radios[0]).focus();
+      return;
+    }
+    document.getElementById(stop).focus();
+  }
+
+  function advanceFocus() {
+    var current = tabStopOf(document.activeElement);
+    if (current === null) {
+      if (!tabExitedForm) {
+        focusTabStop(TAB_ORDER[0]);
+      }
+      return;
+    }
+    if (current === "submit-button") {
+      document.activeElement.blur();
+      tabExitedForm = true;
+      return;
+    }
+    focusTabStop(TAB_ORDER[TAB_ORDER.indexOf(current) + 1]);
+  }
+
+  function moveCountry(select, key) {
+    // Option 0 is the disabled placeholder; options 1..n are the countries.
+    var last = select.options.length - 1;
+    if (key === "ArrowDown") {
+      select.selectedIndex = Math.min(Math.max(select.selectedIndex + 1, 1), last);
+    } else if (key === "ArrowUp" && select.selectedIndex > 1) {
+      select.selectedIndex -= 1;
+    }
+  }
+
+  function typeAheadCountry(select, key) {
+    var folded = key.toLowerCase();
+    for (var index = 1; index < select.options.length; index += 1) {
+      if (select.options[index].text.toLowerCase().indexOf(folded) === 0) {
+        select.selectedIndex = index;
+        return;
+      }
+    }
+  }
+
+  function handleContractKeydown(event) {
+    var target = event.target;
+    if (event.key === "Tab") {
+      event.preventDefault();
+      advanceFocus();
+      return;
+    }
+    if (isTextInput(target)) {
+      if (event.key.indexOf("Arrow") === 0) {
+        event.preventDefault();
+        return;
+      }
+      // Insertion and Backspace act on the selection as it stands after keydown dispatch.
+      pinCaretToEnd(target);
+      return;
+    }
+    if (target.id === "country") {
+      if (event.key.indexOf("Arrow") === 0) {
+        event.preventDefault();
+        moveCountry(target, event.key);
+      } else if (event.key.length === 1 && event.key !== " ") {
+        event.preventDefault();
+        typeAheadCountry(target, event.key);
+      }
+    }
+  }
+
+  function installInputContract() {
+    document.body.dataset.pixelgymInputContract = INPUT_CONTRACT_VERSION;
+    document.addEventListener("keydown", handleContractKeydown, true);
+    document.addEventListener(
+      "mousedown",
+      function (event) {
+        if (isTextInput(event.target)) {
+          // A native mousedown would place the hidden caret under the pointer.
+          event.preventDefault();
+          event.target.focus();
+          pinCaretToEnd(event.target);
+        }
+      },
+      true,
+    );
+    document.addEventListener(
+      "focusin",
+      function (event) {
+        tabExitedForm = false;
+        if (isTextInput(event.target)) {
+          pinCaretToEnd(event.target);
+        }
+      },
+      true,
+    );
+    document.addEventListener("selectionchange", function () {
+      if (isTextInput(document.activeElement)) {
+        pinCaretToEnd(document.activeElement);
+      }
+    });
+  }
+
+  // -- Input acknowledgement barrier --------------------------------------------------------
+  //
+  // A host backend cannot tell from pixels whether the browser has processed an input yet, or
+  // whether a submission the input caused has reached the server: two equal frames look the same
+  // before the input is handled as after. Every trusted agent input therefore ends with an
+  // acknowledgement that the host counts. The acknowledgement for input N is posted only after
+  // (1) the whole input task has run, including the click or implicit submission it caused,
+  // (2) any submission POST that input started has settled, and (3) the resulting DOM has been
+  // committed to a frame. A host that waits for exactly N acknowledgements after its Nth input
+  // can then read submissions and capture the settled frame without any timing assumption.
+  // A CLICK ends with one primary-button mouseup and a KEY with one non-modifier keyup.
+  var MODIFIER_KEYS = ["Shift", "Control", "Alt", "Meta", "AltGraph", "CapsLock"];
+  var inputsProcessed = 0;
+  // Issued by the server at page-ready; acknowledgements from an earlier page carry an old token
+  // and are refused, so a late one can never stand in for this page's input.
+  var pageToken = null;
+  var acknowledgementChain = Promise.resolve();
+  var pendingSubmission = Promise.resolve();
+
+  function afterCurrentTask() {
+    // A message task runs after the current input task without reading any clock.
+    return new Promise(function (resolve) {
+      var channel = new MessageChannel();
+      channel.port1.onmessage = function () {
+        channel.port1.close();
+        resolve();
+      };
+      channel.port2.postMessage(null);
+    });
+  }
+
+  function afterNextFrame() {
+    return new Promise(function (resolve) {
+      requestAnimationFrame(function () {
+        afterCurrentTask().then(resolve);
+      });
+    });
+  }
+
+  function postAcknowledgement(count) {
+    return fetch("/api/input-ack", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        task_id: document.getElementById("task_id").value,
+        page: pageToken,
+        count: count,
+      }),
+    }).catch(function () {
+      // A lost acknowledgement leaves the host waiting; it fails closed at its own deadline.
+    });
+  }
+
+  function acknowledgeInput(event) {
+    if (!event.isTrusted) {
+      return;
+    }
+    if (event.type === "keyup" && MODIFIER_KEYS.indexOf(event.key) !== -1) {
+      return;
+    }
+    if (event.type === "mouseup" && event.button !== 0) {
+      return;
+    }
+    inputsProcessed += 1;
+    var count = inputsProcessed;
+    var previous = acknowledgementChain;
+    acknowledgementChain = afterCurrentTask()
+      .then(function () {
+        // Read only now: a click's submit handler runs after mouseup in the same input task.
+        return Promise.all([previous, pendingSubmission]);
+      })
+      .then(afterNextFrame)
+      .then(function () {
+        return postAcknowledgement(count);
+      });
+  }
+
   function init() {
     initializePage();
+    installInputContract();
+    window.addEventListener("keyup", acknowledgeInput, true);
+    window.addEventListener("mouseup", acknowledgeInput, true);
 
     document.getElementById("vendor-form").addEventListener("submit", function (event) {
       event.preventDefault();
@@ -138,7 +371,7 @@
       if (!complete) {
         showStatus(INCOMPLETE_SUBMISSION_MESSAGE);
       }
-      fetch("/api/submit", {
+      pendingSubmission = fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),

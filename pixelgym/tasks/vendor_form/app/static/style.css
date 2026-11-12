@@ -149,3 +149,10 @@ select {
   margin-top: 12px;
   min-height: 16px;
 }
+
+/* A fast second click is a native double-click, which would paint a word-selection highlight on
+   static text that the fake renderer never draws. Text inputs keep one caret pinned at the end of
+   the value by app.js, so nothing on the page is selectable. */
+body {
+  user-select: none;
+}

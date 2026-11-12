@@ -136,7 +136,7 @@ def test_page_ready_requires_reload_with_the_active_task_id_after_reset():
     }
     marked_before_reset = client.post("/api/page-ready", json={"task_id": before_reset["task_id"]})
     assert marked_before_reset.status_code == 200
-    assert marked_before_reset.json() == {"ready": True}
+    assert marked_before_reset.json() == {"ready": True, "page": 2}
 
     reset = client.post("/api/reset", json={"seed": 8})
     assert reset.status_code == 200
@@ -161,7 +161,7 @@ def test_page_ready_requires_reload_with_the_active_task_id_after_reset():
 
     marked = client.post("/api/page-ready", json={"task_id": after_reset["task_id"]})
     assert marked.status_code == 200
-    assert marked.json() == {"ready": True}
+    assert marked.json() == {"ready": True, "page": 4}
     ready = client.get("/api/page-ready")
     assert ready.status_code == 200
     assert ready.json() == {"ready": True}
@@ -347,3 +347,86 @@ def test_privileged_state_endpoint_returns_full_task_and_submissions():
 
     assert state["task"]["seed"] == 9
     assert state["submissions"] == []
+
+
+def test_input_contract_version_and_tab_order_match_browser_app_literals():
+    app_source = (REPOSITORY_ROOT / "pixelgym/tasks/vendor_form/app/static/app.js").read_text()
+    versions = re.findall(r'var INPUT_CONTRACT_VERSION = "([^"]+)";', app_source)
+    assert versions == [ui.INPUT_CONTRACT_VERSION]
+
+    order_block = re.search(r"var TAB_ORDER = \[(?P<body>[^\]]*)\];", app_source)
+    assert order_block is not None
+    javascript_order = re.findall(r'"([^"]+)"', order_block.group("body"))
+    expected = [
+        "submit-button" if widget is ui.WidgetId.SUBMIT else widget.value for widget in ui.TAB_ORDER
+    ]
+    assert javascript_order == expected
+
+
+def test_input_acknowledgements_are_page_bound_strictly_sequential_and_reset():
+    client = _client()
+    client.post("/api/reset", json={"seed": 7})
+    task = client.get("/api/task").json()
+    assert client.get("/api/input-ack").json() == {"acknowledged": 0}
+
+    def ack(page, count, task_id=task["task_id"]):
+        return client.post(
+            "/api/input-ack", json={"task_id": task_id, "page": page, "count": count}
+        )
+
+    # No page has reported ready yet, so there is no token to echo.
+    assert ack(1, 1).status_code == 409
+    page = client.post("/api/page-ready", json={"task_id": task["task_id"]}).json()["page"]
+
+    assert ack(page, 1).json() == {"acknowledged": 1}
+    # Replays, skips, wrong pages, and stale task IDs are refused without changing the count.
+    assert ack(page, 1).status_code == 409
+    assert ack(page, 3).status_code == 409
+    assert ack(page + 1, 2).status_code == 409
+    assert ack(page, 2, task_id="vf-stale").status_code == 409
+    assert ack(page, "2").status_code == 422
+    assert client.get("/api/input-ack").json() == {"acknowledged": 1}
+
+    client.post("/api/reset", json={"seed": 7})
+    assert client.get("/api/input-ack").json() == {"acknowledged": 0}
+
+
+def test_late_acknowledgement_from_the_previous_page_is_refused_after_same_seed_reset():
+    """Same seed means same task_id, so only the page token tells the pages apart."""
+
+    client = _client()
+    client.post("/api/reset", json={"seed": 7})
+    task = client.get("/api/task").json()
+    old_page = client.post("/api/page-ready", json={"task_id": task["task_id"]}).json()["page"]
+
+    client.post("/api/reset", json={"seed": 7})
+    new_page = client.post("/api/page-ready", json={"task_id": task["task_id"]}).json()["page"]
+    late = client.post(
+        "/api/input-ack", json={"task_id": task["task_id"], "page": old_page, "count": 1}
+    )
+
+    assert new_page != old_page
+    assert late.status_code == 409
+    assert client.get("/api/input-ack").json() == {"acknowledged": 0}
+    fresh = client.post(
+        "/api/input-ack", json={"task_id": task["task_id"], "page": new_page, "count": 1}
+    )
+    assert fresh.json() == {"acknowledged": 1}
+
+
+def test_input_acknowledgements_never_enter_privileged_state():
+    client = _client()
+    client.post("/api/reset", json={"seed": 7})
+    task = client.get("/api/task").json()
+    page = client.post("/api/page-ready", json={"task_id": task["task_id"]}).json()["page"]
+    client.post("/api/input-ack", json={"task_id": task["task_id"], "page": page, "count": 1})
+
+    assert set(client.get("/api/state").json()) == {"task", "submissions"}
+
+
+def test_input_acknowledgements_require_an_active_task():
+    client = _client()
+
+    assert client.get("/api/input-ack").status_code == 409
+    payload = {"task_id": "x", "page": 1, "count": 1}
+    assert client.post("/api/input-ack", json=payload).status_code == 409

@@ -72,6 +72,10 @@ class ScriptedTask:
     def read_submissions(self, _env: Any) -> list[Any]:
         return list(self.submissions)
 
+    def read_input_acknowledgements(self, env: Any) -> int:
+        # A page that acknowledges each input as soon as it is dispatched.
+        return sum(1 for action, _pause in env.actions if action["action_type"] != "WAIT")
+
 
 class ScriptedDesktopEnv:
     """Fake provider whose reset observation, screenshots and step results are scripted."""

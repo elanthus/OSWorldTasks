@@ -10,6 +10,8 @@ Nothing here touches the network, a browser, OSWorld, or the clock.
 
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pytest
 
@@ -323,13 +325,19 @@ def test_radio_arrows_wrap_in_both_directions(backend):
     assert backend.form.payment_terms_value == options[0]
 
 
-def test_arrow_on_an_untouched_radio_group_selects_the_first_option(backend):
+def test_arrow_from_tab_entered_unchecked_group_moves_past_the_focused_first_radio(backend):
+    """Tab enters an unchecked radio group on its first radio *without* checking it; ArrowDown
+    then moves focus and selection to the second radio (Chromium: "Net 30" for seed 7, where v1
+    of the fake chose "Net 15")."""
     for _ in range(TAB_ORDER.index(WidgetId.PAYMENT_TERMS) + 1):
         backend.key("Tab")
+    assert backend.form.payment_terms_value == ""
+    assert backend.form.payment_focus_index == 0
 
     backend.key("ArrowDown")
 
-    assert backend.form.payment_terms_value == backend.form.payment_options[0]
+    assert backend.form.payment_terms_value == backend.form.payment_options[1]
+    assert backend.form.payment_focus_index == 1
 
 
 def test_all_radio_hit_regions_support_varying_label_lengths():
@@ -746,3 +754,141 @@ def test_widget_ids_cover_every_generated_field_name():
     field_widgets = {widget.value for widget in WidgetId} - {WidgetId.SUBMIT.value}
 
     assert field_widgets == set(generator.FIELD_NAMES)
+
+
+# -- Input contract v2: labels, radio focus, checkpoint schema ---------------
+
+
+@pytest.mark.parametrize("widget", [*TEXT_WIDGETS, WidgetId.COUNTRY])
+def test_clicking_a_form_label_focuses_its_control(backend, widget):
+    backend.click(*backend.layout.controls[WidgetId.SUBMIT].center)
+
+    backend.click(*backend.layout.labels[widget].center)
+
+    assert backend.form.focus is widget
+    assert len(backend.read_submissions()) == 1  # the setup click on Submit, nothing more
+
+
+def test_payment_heading_label_has_no_control_and_blurs(backend):
+    backend.click(*backend.layout.controls[WidgetId.COMPANY_NAME].center)
+
+    backend.click(*backend.layout.labels[WidgetId.PAYMENT_TERMS].center)
+
+    assert backend.form.focus is None
+
+
+def test_label_click_reenters_the_form_after_tab_exit(backend):
+    backend.click(*backend.layout.controls[WidgetId.SUBMIT].center)
+    backend.key("Tab")
+    assert backend.form.tab_exited_form is True
+
+    backend.click(*backend.layout.labels[WidgetId.TAX_ID].center)
+
+    assert backend.form.focus is WidgetId.TAX_ID
+    assert backend.form.tab_exited_form is False
+
+
+def _tab_into_payment(backend):
+    for _ in range(TAB_ORDER.index(WidgetId.PAYMENT_TERMS) + 1):
+        backend.key("Tab")
+    assert backend.form.focus is WidgetId.PAYMENT_TERMS
+
+
+def test_space_checks_the_tab_focused_radio(backend):
+    _tab_into_payment(backend)
+
+    backend.key(" ")
+
+    assert backend.form.payment_terms_value == backend.form.payment_options[0]
+
+
+def test_arrow_up_from_an_unchecked_first_radio_wraps_to_the_last(backend):
+    _tab_into_payment(backend)
+
+    backend.key("ArrowUp")
+
+    last = len(backend.form.payment_options) - 1
+    assert backend.form.payment_focus_index == last
+    assert backend.form.payment_terms_value == backend.form.payment_options[last]
+
+
+def test_tab_enters_a_checked_group_on_the_checked_radio(backend):
+    backend.click(*backend.layout.payment_options[2].center)
+    backend.click(*backend.layout.controls[WidgetId.COMPANY_NAME].center)
+    assert backend.form.payment_focus_index is None
+
+    for _ in range(TAB_ORDER.index(WidgetId.PAYMENT_TERMS)):
+        backend.key("Tab")
+
+    assert backend.form.payment_focus_index == 2
+    backend.key("ArrowDown")
+    assert backend.form.payment_terms_value == backend.form.payment_options[0]
+
+
+def test_only_the_focused_radio_draws_a_focus_ring(backend):
+    _tab_into_payment(backend)
+    frame = backend.screenshot()
+
+    def ring_pixels(index):
+        rect = backend.layout.payment_options[index]
+        crop = frame[rect.y : rect.bottom, rect.x : rect.x + 30]
+        return int(np.all(crop == render.FOCUS_BORDER, axis=-1).sum())
+
+    assert ring_pixels(0) > 0
+    assert ring_pixels(1) == ring_pixels(2) == 0
+
+
+def test_checkpoint_v2_round_trips_radio_focus(backend):
+    _tab_into_payment(backend)
+    backend.key("ArrowDown")
+    checkpoint = backend.checkpoint()
+
+    restored = FakeBackend()
+    restored.restore(checkpoint)
+
+    assert json.loads(checkpoint)["schema_version"] == "pixelgym-core-fake-checkpoint-v2"
+    assert restored.form.payment_focus_index == 1
+    assert restored.checkpoint() == checkpoint
+    assert np.array_equal(restored.screenshot(), backend.screenshot())
+    assert backend.environment_resume_record(step_count=1).backend_identity.endswith("-v2")
+
+
+def test_checkpoint_v1_is_rejected_not_reinterpreted(backend):
+    value = json.loads(backend.checkpoint())
+    value["schema_version"] = "pixelgym-core-fake-checkpoint-v1"
+    del value["payment_focus_index"]
+
+    with pytest.raises(ValueError, match="unsupported core fake-backend checkpoint schema"):
+        FakeBackend().restore(json.dumps(value).encode())
+
+
+def test_checkpoint_with_inconsistent_radio_focus_is_rejected(backend):
+    value = json.loads(backend.checkpoint())
+    value["payment_focus_index"] = 1  # focus is not on the radio group
+
+    with pytest.raises(ValueError, match="radio focus is inconsistent"):
+        FakeBackend().restore(json.dumps(value).encode())
+
+
+@pytest.mark.parametrize(
+    ("field", "bad", "message"),
+    [
+        ("payment_focus_index", "1", "out of range"),
+        ("payment_focus_index", True, "out of range"),
+        ("payment_focus_index", 3, "out of range"),
+        ("payment_focus_index", -1, "out of range"),
+        ("tab_exited_form", "false", "must be a bool"),
+        ("tab_exited_form", 0, "must be a bool"),
+        ("focus", "not-a-widget", "not a form widget"),
+    ],
+)
+def test_malformed_v2_fields_are_rejected_before_live_state_changes(backend, field, bad, message):
+    _tab_into_payment(backend)
+    good = backend.checkpoint()
+    value = json.loads(good)
+    value[field] = bad
+
+    with pytest.raises(ValueError, match=message):
+        backend.restore(json.dumps(value).encode())
+
+    assert backend.checkpoint() == good
