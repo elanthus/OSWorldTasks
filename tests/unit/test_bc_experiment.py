@@ -268,7 +268,20 @@ def test_demo_cache_key_changes_when_producer_code_changes(tmp_path: Path) -> No
     before = bc.producer_fingerprint(tmp_path)
     assert bc.producer_fingerprint(tmp_path) == before
     (tmp_path / "pixelgym/tasks/vendor_form/render.py").write_text("WIDTH = 2\n")
-    assert bc.producer_fingerprint(tmp_path) != before
+    after_source = bc.producer_fingerprint(tmp_path)
+    assert after_source != before
+    fonts = tmp_path / "pixelgym/tasks/vendor_form/app/static/fonts"
+    fonts.mkdir(parents=True)
+    (fonts / "DejaVuSans.ttf").write_bytes(b"font-v1")
+    with_font = bc.producer_fingerprint(tmp_path)
+    assert with_font != after_source
+    (fonts / "DejaVuSans.ttf").write_bytes(b"font-v2")
+    assert bc.producer_fingerprint(tmp_path) != with_font
+    with_new_font = bc.producer_fingerprint(tmp_path)
+    cache = tmp_path / "pixelgym/tasks/vendor_form/__pycache__"
+    cache.mkdir()
+    (cache / "render.cpython-312.pyc").write_bytes(b"compiled")
+    assert bc.producer_fingerprint(tmp_path) == with_new_font  # bytecode is ignored
 
 
 def test_generated_demos_equal_the_episodes_in_seed_order() -> None:

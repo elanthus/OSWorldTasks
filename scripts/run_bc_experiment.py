@@ -165,12 +165,18 @@ DEMO_PRODUCERS = (
 
 
 def producer_fingerprint(root: Path = REPO_ROOT) -> str:
-    """SHA-256 over the demonstration-producing source files, in path order."""
+    """SHA-256 over the demonstration-producing files (source and fonts), in path order."""
 
     digest = hashlib.sha256()
     for entry in DEMO_PRODUCERS:
         path = root / entry
-        files = sorted(path.rglob("*.py")) if path.is_dir() else [path]
+        if path.is_dir():
+            # Every file, not only Python: the renderer also reads the bundled font files.
+            files = sorted(
+                f for f in path.rglob("*") if f.is_file() and "__pycache__" not in f.parts
+            )
+        else:
+            files = [path]
         for file in files:
             digest.update(file.relative_to(root).as_posix().encode() + b"\0")
             digest.update(file.read_bytes() + b"\0")
