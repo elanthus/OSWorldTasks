@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pytest
 
 from scripts import osworld_guest_check as driver
@@ -62,6 +63,68 @@ def _patch_parts(monkeypatch: pytest.MonkeyPatch, *, cases_close: dict[str, Any]
         "_run_oracle",
         lambda image, results, deadline: results.update(oracle={"skipped": "time budget"}),
     )
+
+
+class _Task:
+    def read_input_acknowledgements(self, env: Any) -> int:
+        return 0
+
+
+class _DesktopEnv:
+    def __init__(self, cache_dir: Path) -> None:
+        self.cache_dir = str(cache_dir)
+
+
+class _Backend:
+    """Writes park output where OSWorld's setup does: ``desktop-env/<task id>/``."""
+
+    def __init__(self, root: Path) -> None:
+        self.root = root
+        self._env: _DesktopEnv | None = None
+        self._task = _Task()
+
+    def reset(self, seed: int) -> None:
+        task_dir = self.root / "desktop-env" / f"vf-{seed}"
+        task_dir.mkdir(parents=True, exist_ok=True)
+        (task_dir / "pixelgym-vendor-form-pointer-park.json").write_text(
+            f'{{"parked":[{seed},758]}}\n', encoding="utf-8"
+        )
+        (task_dir / "pixelgym-vendor-form-pointer-park-error.txt").write_text("", encoding="utf-8")
+        self._env = _DesktopEnv(task_dir)
+
+
+class _GymEnv:
+    def __init__(self, backend: _Backend) -> None:
+        self.backend = backend
+
+    def reset(self, seed: int) -> tuple[Any, dict[str, Any]]:
+        self.backend.reset(seed)
+        return np.zeros((2, 2, 3), dtype=np.uint8), {}
+
+    def close(self) -> None:
+        pass
+
+
+def test_reset_records_the_park_output_from_the_per_task_setup_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The 2026-11-12 driver read desktop-env/ instead of desktop-env/<task id>/ and recorded
+    # every park report as missing although setup had read and checked it.
+    monkeypatch.setattr(driver, "OSWorldBackend", lambda config: _Backend(tmp_path))
+    monkeypatch.setattr(driver, "PixelGuiEnv", _GymEnv)
+    results: dict[str, Any] = {}
+
+    driver._run_resets(tmp_path / "guest.qcow2", results)
+
+    reports = [record["pointer_park"] for record in results["resets"]["records"]]
+    assert [report["pointer-park.json"] for report in reports] == [
+        f'{{"parked":[{seed},758]}}\n' for seed in driver.RESET_SEEDS
+    ]
+    assert all(report["pointer-park-error.txt"] == "" for report in reports)
+
+
+def test_park_report_without_a_desktop_env_records_missing_output() -> None:
+    assert driver._park_report(None) == {"pointer-park.json": None, "pointer-park-error.txt": None}
 
 
 @pytest.mark.parametrize(

@@ -158,9 +158,22 @@ def _provenance(guest_image: Path) -> dict[str, Any]:
     }
 
 
-def _park_report(config: OSWorldBackendConfig) -> dict[str, str | None]:
-    directory = config.cache_dir / "desktop-env"
+def _setup_cache_dir(backend: OSWorldBackend) -> Path | None:
+    """The directory setup wrote its output to: OSWorld's per-task ``DesktopEnv.cache_dir``.
+
+    OSWorld joins the configured ``desktop-env`` directory with the task id, so setup output lands
+    in ``desktop-env/<task id>/``, not ``desktop-env/``. The 2026-11-12 run read the latter and
+    recorded every park report as missing.
+    """
+
+    env = backend._env
+    return None if env is None else Path(env.cache_dir)
+
+
+def _park_report(directory: Path | None) -> dict[str, str | None]:
     report: dict[str, str | None] = {}
+    if directory is None:
+        return {"pointer-park.json": None, "pointer-park-error.txt": None}
     for name in ("pointer-park.json", "pointer-park-error.txt"):
         path = directory / f"pixelgym-vendor-form-{name}"
         report[name] = path.read_text(encoding="utf-8") if path.is_file() else None
@@ -185,7 +198,7 @@ def _run_resets(guest_image: Path, results: dict[str, Any]) -> None:
                         "acknowledged_after_reset": int(
                             task.read_input_acknowledgements(backend._env)
                         ),
-                        "pointer_park": _park_report(config),
+                        "pointer_park": _park_report(_setup_cache_dir(backend)),
                         "initial_frame_sha256": _digest(observation),
                         "seconds": round(time.monotonic() - started, 1),
                     }
@@ -196,7 +209,7 @@ def _run_resets(guest_image: Path, results: dict[str, Any]) -> None:
                         "seed": seed,
                         "reset_returned": False,
                         "error": traceback.format_exc(),
-                        "pointer_park": _park_report(config),
+                        "pointer_park": _park_report(_setup_cache_dir(backend)),
                         "seconds": round(time.monotonic() - started, 1),
                     }
                 )
