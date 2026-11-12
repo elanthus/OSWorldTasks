@@ -292,8 +292,9 @@ def _tree_at_revision(revision: str, destination: Path) -> Path:
             capture_output=True,
             check=True,
         ).stdout
-    except (OSError, subprocess.CalledProcessError):
-        pytest.skip(f"git revision {revision} is not available")
+    except (OSError, subprocess.CalledProcessError) as error:
+        # The unit-suite CI job clones full history, so a missing revision is a real failure.
+        pytest.fail(f"git revision {revision} is not available: {error}")
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
         tar.extractall(destination, filter="data")
     return destination

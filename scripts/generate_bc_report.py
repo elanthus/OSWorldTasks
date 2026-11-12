@@ -244,12 +244,29 @@ def render(results: dict[str, Any]) -> str:
                 "- An episode needs about 110 consecutive correct actions; per-step accuracy p "
                 "gives roughly p^110 episode success, so small per-step gaps erase episode success."
             ),
-            "- Fixed hyperparameters, two training seeds per point, one host; no search was run.",
+            (
+                f"- Fixed hyperparameters, {_seeds_per_point(results)} per point, one host; "
+                "no search was run."
+            ),
             "- In-process fake backend only; not evidence about the browser or OSWorld path.",
             "",
         ]
     )
     return "\n".join(lines)
+
+
+def _seeds_per_point(results: dict[str, Any]) -> str:
+    """How many training seeds each demonstration count was run with, read from the runs."""
+
+    seeds: dict[int, set[int]] = {}
+    for run in results["runs"]:
+        seeds.setdefault(run["demo_episodes"], set()).add(run["training_seed"])
+    counts = sorted({len(group) for group in seeds.values()})
+    words = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five"}
+    if len(counts) == 1:
+        count = counts[0]
+        return f"{words.get(count, str(count))} training seed{'s' if count != 1 else ''}"
+    return f"{counts[0]} to {counts[-1]} training seeds"
 
 
 def main(argv: list[str] | None = None) -> int:

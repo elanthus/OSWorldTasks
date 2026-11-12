@@ -2,16 +2,20 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
 import pytest
 
+from pixelgym.backends.fake import FakeBackend
+from pixelgym.env import PixelGuiEnv
 from scripts.generate_throughput_report import render
 from scripts.measure_fake_throughput import (
     SCHEMA_VERSION,
     build_evidence,
     byte_identity,
+    frame_digests,
     measure,
     time_steps,
 )
@@ -45,7 +49,7 @@ def test_evidence_records_every_repeat_host_and_revision(tiny_evidence: dict) ->
     assert tiny_evidence["vector"]["async"][0]["env_steps"] == 6
 
 
-def test_byte_identity_pass_compares_every_frame_including_resets(tiny_evidence: dict) -> None:
+def test_byte_identity_pass_compares_the_first_reset_and_every_step(tiny_evidence: dict) -> None:
     rows = {row["workload"]: row for row in tiny_evidence["byte_identity"]}
     assert rows["random"]["frames_compared"] == 41
     assert rows["golden"]["frames_compared"] == 41
@@ -70,6 +74,22 @@ def test_byte_identity_detects_a_renderer_difference(monkeypatch: pytest.MonkeyP
 
     assert row["mismatched_frames"] == row["frames_compared"] == 6
     assert row["first_mismatch_index"] == 0
+
+
+def test_identity_frames_include_the_reset_after_an_episode_ends() -> None:
+    # A random policy never submits a correct form, so the episode truncates at step 200.
+    digests = frame_digests("random", "static_layer", 200)
+    assert len(digests) == 1 + 200 + 1
+    observation, _info = PixelGuiEnv(FakeBackend()).reset(seed=1)
+    assert digests[-1] == hashlib.sha256(observation.tobytes()).hexdigest()
+
+
+def test_every_golden_episode_replays_the_recorded_trajectory_on_seed_7() -> None:
+    episode = 1 + 110  # reset frame plus the fixture's 110 steps, the last of which succeeds
+    digests = frame_digests("golden", "static_layer", 220)
+    assert len(digests) == 2 * episode + 1
+    assert digests[:episode] == digests[episode : 2 * episode]
+    assert digests[-1] == digests[0]
 
 
 def test_golden_workload_replays_the_seed_7_fixture() -> None:

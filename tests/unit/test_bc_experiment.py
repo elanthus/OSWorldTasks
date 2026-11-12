@@ -228,3 +228,56 @@ def test_checked_in_closed_loop_fields_equal_the_untouched_form_score() -> None:
             sum(recorded) / len(recorded)
         )
         assert {episode["seed"]: episode["fields_correct"] for episode in episodes} == untouched
+
+
+@pytest.mark.parametrize(
+    ("seeds", "expected"),
+    [
+        ((0,), "one training seed per point"),
+        ((0, 1), "two training seeds per point"),
+        ((0, 1, 2), "three training seeds per point"),
+    ],
+)
+def test_report_states_the_training_seed_count_from_the_runs(
+    seeds: tuple[int, ...], expected: str
+) -> None:
+    results = _fake_results()
+    template = results["runs"][0]
+    results["runs"] = [
+        {**template, "demo_episodes": n, "training_seed": s} for n in (4, 16) for s in seeds
+    ]
+    assert expected in report.render(results)
+
+
+@pytest.mark.parametrize("count", [0, len(bc.TRAIN_POOL) + 1])
+def test_cli_rejects_demo_counts_outside_the_training_pool(count: int) -> None:
+    with pytest.raises(SystemExit) as raised:
+        bc.main(["--demo-counts", "4", str(count)])
+    assert raised.value.code == 2
+
+
+def test_demo_cache_key_changes_when_producer_code_changes(tmp_path: Path) -> None:
+    for entry in bc.DEMO_PRODUCERS:
+        target = tmp_path / entry
+        if target.suffix == ".py":
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(f"# {entry}\n")
+        else:
+            target.mkdir(parents=True)
+            (target / "render.py").write_text("WIDTH = 1\n")
+    before = bc.producer_fingerprint(tmp_path)
+    assert bc.producer_fingerprint(tmp_path) == before
+    (tmp_path / "pixelgym/tasks/vendor_form/render.py").write_text("WIDTH = 2\n")
+    assert bc.producer_fingerprint(tmp_path) != before
+
+
+def test_generated_demos_equal_the_episodes_in_seed_order() -> None:
+    seeds = [3, 5]
+    demos = bc.generate_demos(seeds, processes=1)
+    episodes = [bc.demo_episode(seed) for seed in seeds]
+    for name in episodes[0]:
+        assert np.array_equal(getattr(demos, name), np.concatenate([e[name] for e in episodes]))
+    assert bc.subset(demos, seeds) is demos
+    partial = bc.subset(demos, [5])
+    assert partial is not demos and set(partial.seed.tolist()) == {5}
+    assert np.array_equal(partial.frames, episodes[1]["frames"])

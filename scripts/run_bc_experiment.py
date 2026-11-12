@@ -133,14 +133,53 @@ def demo_episode(seed: int) -> dict[str, np.ndarray]:
 def generate_demos(seeds: Sequence[int], *, processes: int) -> Demos:
     context = multiprocessing.get_context("spawn")
     with context.Pool(processes) as pool:
-        episodes = pool.map(demo_episode, list(seeds))
-    return Demos(
-        **{name: np.concatenate([episode[name] for episode in episodes]) for name in episodes[0]}
-    )
+        episodes: list[dict[str, np.ndarray] | None] = list(pool.map(demo_episode, list(seeds)))
+    first = episodes[0]
+    assert first is not None
+    total = sum(len(episode["action_type"]) for episode in episodes if episode is not None)
+    stacked = {
+        name: np.empty((total, *value.shape[1:]), dtype=value.dtype)
+        for name, value in first.items()
+    }
+    # Copy each episode into place and drop it, so the frames are held about once, not twice.
+    offset = 0
+    for index, episode in enumerate(episodes):
+        assert episode is not None
+        length = len(episode["action_type"])
+        for name, value in episode.items():
+            stacked[name][offset : offset + length] = value
+        offset += length
+        episodes[index] = None
+    return Demos(**stacked)
+
+
+# Code whose change alters the demonstrations; its contents are part of the cache key.
+DEMO_PRODUCERS = (
+    "pixelgym/actions.py",
+    "pixelgym/env.py",
+    "pixelgym/backends/fake.py",
+    "pixelgym/tasks/vendor_form",
+    "tests/support/golden_solver.py",
+    "scripts/run_bc_experiment.py",
+)
+
+
+def producer_fingerprint(root: Path = REPO_ROOT) -> str:
+    """SHA-256 over the demonstration-producing source files, in path order."""
+
+    digest = hashlib.sha256()
+    for entry in DEMO_PRODUCERS:
+        path = root / entry
+        files = sorted(path.rglob("*.py")) if path.is_dir() else [path]
+        for file in files:
+            digest.update(file.relative_to(root).as_posix().encode() + b"\0")
+            digest.update(file.read_bytes() + b"\0")
+    return digest.hexdigest()
 
 
 def cached_demos(name: str, seeds: Sequence[int], *, processes: int) -> Demos:
-    digest = hashlib.sha256(json.dumps([name, list(seeds), SCHEMA_VERSION]).encode()).hexdigest()
+    key = [name, list(seeds), SCHEMA_VERSION, producer_fingerprint()]
+    digest = hashlib.sha256(json.dumps(key).encode()).hexdigest()
     path = CACHE_DIR / f"{name}-{digest[:16]}.npz"
     if path.is_file():
         with np.load(path) as stored:
@@ -153,6 +192,8 @@ def cached_demos(name: str, seeds: Sequence[int], *, processes: int) -> Demos:
 
 def subset(demos: Demos, seeds: Sequence[int]) -> Demos:
     mask = np.isin(demos.seed, np.asarray(seeds))
+    if mask.all():
+        return demos  # every seed requested: reuse the arrays instead of copying them
     return Demos(**{name: value[mask] for name, value in demos.__dict__.items()})
 
 
@@ -482,6 +523,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--eval-every", type=int, default=500)
     parser.add_argument("--processes", type=int, default=8)
     args = parser.parse_args(argv)
+    invalid = [count for count in args.demo_counts if not 1 <= count <= len(TRAIN_POOL)]
+    if invalid:
+        parser.error(f"--demo-counts must be between 1 and {len(TRAIN_POOL)}; got {invalid}")
     results = run(args)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(results, indent=2, sort_keys=True) + "\n", encoding="utf-8")

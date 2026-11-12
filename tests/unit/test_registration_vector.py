@@ -4,14 +4,16 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import gymnasium as gym
 import numpy as np
 import pytest
 from gymnasium.utils.env_checker import check_env
+from gymnasium.wrappers import TimeLimit
 
 from pixelgym.env import PixelGuiEnv
-from pixelgym.registration import VENDOR_FORM_ID, register_envs
+from pixelgym.registration import VENDOR_FORM_ID, make_vendor_form_env, register_envs
 
 _GOLDEN = Path(__file__).parent / "fixtures/golden_trajectory_seed7.json"
 _NOOP = {"action_type": 0, "x": 0, "y": 0, "key": 0}
@@ -63,7 +65,7 @@ def test_sync_vector_reset_matches_single_environment_resets() -> None:
 def test_sync_vector_random_steps_truncate_and_autoreset_each_environment() -> None:
     vector = gym.vector.SyncVectorEnv(
         [
-            lambda: gym.make(VENDOR_FORM_ID, width=256, height=192, max_episode_steps=5)
+            lambda: gym.make(VENDOR_FORM_ID, width=256, height=192, episode_step_limit=5)
             for _ in range(4)
         ]
     )
@@ -84,6 +86,36 @@ def test_sync_vector_random_steps_truncate_and_autoreset_each_environment() -> N
         assert truncations.tolist() == [2, 2, 2, 2]
     finally:
         vector.close()
+
+
+def test_episode_step_limit_sets_the_environment_limit_without_a_time_limit_wrapper() -> None:
+    env = gym.make(VENDOR_FORM_ID, width=64, height=48, episode_step_limit=5)
+    try:
+        layer: Any = env
+        while isinstance(layer, gym.Wrapper):
+            assert not isinstance(layer, TimeLimit)
+            layer = layer.env
+        assert layer._max_episode_steps == 5
+        env.reset(seed=1)
+        truncated = [env.step(_NOOP)[3] for _ in range(5)]
+        assert truncated == [False, False, False, False, True]
+    finally:
+        env.close()
+
+
+@pytest.mark.parametrize("mode", ["sync", "async"])
+def test_make_vec_builds_the_registered_environment(mode: str) -> None:
+    vector = gym.make_vec(VENDOR_FORM_ID, num_envs=2, vectorization_mode=mode, width=64, height=48)
+    try:
+        observations, _info = vector.reset(seed=[7, 8])
+        assert observations.shape == (2, 48, 64, 3)
+    finally:
+        vector.close()
+
+
+def test_factory_rejects_a_render_mode() -> None:
+    with pytest.raises(ValueError, match="no render modes"):
+        make_vendor_form_env(render_mode="rgb_array")
 
 
 def test_sync_vector_pays_reward_only_to_the_environment_that_submits() -> None:

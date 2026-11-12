@@ -9,8 +9,9 @@ Workloads, each timed with ``time.perf_counter`` and repeated:
 
 - ``random``: `PixelGuiEnv.step` with ``action_space.sample()`` (seeded). A third of these
   actions are NOOPs, which reuse the cached frame, so this is not a render-every-step number.
-- ``golden``: the seed-7 golden trajectory replayed in a loop. Almost every step types a
-  character, so every step renders; this is the workload closest to scripted demonstrations.
+- ``golden``: the seed-7 golden trajectory replayed in a loop, each episode reset to seed 7 and
+  started from the fixture's first action. Almost every step types a character, so every step
+  renders; this is the workload closest to scripted demonstrations.
 - ``reset``: `PixelGuiEnv.reset` over distinct seeds, reported as a latency distribution.
 - ``sync_vector`` / ``async_vector``: Gymnasium 0.28 ``SyncVectorEnv`` and ``AsyncVectorEnv``
   over ``PixelGym/VendorForm-v0`` with a random policy, as aggregate environment steps per second.
@@ -18,7 +19,8 @@ Workloads, each timed with ``time.perf_counter`` and repeated:
 ``random``, ``golden``, and ``reset`` are measured with the current static-layer renderer and
 with the frozen single-pass reference (``tests/support/reference_render.py``), so the speed-up
 is measured on the same host in the same run. A separate untimed pass replays the same seeded
-action streams through both renderers and compares every frame's SHA-256, which is the evidence
+action streams through both renderers and compares the SHA-256 of every frame, each reset's
+included, which is the evidence
 that the speed-up kept frames byte-identical. Numbers describe this host only.
 """
 
@@ -86,33 +88,40 @@ def _random_stream(env: PixelGuiEnv, seed: int) -> Iterator[dict[str, Any]]:
         yield env.action_space.sample()
 
 
-def _golden_stream() -> Iterator[dict[str, int]]:
-    actions = _golden_actions()
-    while True:
-        yield from actions
+def _drive(env: PixelGuiEnv, workload: str, steps: int, *, seed: int) -> Iterator[Any]:
+    """Step `steps` times, yielding every observation: each reset's and each step's.
 
+    ``random`` continues one seeded action stream and resets with seeds ``seed + episode``.
+    ``golden`` resets every episode to the fixture's seed and replays the fixture from its first
+    action, so each episode is the recorded trajectory.
+    """
 
-def _drive(
-    env: PixelGuiEnv, actions: Iterator[dict[str, Any]], steps: int, *, seed: int
-) -> Iterator[Any]:
-    """Step `steps` times, resetting (with derived seeds) whenever an episode ends."""
-
+    if workload == "random":
+        random_actions = _random_stream(env, seed)
+    elif workload != "golden":
+        raise ValueError(f"unknown workload {workload!r}")
+    golden = _golden_actions()
     episode = 0
-    env.reset(seed=seed)
+
+    def start() -> tuple[Any, Iterator[dict[str, Any]]]:
+        if workload == "golden":
+            observation, _info = env.reset(seed=seed)
+            return observation, iter(golden)
+        observation, _info = env.reset(seed=seed + episode)
+        return observation, random_actions
+
+    observation, actions = start()
+    yield observation
     for _ in range(steps):
-        observation, _reward, terminated, truncated, _info = env.step(next(actions))
+        action = next(actions, None)
+        if action is None:
+            raise RuntimeError("the golden fixture ended before its episode did")
+        observation, _reward, terminated, truncated, _info = env.step(action)
         yield observation
         if terminated or truncated:
             episode += 1
-            env.reset(seed=seed + episode)
-
-
-def _stream(env: PixelGuiEnv, workload: str, seed: int) -> Iterator[dict[str, Any]]:
-    if workload == "random":
-        return _random_stream(env, seed)
-    if workload == "golden":
-        return _golden_stream()
-    raise ValueError(f"unknown workload {workload!r}")
+            observation, actions = start()
+            yield observation
 
 
 def _seed_for(workload: str) -> int:
@@ -124,7 +133,7 @@ def time_steps(workload: str, renderer: str, steps: int) -> dict[str, Any]:
     env = PixelGuiEnv(_backend(renderer))
     seed = _seed_for(workload)
     started = time.perf_counter()
-    for _observation in _drive(env, _stream(env, workload, seed), steps, seed=seed):
+    for _observation in _drive(env, workload, steps, seed=seed):
         pass
     seconds = time.perf_counter() - started
     env.close()
@@ -177,12 +186,10 @@ def time_vector(kind: str, num_envs: int, steps: int) -> dict[str, Any]:
 def frame_digests(workload: str, renderer: str, steps: int) -> list[str]:
     env = PixelGuiEnv(_backend(renderer))
     seed = _seed_for(workload)
-    observation, _info = env.reset(seed=seed)
-    digests = [hashlib.sha256(observation.tobytes()).hexdigest()]
-    digests.extend(
+    digests = [
         hashlib.sha256(frame.tobytes()).hexdigest()
-        for frame in _drive(env, _stream(env, workload, seed), steps, seed=seed)
-    )
+        for frame in _drive(env, workload, steps, seed=seed)
+    ]
     env.close()
     return digests
 

@@ -14,7 +14,9 @@ are imported when an environment is made.
 
 The episode step limit is the environment's own (`PixelGuiEnv` sets ``truncated``), so the ID
 registers no extra `TimeLimit` wrapper: a second limit could truncate an episode the environment
-had not truncated.
+had not truncated. Set the limit with ``episode_step_limit``. ``gym.make`` consumes a
+``max_episode_steps`` argument itself and wraps the environment in `TimeLimit` instead of passing
+it here, so that name is not the factory's.
 """
 
 from __future__ import annotations
@@ -30,17 +32,25 @@ def make_vendor_form_env(
     *,
     width: int = 1024,
     height: int = 768,
-    max_episode_steps: int = 200,
+    episode_step_limit: int = 200,
+    render_mode: str | None = None,
     **env_kwargs: Any,
 ) -> Any:
-    """Entry point for `VENDOR_FORM_ID`: a `PixelGuiEnv` over a fresh `FakeBackend`."""
+    """Entry point for `VENDOR_FORM_ID`: a `PixelGuiEnv` over a fresh `FakeBackend`.
+
+    ``gym.make_vec`` always passes ``render_mode``, ``None`` included. The environment has no
+    render modes, so ``None`` is accepted and anything else is rejected.
+    """
+
+    if render_mode is not None:
+        raise ValueError(f"{VENDOR_FORM_ID} has no render modes; got render_mode={render_mode!r}")
 
     from pixelgym.backends.fake import FakeBackend
     from pixelgym.env import PixelGuiEnv
 
     return PixelGuiEnv(
         FakeBackend(width=width, height=height),
-        max_episode_steps=max_episode_steps,
+        max_episode_steps=episode_step_limit,
         **env_kwargs,
     )
 
