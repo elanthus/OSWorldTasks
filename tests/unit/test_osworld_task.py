@@ -11,13 +11,18 @@ from pathlib import Path
 
 import pytest
 
-from pixelgym.tasks.vendor_form import browser_contract, generator
+from pixelgym.tasks.vendor_form import browser_contract, generator, osworld_task
 from pixelgym.tasks.vendor_form.browser_contract import (
     ChromiumLaunchPath,
     build_chromium_argv,
     chromium_renderer_contract,
 )
-from pixelgym.tasks.vendor_form.osworld_task import build_guest_bundle, create_osworld_task
+from pixelgym.tasks.vendor_form.osworld_task import (
+    SETUP_ACKNOWLEDGED_INPUTS,
+    build_guest_bundle,
+    create_osworld_task,
+)
+from tests.support.osworld_setup_model import SetupModel, install_fake_osworld
 
 
 class _FakeBaseTask(dict):
@@ -196,7 +201,9 @@ class _SetupController:
         self.commands.append((command, kwargs))
         if stdout:
             value = (
-                json.dumps(self.page_ready)
+                json.dumps({"parked": [self.screen_width - 10, self.screen_height - 10]})
+                if "pointer-park" in stdout
+                else json.dumps(self.page_ready)
                 if "page-ready" in stdout
                 else "DISPLAY_SIZE_READY\n"
                 if "display-size" in stdout
@@ -416,3 +423,67 @@ def test_custom_task_setup_rejects_unexpected_reset_field(monkeypatch, tmp_path)
 
     with pytest.raises(RuntimeError, match="response mismatch"):
         task.setup(controller)
+
+
+# -- Guest setup and the page's acknowledgement count ---------------------------------------------
+
+_PRE_FIX_POINTER_PARK = (
+    "import pyautogui; pyautogui.click(100,150); "
+    "pyautogui.moveTo(__PIXELGYM_PARK_X__,__PIXELGYM_PARK_Y__,duration=0)"
+)
+
+
+def test_full_setup_sequence_leaves_exactly_the_fixed_acknowledgement_count(monkeypatch, tmp_path):
+    install_fake_osworld(monkeypatch)
+    task, record = create_osworld_task(7, cache_dir=tmp_path)
+    guest = SetupModel(tmp_path, record)
+
+    task.setup(guest)
+
+    assert guest.page_loaded
+    assert guest.page_acknowledged == SETUP_ACKNOWLEDGED_INPUTS == 0
+    park = [command for command, _kwargs in guest.commands if "pyautogui" in command[-1]]
+    assert len(park) == 1
+    assert park[0][0] == "python"  # the interpreter OSWorld's own pyautogui actions use
+    assert "pyautogui.click" not in park[0][-1]
+    assert guest.pointer == (guest.screen_width - 10, guest.screen_height - 10)
+
+
+def test_negative_control_the_pre_fix_park_click_is_acknowledged_by_the_page(monkeypatch, tmp_path):
+    """The model counts the old park program's click, so the test above can fail."""
+
+    install_fake_osworld(monkeypatch)
+    monkeypatch.setitem(osworld_task._GUEST_PROGRAMS, "pointer_park", _PRE_FIX_POINTER_PARK)
+    task, record = create_osworld_task(7, cache_dir=tmp_path)
+    guest = SetupModel(tmp_path, record)
+
+    with pytest.raises(RuntimeError, match="guest pointer park did not report"):
+        task.setup(guest)  # the old program printed nothing, which setup now rejects
+    assert guest.page_acknowledged == 1 != SETUP_ACKNOWLEDGED_INPUTS
+
+
+@pytest.mark.parametrize(
+    ("reply", "error"),
+    [("", ""), ('{"parked":[0,0]}', ""), ("", "pyautogui.FailSafeException: corner")],
+)
+def test_setup_fails_closed_when_the_pointer_park_does_not_report_its_position(
+    monkeypatch, tmp_path, reply, error
+):
+    install_fake_osworld(monkeypatch)
+    task, record = create_osworld_task(7, cache_dir=tmp_path)
+    guest = SetupModel(tmp_path, record)
+    original = guest.execute
+
+    def execute(command, *, stdout="", stderr="", **kwargs):
+        if "pyautogui" not in command[-1]:
+            return original(command, stdout=stdout, stderr=stderr, **kwargs)
+        (tmp_path / stdout).write_text(reply, encoding="utf-8")
+        (tmp_path / stderr).write_text(error, encoding="utf-8")
+        return None
+
+    monkeypatch.setattr(guest, "execute", execute)
+
+    with pytest.raises(RuntimeError, match="guest pointer park did not report") as caught:
+        task.setup(guest)
+    if error:
+        assert "FailSafeException" in str(caught.value)

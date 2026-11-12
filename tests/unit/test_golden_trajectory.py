@@ -1,7 +1,7 @@
 """Replay of the checked-in seed-7 golden trajectory.
 
 The trajectory is a frozen list of literal `NOOP`/`CLICK`/`KEY` dictionaries in
-`fixtures/golden_trajectory_seed7.json`, together with the
+`fixtures/golden_trajectory_seed7_v2.json`, together with the
 `(step, action_type, reward, terminated, truncated)` timeline it is required to
 produce. Replay is deliberately blind: no replay test reads
 `backend.current_fields()`, `backend.form`, `backend.layout`, or
@@ -307,6 +307,6 @@ def test_the_golden_fixture_still_matches_what_the_solver_produces(golden_trajec
     regenerated = build_golden_actions(backend)
 
     assert golden_trajectory["actions"] == regenerated, (
-        "tests/unit/fixtures/golden_trajectory_seed7.json is stale; regenerate it with "
+        "tests/unit/fixtures/golden_trajectory_seed7_v2.json is stale; regenerate it with "
         "`python scripts/golden_trajectory.py check`, which prints the diff and the recipe"
     )

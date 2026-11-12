@@ -43,7 +43,7 @@ pytestmark = [
     ),
 ]
 
-_GOLDEN = Path(__file__).resolve().parents[1] / "unit/fixtures/golden_trajectory_seed7.json"
+_GOLDEN = Path(__file__).resolve().parents[1] / "unit/fixtures/golden_trajectory_seed7_v2.json"
 
 
 def _recording_backend(page: Any, base_url: str, **kwargs: Any) -> Any:

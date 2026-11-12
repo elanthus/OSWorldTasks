@@ -7,10 +7,13 @@ the stylesheet bundles -- so the fake frame is a recognizable stand-in for a
 real screenshot rather than an unrelated picture.
 
 Determinism (AGENTS.md invariant 10) comes from what is *absent* as much as
-from what is drawn: no clock, no animation, no transition, and no text caret --
-focus is shown as a static accent border, so a frame captured while a text
-field is focused is identical every time. The only inputs are the task record
-and the form state.
+from what is drawn: no clock, no animation, no transition, and no blinking.
+Focus is shown as a static accent border, and the focused text field draws a
+static, non-blinking caret immediately after the last character of its value
+(`RENDERER_VERSION` v2). The caret is what makes trailing spaces visible: a
+space has no ink, so without it "Acme" and "Acme " rendered identically and the
+frame was not a function of the form state. The only inputs are the task
+record and the form state.
 
 Scope note: this is bit-for-bit reproducible for a given Pillow build, which is
 what the fake path needs. It is *not* evidence about the real browser path --
@@ -39,6 +42,14 @@ from pixelgym.tasks.vendor_form.ui import (
     WidgetId,
 )
 
+RENDERER_VERSION = "pixelgym-vendor-form-fake-renderer-v2"
+"""Version of the fake frame content.
+
+v1 drew no caret, so a trailing space in a text field was invisible. v2 draws a static caret at
+the end of the focused text field's value. Any stored frame digest (checkpoint resume records,
+golden replays, throughput byte-identity hashes) is only comparable within one version.
+"""
+
 FONT_DIR = Path(__file__).parent / "app" / "static" / "fonts"
 REGULAR_FONT = FONT_DIR / "DejaVuSans.ttf"
 BOLD_FONT = FONT_DIR / "DejaVuSans-Bold.ttf"
@@ -53,7 +64,7 @@ TEXT_COLOR = (28, 30, 33)  # #1c1e21
 BUTTON_BG = (60, 140, 95)  # #3c8c5f
 BUTTON_BORDER = (47, 111, 79)  # #2f6f4f
 BUTTON_TEXT = (255, 255, 255)
-# Not in style.css: the fake makes focus visible without a caret.
+# Not in style.css: the fake marks the focused control with an accent border.
 FOCUS_BORDER = (47, 111, 159)
 PLACEHOLDER_TEXT = (130, 138, 150)
 
@@ -61,6 +72,8 @@ _BASE_FONT_SIZE = 14
 _HEADING_FONT_SIZE = 16
 _TEXT_INSET = 8  # design px; matches the 6px/8px control padding in style.css
 _MAX_RENDERED_CHARS = 200  # cap measurement work on absurdly long typed strings
+_CARET_WIDTH = 1  # design px, as #pixelgym-caret in style.css
+_CARET_HEIGHT = 16  # design px: the 16px content line of a 30px input with 6px padding
 
 
 @lru_cache(maxsize=32)
@@ -137,6 +150,29 @@ class _Painter:
 
     def label(self, rect: Rect, text: str) -> None:
         self.text_in(rect, text, font=self.bold)
+
+    def text_with_caret(self, rect: Rect, text: str) -> None:
+        """Draw a focused text input's value and a static caret right after its last character.
+
+        The caret's x position is the advance width of the visible text, which counts trailing
+        spaces, so every typed character -- including a space -- moves it. Room for the caret is
+        reserved before the value is trimmed to the field, so the caret is never clipped.
+        """
+        caret_width = _scaled(_CARET_WIDTH, self.scale)
+        available = max(1, rect.width - 2 * self.inset - caret_width)
+        shown = _fit(text, self.body, available, keep_tail=True)
+        _, center_y = rect.center
+        left = rect.x + self.inset
+        if shown:
+            self.draw.text((left, center_y), shown, font=self.body, fill=TEXT_COLOR, anchor="lm")
+        caret_x = min(left + round(self.body.getlength(shown)), rect.right - 1 - caret_width)
+        caret_x = max(rect.x, caret_x)
+        height = _scaled(_CARET_HEIGHT, self.scale)
+        top = max(rect.y, center_y - height // 2)
+        bottom = min(rect.bottom - 1, top + height - 1)
+        self.draw.rectangle(
+            (caret_x, top, caret_x + caret_width - 1, max(top, bottom)), fill=TEXT_COLOR
+        )
 
 
 def render_static(task_record: Mapping[str, Any], layout: Layout) -> Image.Image | None:
@@ -281,8 +317,12 @@ def _render_text_control(
     painter: _Painter, state: FormState, layout: Layout, widget: WidgetId
 ) -> None:
     rect = layout.controls[widget]
-    painter.box(rect, fill=FORM_PANEL_BG, outline=CONTROL_BORDER, focused=state.focus is widget)
-    painter.text_in(rect, state.text[widget], font=painter.body, keep_tail=True)
+    focused = state.focus is widget
+    painter.box(rect, fill=FORM_PANEL_BG, outline=CONTROL_BORDER, focused=focused)
+    if focused:
+        painter.text_with_caret(rect, state.text[widget])
+    else:
+        painter.text_in(rect, state.text[widget], font=painter.body, keep_tail=True)
 
 
 def _render_country(painter: _Painter, state: FormState, layout: Layout) -> None:

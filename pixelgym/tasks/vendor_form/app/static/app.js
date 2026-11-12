@@ -136,13 +136,16 @@
   // pixels, this page pins it to the shared rule instead:
   // - Tab walks TAB_ORDER; Tab from Submit leaves the form and a further Tab does nothing until
   //   a control gains focus again. No native sequential-navigation starting point applies.
-  // - Text inputs keep one collapsed caret at the end of the value (the caret is transparent,
-  //   so a movable caret would be hidden state). Arrow keys are inert in text inputs.
+  // - Text inputs keep one collapsed caret at the end of the value (the native caret is
+  //   transparent, so a movable caret would be hidden state). Arrow keys are inert in text inputs.
+  // - The focused text input shows a static, non-blinking caret element right after the last
+  //   character, so a trailing space is visible (v3). See updateCaret.
   // - The country select handles ArrowUp/ArrowDown (clamped, never back onto the placeholder),
   //   ignores ArrowLeft/ArrowRight, and treats each printable key as a fresh first-letter
-  //   search. Native arrows open the popup on macOS and native type-ahead is timed.
+  //   search. Native arrows open the popup on macOS and native type-ahead is timed. Enter and
+  //   Space are inert on the select (v3): natively they open the popup on some platforms.
   // Keep this text synchronized with ui.INPUT_CONTRACT_VERSION.
-  var INPUT_CONTRACT_VERSION = "pixelgym-vendor-form-input-v2";
+  var INPUT_CONTRACT_VERSION = "pixelgym-vendor-form-input-v3";
   var TAB_ORDER = [
     "company_name",
     "contact_email",
@@ -164,6 +167,34 @@
     if (element.selectionStart !== end || element.selectionEnd !== end) {
       element.setSelectionRange(end, end);
     }
+  }
+
+  // The caret is an ordinary absolutely positioned element with no animation, transition, or
+  // timer. It moves only when this function runs, which happens on focus changes and input
+  // events, so between inputs it is exactly as static as the rest of the page (invariant 10).
+  var CARET_HEIGHT = 16;
+
+  function updateCaret() {
+    var caret = document.getElementById("pixelgym-caret");
+    var active = document.activeElement;
+    if (!isTextInput(active)) {
+      caret.style.display = "none";
+      return;
+    }
+    var mirror = document.getElementById("pixelgym-caret-mirror");
+    mirror.textContent = active.value;
+    var textWidth = mirror.getBoundingClientRect().width;
+    var box = active.getBoundingClientRect();
+    var style = window.getComputedStyle(active);
+    var contentLeft = box.left + active.clientLeft + parseFloat(style.paddingLeft);
+    var contentRight =
+      box.left + active.clientLeft + active.clientWidth - parseFloat(style.paddingRight);
+    // A value wider than the field scrolls so its end stays in view; the caret then sits at the
+    // right edge of the content box. Whole pixels keep the 1px caret free of anti-aliasing.
+    var x = Math.round(Math.min(contentLeft + textWidth, contentRight - 1));
+    caret.style.left = x + "px";
+    caret.style.top = Math.round(box.top + (box.height - CARET_HEIGHT) / 2) + "px";
+    caret.style.display = "block";
   }
 
   function tabStopOf(element) {
@@ -239,7 +270,9 @@
       return;
     }
     if (target.id === "country") {
-      if (event.key.indexOf("Arrow") === 0) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+      } else if (event.key.indexOf("Arrow") === 0) {
         event.preventDefault();
         moveCountry(target, event.key);
       } else if (event.key.length === 1 && event.key !== " ") {
@@ -271,9 +304,12 @@
         if (isTextInput(event.target)) {
           pinCaretToEnd(event.target);
         }
+        updateCaret();
       },
       true,
     );
+    document.addEventListener("focusout", updateCaret, true);
+    document.addEventListener("input", updateCaret, true);
     document.addEventListener("selectionchange", function () {
       if (isTextInput(document.activeElement)) {
         pinCaretToEnd(document.activeElement);

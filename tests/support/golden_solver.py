@@ -79,12 +79,14 @@ def build_dynamic_solve_actions(backend: FakeBackend, *, include_submit: bool = 
         actions.extend(key_action(character) for character in fields[widget.value])
 
     # Native select-popup rows do not expose portable geometry. Focus the
-    # control, use the countries' unique initial letters for type-ahead, then
-    # commit with Enter; key_action verifies both keys are allowlisted.
+    # control and use the countries' unique initial letters for type-ahead; the
+    # keystroke selects the option immediately. There is no Enter afterwards:
+    # under input contract v2 an Enter on the select changed no state (the frame
+    # before and after was identical), and from v3 the page makes it inert.
     actions.append(_click_widget(backend, WidgetId.COUNTRY))
     country_index = backend.form.country_options.index(fields["country"])
     country = backend.form.country_options[country_index]
-    actions.extend((key_action(country[0].lower()), key_action("Enter")))
+    actions.append(key_action(country[0].lower()))
 
     payment_index = backend.form.payment_options.index(fields["payment_terms"])
     actions.append(click_action(*layout.payment_options[payment_index].center))

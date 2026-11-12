@@ -41,16 +41,16 @@ Commands:
 
     # Produce a candidate, without overwriting the committed fixture.
     python scripts/golden_trajectory.py generate --seed 7 \\
-        --output /tmp/golden_trajectory_seed7.json
+        --output /tmp/golden_trajectory_seed7_v2.json
 
     # Blindly replay any candidate.
     python scripts/golden_trajectory.py verify \\
-        --fixture /tmp/golden_trajectory_seed7.json
+        --fixture /tmp/golden_trajectory_seed7_v2.json
 
     # Generate the evidence bundle from an accepted fixture. Artifact names and
     # every claim inside them are derived from the fixture's own seed.
     python scripts/golden_trajectory.py artifacts \\
-        --fixture tests/unit/fixtures/golden_trajectory_seed7.json \\
+        --fixture tests/unit/fixtures/golden_trajectory_seed7_v2.json \\
         --output artifacts/day-1
 
 `generate` refuses to write to the committed fixture path. Regeneration must
@@ -91,7 +91,7 @@ from pixelgym.tasks.vendor_form import generator
 
 SCHEMA_VERSION = 1
 COMMITTED_SEED = 7
-COMMITTED_FIXTURE = REPO_ROOT / "tests" / "unit" / "fixtures" / "golden_trajectory_seed7.json"
+COMMITTED_FIXTURE = REPO_ROOT / "tests" / "unit" / "fixtures" / "golden_trajectory_seed7_v2.json"
 DEFAULT_ARTIFACT_DIR = REPO_ROOT / "artifacts" / "day-1"
 
 _ACTION_FIELDS = ("action_type", "x", "y", "key")

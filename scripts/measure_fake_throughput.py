@@ -56,7 +56,7 @@ from tests.support.reference_render import render_reference
 
 SCHEMA_VERSION = "pixelgym-fake-throughput-v1"
 DEFAULT_OUTPUT = Path("artifacts/throughput/fake-throughput.json")
-GOLDEN_FIXTURE = Path("tests/unit/fixtures/golden_trajectory_seed7.json")
+GOLDEN_FIXTURE = Path("tests/unit/fixtures/golden_trajectory_seed7_v2.json")
 RENDERERS = ("static_layer", "reference_single_pass")
 
 

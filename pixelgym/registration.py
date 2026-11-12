@@ -14,9 +14,20 @@ are imported when an environment is made.
 
 The episode step limit is the environment's own (`PixelGuiEnv` sets ``truncated``), so the ID
 registers no extra `TimeLimit` wrapper: a second limit could truncate an episode the environment
-had not truncated. Set the limit with ``episode_step_limit``. ``gym.make`` consumes a
-``max_episode_steps`` argument itself and wraps the environment in `TimeLimit` instead of passing
-it here, so that name is not the factory's.
+had not truncated. Set the limit with ``episode_step_limit``.
+
+``gym.make(VENDOR_FORM_ID, max_episode_steps=N)`` does **not** change that limit. Gymnasium 0.28
+consumes ``max_episode_steps`` itself, never passes it to this factory, and wraps the environment
+in `TimeLimit(N)` on top of the environment's own limit (``episode_step_limit``, default 200).
+The two then disagree, and the factory cannot see ``N`` to reconcile them:
+
+- ``N`` below the environment limit: the wrapper reports ``truncated`` at step ``N`` while the
+  environment's episode is still open, so a caller that keeps stepping without ``reset`` is not
+  stopped by invariant 8 and can still collect reward.
+- ``N`` above it: the environment truncates first and the wrapper never fires.
+
+Pass ``episode_step_limit=N`` instead. `tests/unit/test_registration_vector.py` pins both cases,
+so a Gymnasium change that starts forwarding the argument is noticed.
 """
 
 from __future__ import annotations

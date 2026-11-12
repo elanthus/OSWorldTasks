@@ -69,12 +69,14 @@ from typing import Any
 DESIGN_WIDTH = 1024
 DESIGN_HEIGHT = 768
 
-INPUT_CONTRACT_VERSION = "pixelgym-vendor-form-input-v2"
+INPUT_CONTRACT_VERSION = "pixelgym-vendor-form-input-v3"
 """Version of the interaction contract shared by `FormState` and `app/static/app.js`.
 
 v1 left carets, Tab navigation, select arrows, and type-ahead to native Chromium and did not model
-label clicks or radio focus. v2 is the contract described in this module's docstring. The app
-publishes the same string as ``document.body.dataset.pixelgymInputContract``.
+label clicks or radio focus. v2 pinned those. v3 adds a static, non-blinking caret drawn after the
+last character of the focused text input (so a trailing space is visible in the frame) and makes
+Enter and Space inert on the country select. The app publishes the same string as
+``document.body.dataset.pixelgymInputContract``.
 """
 
 

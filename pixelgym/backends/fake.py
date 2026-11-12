@@ -73,8 +73,15 @@ DEFAULT_HEIGHT = ui.DESIGN_HEIGHT
 
 _NO_TASK = "FakeBackend has no active task; call reset(seed) first."
 
-CHECKPOINT_SCHEMA_VERSION = "pixelgym-core-fake-checkpoint-v2"
-"""v2 adds `payment_focus_index` and requires `tab_exited_form` (input contract v2)."""
+CHECKPOINT_SCHEMA_VERSION = "pixelgym-core-fake-checkpoint-v3"
+"""v2 added `payment_focus_index` and required `tab_exited_form` (input contract v2). v3 has the
+same fields but is sealed under input contract v3 and renderer v2 (static caret), so the frame a
+restored checkpoint shows differs from the one a v2 checkpoint was sealed with."""
+
+RESUME_IDENTITY_VERSION = "v3"
+"""Suffix of the fake backend's resume identity. Resume records bind a screenshot digest, which
+changed with renderer v2, so records sealed under the -v2 identity are rejected, not
+reinterpreted."""
 
 
 class FakeBackend:
@@ -234,7 +241,8 @@ class FakeBackend:
             )
         if value.get("schema_version") != CHECKPOINT_SCHEMA_VERSION:
             # v1 checkpoints were sealed under the pre-v2 input contract (no radio focus, no label
-            # clicks). They are rejected rather than reinterpreted under the current semantics.
+            # clicks); v2 checkpoints under input contract v2 and renderer v1 (no caret, Enter
+            # live on the select). Both are rejected rather than reinterpreted.
             raise ValueError("unsupported core fake-backend checkpoint schema")
         required = {
             "width",
@@ -305,7 +313,7 @@ class FakeBackend:
         checkpoint = self.checkpoint()
         return EnvironmentResumeRecord(
             task_id=record["task_id"],
-            backend_identity=f"pixelgym-core-fake-{self.width}x{self.height}-v2",
+            backend_identity=f"pixelgym-core-fake-{self.width}x{self.height}-{RESUME_IDENTITY_VERSION}",
             step_count=step_count,
             screenshot_digest="sha256:" + sha256_bytes(self.screenshot().tobytes()),
             application_state_digest=content_digest(json.loads(checkpoint)),

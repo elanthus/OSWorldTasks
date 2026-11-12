@@ -14,7 +14,7 @@ from pixelgym.validation import reward as reward_validation
 from pixelgym.validation.reward import validate_reward_timing
 from pixelgym.validation.spaces import validate_space_integrity
 
-GOLDEN = Path(__file__).parent / "fixtures" / "golden_trajectory_seed7.json"
+GOLDEN = Path(__file__).parent / "fixtures" / "golden_trajectory_seed7_v2.json"
 
 
 def _first_frame_only_renderer() -> Any:
