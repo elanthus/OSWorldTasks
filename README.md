@@ -46,10 +46,10 @@ The unit suite runs this snippet ([test](tests/unit/test_readme_snippet.py)). Se
   A randomized differential test checks the fake against the real page in Chromium after every
   action ([test](tests/integration/test_vendor_form_differential.py)), and an
   input-acknowledgement barrier pays reward on the step whose action caused the submission
-  ([test](tests/integration/test_vendor_form_input_barrier.py)). On the OSWorld guest, one run at
-  an earlier revision of that work paid its only reward at the golden trajectory's last step, and
-  seven input sequences flagged in review submitted the same values as the fake
-  ([guest check](artifacts/osworld-guest-check-2026-11-11/README.md)).
+  ([test](tests/integration/test_vendor_form_input_barrier.py)). On the OSWorld guest, running the
+  merged code, the golden trajectory paid its only reward at its last step, and seven input
+  sequences flagged in review submitted the same values as the fake
+  ([guest check](artifacts/osworld-guest-check-2026-11-12/README.md)).
 - **Grounding.** On 100 paired screenshots (20 task seeds × 5 screen states; each of 10 target
   controls appears 10 times), `gpt-5.4-mini` scored 56/100 with raw coordinates and 100/100 when
   choosing among 10 labelled marks: +44 points, target-clustered 95% CI [+21, +67]
@@ -282,9 +282,13 @@ without being promoted to a headline result
   task. The 1/9 chance level assumes an otherwise-perfect policy guessing uniformly; correct answers
   are not exactly balanced across screen positions, and the best fixed-position guess would match
   26 of 192 ([chance supplement](artifacts/grounding-v5-stateless-chance-ceiling-v1.md)).
-- The OSWorld guest check is one run of seven hand-picked sequences at commit `627e09b`. A later
-  commit in the same pull request changed the guest form server and page script, so it is not
-  evidence for the merged guest code ([provenance](artifacts/osworld-guest-check-2026-11-11/provenance.json)).
+- The OSWorld guest check covers seven hand-picked sequences, not a randomized differential test.
+  On the merged code it took three attempts: two VM boots missed OSWorld's fixed 300 s readiness
+  wait, and Docker Desktop was quit once. All attempts are kept, and the complete result combines
+  two of them at the same revision
+  ([provenance](artifacts/osworld-guest-check-2026-11-12/provenance.json)). An earlier run at
+  commit `627e09b`, before the guest page changed, is retained
+  ([earlier check](artifacts/osworld-guest-check-2026-11-11/README.md)).
 - Throughput and the behaviour-cloning result describe the in-process fake backend on one host.
   The cloning experiment had no recovery data and no hyperparameter search, and validation accuracy
   was still rising when training stopped ([BC report](artifacts/bc-experiment/REPORT.md)).
