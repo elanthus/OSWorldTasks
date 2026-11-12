@@ -8,7 +8,11 @@ import pytest
 from fastapi.testclient import TestClient
 
 from pixelgym.tasks.vendor_form import generator
-from pixelgym.tasks.vendor_form.app.guest_server import GuestTaskState
+from pixelgym.tasks.vendor_form.app.guest_server import (
+    GuestTaskState,
+    PayloadValidationError,
+    TaskConflictError,
+)
 from pixelgym.tasks.vendor_form.app.server import create_app
 
 
@@ -122,3 +126,28 @@ def test_privileged_state_is_a_deep_copy(state):
             }
         )
     )
+
+
+def test_input_acknowledgements_match_fastapi_contract(state):
+    task = generator.generate_task(7)
+    assert state.inputs_acknowledged() == 0
+
+    assert state.acknowledge_input({"task_id": task["task_id"], "count": 1}) == {"acknowledged": 1}
+    with pytest.raises(TaskConflictError):
+        state.acknowledge_input({"task_id": task["task_id"], "count": 1})
+    with pytest.raises(TaskConflictError):
+        state.acknowledge_input({"task_id": task["task_id"], "count": 3})
+    with pytest.raises(TaskConflictError):
+        state.acknowledge_input({"task_id": "vf-stale", "count": 2})
+    with pytest.raises(PayloadValidationError):
+        state.acknowledge_input({"task_id": task["task_id"], "count": True})
+    with pytest.raises(PayloadValidationError):
+        state.acknowledge_input({"task_id": task["task_id"]})
+    assert state.inputs_acknowledged() == 1
+
+    state.mark_page_ready(task["task_id"])
+    assert state.inputs_acknowledged() == 0
+    state.acknowledge_input({"task_id": task["task_id"], "count": 1})
+    state.reset(7)
+    assert state.inputs_acknowledged() == 0
+    assert set(state.privileged_state()) == {"task", "submissions"}

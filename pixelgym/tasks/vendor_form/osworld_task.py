@@ -69,6 +69,7 @@ _GUEST_PROGRAM_NAMES = (
     "browser_window_state",
     "desktop_ready",
     "display_size",
+    "input_ack",
     "page_ready",
     "pointer_park",
     "privileged_state",
@@ -445,6 +446,26 @@ class _VendorFormTaskSupport:
         if not isinstance(value, dict):
             raise OSWorldTaskError("browser window-state query returned a non-object")
         return cast(dict[str, Any], value)
+
+    def read_input_acknowledgements(self, env: Any) -> int:
+        """Return how many agent inputs the page has acknowledged since reset (privileged).
+
+        See the input acknowledgement barrier in ``app/static/app.js``. The count is a host-side
+        synchronization signal only; it never enters an observation or ``info``.
+        """
+
+        script = "python3 - <<'PY'\n" + _guest_program("input_ack", APP_URL=APP_URL) + "PY\n"
+        result = env.controller.run_bash_script(script, timeout=15)
+        if not isinstance(result, dict) or result.get("returncode") != 0:
+            raise OSWorldTaskError(f"input acknowledgement query failed: {result!r}")
+        try:
+            value = json.loads(result.get("output", "").strip())
+        except json.JSONDecodeError as exc:
+            raise OSWorldTaskError("input acknowledgement query returned invalid JSON") from exc
+        count = value.get("acknowledged") if isinstance(value, dict) else None
+        if type(count) is not int or count < 0:
+            raise OSWorldTaskError(f"input acknowledgement count is malformed: {value!r}")
+        return count
 
     def read_submissions(self, env: Any) -> list[Submission]:
         state = self.read_privileged_state(env)

@@ -347,3 +347,67 @@ def test_privileged_state_endpoint_returns_full_task_and_submissions():
 
     assert state["task"]["seed"] == 9
     assert state["submissions"] == []
+
+
+def test_input_contract_version_and_tab_order_match_browser_app_literals():
+    app_source = (REPOSITORY_ROOT / "pixelgym/tasks/vendor_form/app/static/app.js").read_text()
+    versions = re.findall(r'var INPUT_CONTRACT_VERSION = "([^"]+)";', app_source)
+    assert versions == [ui.INPUT_CONTRACT_VERSION]
+
+    order_block = re.search(r"var TAB_ORDER = \[(?P<body>[^\]]*)\];", app_source)
+    assert order_block is not None
+    javascript_order = re.findall(r'"([^"]+)"', order_block.group("body"))
+    expected = [
+        "submit-button" if widget is ui.WidgetId.SUBMIT else widget.value for widget in ui.TAB_ORDER
+    ]
+    assert javascript_order == expected
+
+
+def test_input_acknowledgements_are_task_bound_strictly_sequential_and_reset():
+    client = _client()
+    client.post("/api/reset", json={"seed": 7})
+    task = client.get("/api/task").json()
+    assert client.get("/api/input-ack").json() == {"acknowledged": 0}
+
+    assert client.post("/api/input-ack", json={"task_id": task["task_id"], "count": 1}).json() == {
+        "acknowledged": 1
+    }
+    # Replays, skips, and stale task IDs are refused without changing the count.
+    assert (
+        client.post("/api/input-ack", json={"task_id": task["task_id"], "count": 1}).status_code
+        == 409
+    )
+    assert (
+        client.post("/api/input-ack", json={"task_id": task["task_id"], "count": 3}).status_code
+        == 409
+    )
+    assert (
+        client.post("/api/input-ack", json={"task_id": "vf-stale", "count": 2}).status_code == 409
+    )
+    assert (
+        client.post("/api/input-ack", json={"task_id": task["task_id"], "count": "2"}).status_code
+        == 422
+    )
+    assert client.get("/api/input-ack").json() == {"acknowledged": 1}
+
+    client.post("/api/page-ready", json={"task_id": task["task_id"]})
+    assert client.get("/api/input-ack").json() == {"acknowledged": 0}
+    client.post("/api/input-ack", json={"task_id": task["task_id"], "count": 1})
+    client.post("/api/reset", json={"seed": 7})
+    assert client.get("/api/input-ack").json() == {"acknowledged": 0}
+
+
+def test_input_acknowledgements_never_enter_privileged_state():
+    client = _client()
+    client.post("/api/reset", json={"seed": 7})
+    task = client.get("/api/task").json()
+    client.post("/api/input-ack", json={"task_id": task["task_id"], "count": 1})
+
+    assert set(client.get("/api/state").json()) == {"task", "submissions"}
+
+
+def test_input_acknowledgements_require_an_active_task():
+    client = _client()
+
+    assert client.get("/api/input-ack").status_code == 409
+    assert client.post("/api/input-ack", json={"task_id": "x", "count": 1}).status_code == 409

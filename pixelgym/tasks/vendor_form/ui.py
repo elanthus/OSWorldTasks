@@ -21,19 +21,40 @@ Two things live here:
 - `FormState` -- focus, typed text, selection, and checkbox state, advanced by
   `click()` and `key()`.
 
-Interaction semantics deliberately mirror the task app in Chromium rather than
-inventing shortcuts: Tab walks the form's tab order and leaves the form after
-Submit, printable keys append to the focused text field, Backspace deletes one
-character, arrows move a `<select>` value or a radio group, Space toggles a
-focused checkbox, and Enter submits only from a text input, the checkbox, or
-the Submit button. The browser test verifies leaving the form in headless
-Chromium only; Tab-based re-entry is outside the equivalence contract, and the
-fake keeps focus outside until a control is clicked.
+Interaction semantics are an explicit contract shared with the task app
+(input contract `INPUT_CONTRACT_VERSION`). Where native browser behaviour is
+platform-dependent, timed, or invisible in pixels, `app/static/app.js` pins the
+browser to the rule below instead of the fake guessing at Chromium; where it is
+standard and visible, the fake models it. The opt-in randomized differential
+test (`tests/integration/test_vendor_form_differential.py`) drives both with
+the same action sequences and compares form values, focus, status, and
+submissions after every action.
 
-What is deliberately *not* modeled, since no allowlisted action can reach it:
-text carets and caret movement (typing always appends -- ArrowLeft/ArrowRight
-are inert in a text field), text selection, Shift+Tab (the action space has no
-modifiers), and mouse drag.
+- Tab walks `TAB_ORDER` (the app handles Tab itself, so there is no native
+  sequential-navigation starting point). Tab from Submit leaves the form with
+  nothing focused; a further Tab does nothing until a control or its label is
+  clicked, after which Tab from an unfocused page focuses the first control.
+- Text inputs have a single caret pinned to the end of the value. Printable
+  keys append, Backspace deletes the last character, and arrow keys are inert.
+  The app enforces this because the caret is hidden (`caret-color:
+  transparent`, invariant 10): a movable caret would be state the pixel agent
+  cannot see, and click-to-caret placement depends on browser glyph shaping.
+- Clicking a `<label for=...>` focuses its control, as in a browser. The
+  payment-terms heading label has no control and blurs like the background.
+- The country `<select>` is handled by the app: ArrowDown/ArrowUp move one
+  option and clamp (never back onto the placeholder), ArrowLeft/ArrowRight are
+  inert, and a printable key selects the first option whose label starts with
+  it. Native arrows open the popup on macOS and change the value on Linux,
+  and native type-ahead buffers keys on a timer, so neither can be the
+  contract. The native popup never opens.
+- The payment radios follow standard radio-group semantics: one radio holds
+  focus (`payment_focus_index`), Tab enters on the checked radio or the first
+  one, arrows move focus and selection together and wrap, and Space checks the
+  focused radio.
+- Space toggles a focused checkbox and activates Submit; Enter submits only
+  from a text input, the checkbox, or Submit.
+
+Not modeled: Shift+Tab (the action space has no modifiers) and mouse drag.
 """
 
 from __future__ import annotations
@@ -47,6 +68,14 @@ from typing import Any
 # is expressed in that design space and scaled to the backend's actual size.
 DESIGN_WIDTH = 1024
 DESIGN_HEIGHT = 768
+
+INPUT_CONTRACT_VERSION = "pixelgym-vendor-form-input-v2"
+"""Version of the interaction contract shared by `FormState` and `app/static/app.js`.
+
+v1 left carets, Tab navigation, select arrows, and type-ahead to native Chromium and did not model
+label clicks or radio focus. v2 is the contract described in this module's docstring. The app
+publishes the same string as ``document.body.dataset.pixelgymInputContract``.
+"""
 
 
 class WidgetId(Enum):
@@ -85,6 +114,11 @@ TAB_ORDER: tuple[WidgetId, ...] = (
     WidgetId.SUBMIT,
 )
 """Document tab order, matching the control order in `app/static/index.html`."""
+
+LABELED_CONTROLS: tuple[WidgetId, ...] = (*TEXT_WIDGETS, WidgetId.COUNTRY)
+"""Controls whose block `<label for=...>` focuses them when clicked. The payment-terms heading is a
+bare `<label>` with no control, and the checkbox and radio labels wrap their inputs, so their hit
+regions are already the control rectangles."""
 
 REQUEST_CARD_FIELDS: tuple[str, ...] = (
     "company_name",
@@ -283,9 +317,10 @@ class Layout:
     def hit_test(self, x: int, y: int) -> tuple[WidgetId, int | None] | None:
         """Which control (and which of its options) a click at `(x, y)` lands on.
 
-        Returns `None` for a click on empty space. Only browser-pinned control
-        and payment-option rectangles participate; there are no synthetic
-        native-select popup hit regions.
+        Returns `None` for a click on empty space. Only browser-pinned control,
+        payment-option, and `<label for=...>` rectangles participate; there are
+        no synthetic native-select popup hit regions. A label resolves to the
+        control it is for, because clicking it focuses that control.
         """
         for index, rect in enumerate(self.payment_options):
             if rect.contains(x, y):
@@ -295,6 +330,10 @@ class Layout:
             if widget is WidgetId.PAYMENT_TERMS:
                 continue  # already resolved to a specific radio above
             if rect.contains(x, y):
+                return widget, None
+
+        for widget in LABELED_CONTROLS:
+            if self.labels[widget].contains(x, y):
                 return widget, None
 
         return None
@@ -328,6 +367,7 @@ class FormState:
         self.payment_index: int | None = None
         self.expedited: bool = False
         self.focus: WidgetId | None = None
+        self.payment_focus_index: int | None = None
         self.tab_exited_form: bool = False
         self.status: str = ""
 
@@ -397,11 +437,11 @@ class FormState:
         hit = self.layout.hit_test(x, y)
 
         if hit is None:
-            self.focus = None  # clicking the page background blurs
+            self._set_focus(None)  # clicking the page background blurs
             return False
 
         widget, index = hit
-        self.focus = widget
+        self._set_focus(widget, payment_index=index)
         self.tab_exited_form = False
 
         if widget in TEXT_WIDGETS:
@@ -466,6 +506,8 @@ class FormState:
         # Space activates the focused control, as it does in a browser.
         if self.focus is WidgetId.EXPEDITED_ONBOARDING:
             self.expedited = not self.expedited
+        elif self.focus is WidgetId.PAYMENT_TERMS:
+            self.payment_index = self.payment_focus_index
         elif self.focus is WidgetId.SUBMIT:
             return True
         return False
@@ -484,27 +526,39 @@ class FormState:
             return
 
         if self.focus is WidgetId.PAYMENT_TERMS:
-            # A radio group wraps in both directions.
+            # Arrows move focus *and* selection from the focused radio, and wrap. The focused radio
+            # can be unchecked (Tab enters an unchecked group on its first radio), so the step is
+            # taken from `payment_focus_index`, never from the checked index.
+            assert self.payment_focus_index is not None
             count = len(self.payment_options)
-            if key in ("ArrowDown", "ArrowRight"):
-                self.payment_index = (
-                    0 if self.payment_index is None else (self.payment_index + 1) % count
-                )
-            else:
-                self.payment_index = (
-                    count - 1 if self.payment_index is None else (self.payment_index - 1) % count
-                )
+            step = 1 if key in ("ArrowDown", "ArrowRight") else -1
+            self.payment_focus_index = (self.payment_focus_index + step) % count
+            self.payment_index = self.payment_focus_index
 
     def _advance_focus(self) -> None:
         if self.focus is None:
             if not self.tab_exited_form:
-                self.focus = TAB_ORDER[0]
+                self._set_focus(TAB_ORDER[0])
             return
         if self.focus is WidgetId.SUBMIT:
-            self.focus = None
+            self._set_focus(None)
             self.tab_exited_form = True
             return
-        self.focus = TAB_ORDER[TAB_ORDER.index(self.focus) + 1]
+        self._set_focus(TAB_ORDER[TAB_ORDER.index(self.focus) + 1])
+
+    def _set_focus(self, widget: WidgetId | None, *, payment_index: int | None = None) -> None:
+        """Move focus, keeping `payment_focus_index` set exactly while the radio group has focus.
+
+        A click names the radio it landed on (`payment_index`); keyboard entry lands on the checked
+        radio, or the first radio when none is checked.
+        """
+        self.focus = widget
+        if widget is not WidgetId.PAYMENT_TERMS:
+            self.payment_focus_index = None
+        elif payment_index is not None:
+            self.payment_focus_index = payment_index
+        else:
+            self.payment_focus_index = 0 if self.payment_index is None else self.payment_index
 
 
 def layout_for(task_record: Mapping[str, Any], width: int, height: int) -> Layout:

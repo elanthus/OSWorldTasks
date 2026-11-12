@@ -68,6 +68,7 @@ class GuestTaskState:
         self._task = task
         self._submissions: list[dict[str, Any]] = []
         self._page_ready = False
+        self._inputs_acknowledged = 0
         self._lock = threading.RLock()
 
     def reset(self, seed: int) -> dict[str, Any]:
@@ -78,6 +79,7 @@ class GuestTaskState:
                 raise TaskConflictError("reset seed does not match the bundled task")
             self._submissions = []
             self._page_ready = False
+            self._inputs_acknowledged = 0
             return {
                 "task_id": self._task["task_id"],
                 "seed": self._task["seed"],
@@ -116,6 +118,27 @@ class GuestTaskState:
             if task_id != self._task["task_id"]:
                 raise TaskConflictError("page-ready task_id does not match the active task")
             self._page_ready = True
+            self._inputs_acknowledged = 0
+
+    def acknowledge_input(self, payload: dict[str, Any]) -> dict[str, int]:
+        """Record the page's Nth input acknowledgement; see the barrier in ``static/app.js``."""
+
+        if set(payload) != {"task_id", "count"}:
+            raise PayloadValidationError("input-ack payload must contain only task_id and count")
+        task_id, count = payload["task_id"], payload["count"]
+        if not isinstance(task_id, str) or type(count) is not int:
+            raise PayloadValidationError("input-ack task_id must be a str and count an int")
+        with self._lock:
+            if task_id != self._task["task_id"]:
+                raise TaskConflictError("input-ack task_id does not match the active task")
+            if count != self._inputs_acknowledged + 1:
+                raise TaskConflictError("input-ack count is not the next acknowledgement")
+            self._inputs_acknowledged = count
+            return {"acknowledged": count}
+
+    def inputs_acknowledged(self) -> int:
+        with self._lock:
+            return self._inputs_acknowledged
 
     def page_ready(self) -> bool:
         with self._lock:
@@ -151,6 +174,10 @@ class VendorFormRequestHandler(BaseHTTPRequestHandler):
         if path == "/api/page-ready":
             self._send_json(HTTPStatus.OK, {"ready": self.server.state.page_ready()})
             return
+        if path == "/api/input-ack":
+            acknowledged = self.server.state.inputs_acknowledged()
+            self._send_json(HTTPStatus.OK, {"acknowledged": acknowledged})
+            return
         if path == "/healthz":
             self._send_json(HTTPStatus.OK, {"ready": True})
             return
@@ -181,6 +208,8 @@ class VendorFormRequestHandler(BaseHTTPRequestHandler):
                     raise PayloadValidationError("page-ready payload must contain only task_id")
                 self.server.state.mark_page_ready(payload["task_id"])
                 result = {"ready": True}
+            elif path == "/api/input-ack":
+                result = self.server.state.acknowledge_input(payload)
             else:
                 self._send_json(HTTPStatus.NOT_FOUND, {"detail": "not found"})
                 return

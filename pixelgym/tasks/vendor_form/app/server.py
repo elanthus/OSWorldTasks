@@ -11,6 +11,11 @@ Endpoints:
   task; returns 409 if its ``task_id`` is stale.
 - ``GET  /api/page-ready`` — whether the page has reported ready since the last
   reset. Returns 409 before reset.
+- ``POST /api/input-ack`` — the page acknowledges its Nth processed agent input
+  (after any submission that input caused has been recorded and painted).
+  ``count`` must be exactly one more than the current count; reset and
+  page-ready set it to zero. See the barrier comment in ``static/app.js``.
+- ``GET  /api/input-ack`` — privileged host read of the acknowledged count.
 - ``GET  /api/state``  — privileged view for the host-side evaluator (task +
   every submission). Returns 409 before reset. Not linked from the UI.
 - ``GET  /``           — the form itself, served as static HTML.
@@ -65,6 +70,13 @@ class PageReadyRequest(BaseModel):
     task_id: str
 
 
+class InputAckRequest(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    task_id: str
+    count: int
+
+
 @dataclasses.dataclass(frozen=True)
 class SubmissionRecord:
     """An immutable submission event. Neither the record nor its ``values``
@@ -94,11 +106,13 @@ class VendorFormState:
         self.task: dict[str, Any] | None = None
         self.submissions: list[SubmissionRecord] = []
         self.page_ready = False
+        self.inputs_acknowledged = 0
 
     def reset(self, seed: int) -> dict[str, Any]:
         self.task = generator.generate_task(seed)
         self.submissions = []
         self.page_ready = False
+        self.inputs_acknowledged = 0
         return self.task
 
     def require_task(self) -> dict[str, Any]:
@@ -131,6 +145,22 @@ class VendorFormState:
         if task_id != task["task_id"]:
             raise HTTPException(status_code=409, detail="page-ready task_id is stale")
         self.page_ready = True
+        self.inputs_acknowledged = 0
+
+    def acknowledge_input(self, task_id: str, count: int) -> int:
+        task = self.require_task()
+        if task_id != task["task_id"]:
+            raise HTTPException(status_code=409, detail="input-ack task_id is stale")
+        if count != self.inputs_acknowledged + 1:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    f"input-ack count {count} is not the next acknowledgement "
+                    f"(acknowledged={self.inputs_acknowledged})"
+                ),
+            )
+        self.inputs_acknowledged = count
+        return count
 
 
 def create_app() -> FastAPI:
@@ -173,6 +203,15 @@ def create_app() -> FastAPI:
     def get_page_ready() -> dict[str, bool]:
         state.require_task()
         return {"ready": state.page_ready}
+
+    @app.post("/api/input-ack")
+    def acknowledge_input(payload: InputAckRequest) -> dict[str, int]:
+        return {"acknowledged": state.acknowledge_input(payload.task_id, payload.count)}
+
+    @app.get("/api/input-ack")
+    def get_input_ack() -> dict[str, int]:
+        state.require_task()
+        return {"acknowledged": state.inputs_acknowledged}
 
     @app.get("/api/state")
     def get_state() -> dict[str, Any]:

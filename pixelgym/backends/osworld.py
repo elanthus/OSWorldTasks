@@ -29,9 +29,11 @@ from pixelgym.backends.base import (
     content_digest,
     sha256_bytes,
 )
+from pixelgym.backends.settle import InputAcknowledgementError, await_input_acknowledgement
 from pixelgym.serialization import canonical_json_bytes
 from pixelgym.task_spec import Submission
 from pixelgym.tasks.vendor_form.osworld_task import APP_URL, create_osworld_task
+from pixelgym.tasks.vendor_form.ui import INPUT_CONTRACT_VERSION
 
 OSWORLD_REPOSITORY = "https://github.com/xlang-ai/OSWorld-V2"
 OSWORLD_TAG = "v2026.06.24"
@@ -159,6 +161,8 @@ class OSWorldBackendConfig:
     stabilization_poll_interval: float = 0.1
     stable_frame_count: int = 2
     noop_seconds: float = 0.1
+    input_ack_timeout: float = 30.0
+    input_ack_poll_interval: float = 0.05
     guest_volume_size_gb: int = 50
     runtime_image_reference: str = field(default_factory=_default_runtime_image_reference)
 
@@ -175,6 +179,10 @@ class OSWorldBackendConfig:
             raise ValueError("stable_frame_count must be at least two")
         if self.noop_seconds < 0:
             raise ValueError("noop_seconds must be non-negative")
+        if self.input_ack_timeout <= 0:
+            raise ValueError("input_ack_timeout must be positive")
+        if self.input_ack_poll_interval < 0:
+            raise ValueError("input_ack_poll_interval must be non-negative")
         if self.guest_volume_size_gb <= 0:
             raise ValueError("guest_volume_size_gb must be positive")
         if not self.runtime_image_reference:
@@ -198,6 +206,8 @@ class OSWorldBackend:
         self._latest_raw_screenshot: bytes | None = None
         self._last_submissions: tuple[Submission, ...] = ()
         self._structured_action_count = 0
+        self._inputs_dispatched = 0
+        self._last_input_ack_reads: int | None = None
         self._closed = False
         self._last_stabilization_seconds: float | None = None
 
@@ -217,6 +227,12 @@ class OSWorldBackend:
     def last_stabilization_seconds(self) -> float | None:
         return self._last_stabilization_seconds
 
+    @property
+    def last_input_ack_reads(self) -> int | None:
+        """Validation-only count of acknowledgement reads the last input needed."""
+
+        return self._last_input_ack_reads
+
     def reset(self, seed: int) -> Mapping[str, Any]:
         if type(seed) is not int:
             raise TypeError(f"OSWorldBackend seed must be an int, got {type(seed).__name__}")
@@ -230,7 +246,11 @@ class OSWorldBackend:
             self._task_record = record
             self._last_submissions = ()
             self._structured_action_count = 0
+            self._inputs_dispatched = 0
             task.read_privileged_state(env)
+            # The freshly loaded page must not have acknowledged any input yet; otherwise later
+            # acknowledgements could not be paired with this backend's own actions.
+            self._await_input_acknowledgements()
             self._latest_raw_screenshot = self._raw_from_observation(observation)
             # Validate the public observation path during reset, not later on
             # the first action.  PixelGuiEnv.reset() must receive real pixels.
@@ -294,6 +314,7 @@ class OSWorldBackend:
             {"action_type": "CLICK", "parameters": {"button": "left", "x": x, "y": y}},
             pause=0,
         )
+        self._settle_input()
 
     def key(self, key: str) -> None:
         if key in _NAMED_KEY_MAP:
@@ -308,6 +329,38 @@ class OSWorldBackend:
         else:
             raise OSWorldBackendError(f"key {key!r} is not a supported PixelGym key")
         self._step(action, pause=0)
+        self._settle_input()
+
+    def _settle_input(self) -> None:
+        """Return only once the page has fully processed the input just dispatched.
+
+        This is what lets ``PixelGuiEnv.step`` read a submission caused by this action in the
+        same step: the page acknowledges an input only after any submission it caused has been
+        recorded by the task server and painted. The frame cached from ``DesktopEnv.step`` predates
+        that acknowledgement, so it is discarded and ``screenshot()`` must find two fresh
+        bitwise-equal frames.
+        """
+
+        self._inputs_dispatched += 1
+        self._await_input_acknowledgements()
+        self._latest_raw_screenshot = None
+
+    def _await_input_acknowledgements(self) -> None:
+        env = self._require_active()
+        task = self._task
+        if task is None:
+            raise OSWorldBackendError("OSWorld task is not installed")
+        try:
+            self._last_input_ack_reads = await_input_acknowledgement(
+                lambda: int(task.read_input_acknowledgements(env)),
+                self._inputs_dispatched,
+                timeout=self.config.input_ack_timeout,
+                poll_interval=self.config.input_ack_poll_interval,
+                monotonic=time.monotonic,
+                sleep=time.sleep,
+            )
+        except InputAcknowledgementError as exc:
+            raise OSWorldBackendError(f"OSWorld input was not acknowledged: {exc}") from exc
 
     def read_submissions(self) -> Sequence[Submission]:
         env = self._require_active()
@@ -393,6 +446,8 @@ class OSWorldBackend:
             "guest_image_path": str(self.config.guest_image_path),
             "guest_volume_size_gb": self.config.guest_volume_size_gb,
             "task_bundle_sha256": (self._task.bundle_sha256 if self._task is not None else None),
+            "input_contract": INPUT_CONTRACT_VERSION,
+            "input_acknowledgement_barrier": True,
             "browser_launch": (
                 getattr(self._task, "browser_launch_metadata", None)
                 if self._task is not None
@@ -482,6 +537,7 @@ class OSWorldBackend:
         self._latest_raw_screenshot = None
         self._last_submissions = ()
         self._structured_action_count = 0
+        self._inputs_dispatched = 0
         self._closed = True
         if env is not None:
             try:

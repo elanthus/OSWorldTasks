@@ -45,6 +45,10 @@ class _FakeTask:
     def read_submissions(self, _env):
         return list(self.submissions)
 
+    def read_input_acknowledgements(self, env):
+        # A page that acknowledges each input as soon as it is dispatched.
+        return sum(1 for action, _pause in env.actions if action["action_type"] != "WAIT")
+
 
 class _FakeController:
     def __init__(self, frame):
