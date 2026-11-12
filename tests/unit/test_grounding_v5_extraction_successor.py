@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import sqlite3
+import subprocess
+import tarfile
 from copy import deepcopy
 from pathlib import Path
 
@@ -280,7 +283,23 @@ def test_diagnostic_binds_original_audit_lineage(evidence):
         )
 
 
-def test_prepared_successor_artifacts_are_bound_and_original_results_preserved():
+def _tree_at_revision(revision: str, destination: Path) -> Path:
+    """Extract the manifest's runtime-input files at `revision` (local git only, no network)."""
+    try:
+        archive = subprocess.run(
+            ["git", "archive", revision, "pixelgym", "pyproject.toml", "requirements", "scripts"],
+            cwd=ROOT,
+            capture_output=True,
+            check=True,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError):
+        pytest.skip(f"git revision {revision} is not available")
+    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+        tar.extractall(destination, filter="data")
+    return destination
+
+
+def test_prepared_successor_artifacts_are_bound_and_original_results_preserved(tmp_path):
     public = ROOT / successor.OUTPUT_DIRECTORY
     plan = json.loads((public / "execution-plan.json").read_text())
     original = json.loads((ROOT / successor.ORIGINAL_PLAN_PATH).read_text())
@@ -297,11 +316,16 @@ def test_prepared_successor_artifacts_are_bound_and_original_results_preserved()
         assert "sha256:" + hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == expected
     from pixelgym.grounding.v5.claude_code_policy import ClaudeRuntimeIdentity
 
+    # The manifests hash runtime inputs (pyproject.toml, the platform lock, policy modules) that
+    # later, unrelated work may legitimately edit. Rebuild them from those files exactly as they
+    # were at the plan's recorded source revision, so the binding stays byte-exact without
+    # freezing the working tree. The frozen plan itself is never rewritten.
+    source_revision = plan["source_binding"]["source_revision"]
     assert {
         mode: manifest.to_dict()
         for mode, manifest in successor.live_manifests(
-            ROOT,
-            source_revision=plan["source_binding"]["source_revision"],
+            _tree_at_revision(source_revision, tmp_path),
+            source_revision=source_revision,
             identity=ClaudeRuntimeIdentity(**plan["runtime_identity"]),
         ).items()
     } == plan["policy_manifests"]
