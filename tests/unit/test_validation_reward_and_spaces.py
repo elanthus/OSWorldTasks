@@ -27,9 +27,9 @@ def _first_frame_only_renderer() -> Any:
     real_render = fake_backend_module.render.render
     cache: list[Any] = []
 
-    def render(record: Any, form: Any, layout: Any) -> Any:
+    def render(record: Any, form: Any, layout: Any, **kwargs: Any) -> Any:
         if not cache:
-            cache.append(real_render(record, form, layout))
+            cache.append(real_render(record, form, layout, **kwargs))
         return cache[0]
 
     return render
