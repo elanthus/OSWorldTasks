@@ -52,6 +52,10 @@ dev = [
     "setuptools>=77",  # supports SPDX license metadata and no-isolation wheel tests
 ]
 
+[project.entry-points."gymnasium.envs"]
+# Gymnasium 0.28 runs this on `import gymnasium`; the entry-point name is the ID namespace.
+PixelGym = "pixelgym.registration:register_envs"
+
 [build-system]
 requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"

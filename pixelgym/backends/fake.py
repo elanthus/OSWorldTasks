@@ -88,6 +88,7 @@ class FakeBackend:
         self._form: ui.FormState | None = None
         self._submissions: list[Submission] = []
         self._frame: Frame | None = None
+        self._static: Any = None  # render.render_static for the active task, built at reset
         self.click_calls: list[tuple[int, int]] = []
         self.key_calls: list[str] = []
         self.noop_calls = 0
@@ -121,6 +122,7 @@ class FakeBackend:
         self.key_calls = []
         self.noop_calls = 0
         self._frame = None
+        self._static = render.render_static(record, self._layout)
         return record
 
     def screenshot(self) -> Frame:
@@ -132,7 +134,7 @@ class FakeBackend:
         """
         record, layout, form = self._require_task()
         if self._frame is None:
-            self._frame = render.render(record, form, layout)
+            self._frame = render.render(record, form, layout, static=self._static)
         return self._frame.copy()
 
     def noop(self) -> None:
@@ -354,6 +356,12 @@ class FakeBackend:
         """The live form state, for asserting on focus/typed values in tests."""
         _record, _layout, form = self._require_task()
         return form
+
+    @property
+    def task_record(self) -> Mapping[str, Any]:
+        """The active generated task record (privileged; tests and evidence scripts only)."""
+        record, _layout, _form = self._require_task()
+        return record
 
     @property
     def layout(self) -> ui.Layout:
