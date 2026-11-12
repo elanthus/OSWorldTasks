@@ -48,6 +48,9 @@ and [docs/evidence-index.md](../docs/evidence-index.md) for the evidence each on
 | `generate_grounding_report_v2.py` | Write the grounding report v2 and its provenance from frozen evidence without model calls | `--repository-root`, `--output-dir` | report v2 and provenance files | none | yes |
 | `verify_grounding_report_v2.py` | Verify the grounding report v2 and its provenance regenerate byte-identically, without writing files | `--repository-root` | exit status | none | yes |
 | `generate_grounding_clustered_analysis.py` | Generate the target-clustered supplement to the frozen v1 analysis | frozen results and predictions | `artifacts/grounding-clustered-analysis-v1.{json,md}` | none | yes |
+| `generate_grounding_clustered_analysis_v2.py` | Generate v2 of the clustered supplement: v1's numbers recomputed, with the allocation read from the dataset and stated in full | frozen results, predictions, and dataset | `artifacts/grounding-clustered-analysis-v2.{json,md}` | none | yes |
+| `generate_grounding_ambiguity_split.py` | Split the frozen v1 raw-coordinate misses by whether they land on the read-only request card in the target's row, with strict and forgiving deltas | frozen results, predictions, and error-review decisions | `artifacts/grounding-ambiguity-split-v1.{json,md}` | none | yes |
+| `generate_v5_stateless_chance_ceiling.py` | Compare the v5 stateless arm's successes in the three D5.9 campaigns with the chance level of its two deferred three-way choices | frozen D5.9 task manifest and campaign reports | `artifacts/grounding-v5-stateless-chance-ceiling-v1.{json,md}` | none | yes |
 | `measure_grounding_maintenance.py` | Compare grounding maintenance surfaces and built-wheel contents at two revisions | `--before-revision`, `--after-revision` | stdout JSON | none (runs `git`) | no |
 
 ## Release evidence

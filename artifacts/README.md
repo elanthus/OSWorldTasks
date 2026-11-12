@@ -25,6 +25,12 @@ capture, a calibration campaign, or a release record, retained on purpose. Use t
 | Grounding v1 experiment | [grounding-report.md](grounding-report.md) | Frozen original report (v1) |
 | Grounding v1 experiment | [grounding-results.json](grounding-results.json) | Structured results |
 | Grounding v1 experiment | [grounding-report-provenance-v1.json](grounding-report-provenance-v1.json) | Recorded provider, prompt, data, and collection window |
+| Grounding v1 experiment | [grounding-clustered-analysis-v2.md](grounding-clustered-analysis-v2.md) | Target-clustered supplement, v2: v1's numbers with the allocation stated in full ([v1](grounding-clustered-analysis-v1.md) unchanged) |
+| Grounding v1 experiment | [grounding-ambiguity-split-v1.md](grounding-ambiguity-split-v1.md) | Post-hoc split of raw misses that land on the request card |
+| Agent rollouts (v5) | [grounding-v5-stateless-chance-ceiling-v1.md](grounding-v5-stateless-chance-ceiling-v1.md) | Chance level of the stateless arm against the three campaigns |
+| Environment validation | [osworld-guest-check-2026-11-11/README.md](osworld-guest-check-2026-11-11/README.md) | One OSWorld guest run at `627e09b`: golden reward timing and seven fake-versus-guest sequences |
+| Throughput | [throughput/REPORT.md](throughput/REPORT.md) | Fake-backend throughput and renderer byte identity |
+| Learning | [bc-experiment/REPORT.md](bc-experiment/REPORT.md) | Behaviour-cloning experiment |
 | Grounding v2 design (not run) | [grounding-v2-protocol.md](grounding-v2-protocol.md) | Crossed allocation protocol |
 | Grounding v2 design (not run) | [grounding-v2-manifest.json](grounding-v2-manifest.json) | Crossed allocation manifest |
 | Platform | [platform/architecture.md](platform/architecture.md) | Platform architecture |

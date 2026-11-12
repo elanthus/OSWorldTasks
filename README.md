@@ -1,17 +1,76 @@
 # PixelGym-OSWorld
 
-PixelGym-OSWorld combines a pixel-only Gymnasium environment with a GUI-grounding benchmark for
-one deterministic synthetic vendor-onboarding form and an optional backend pinned to OSWorld-V2.
-It is built to make environment contracts, reward timing, reset behavior, and grounding evidence
-inspectable—not to claim broad desktop-agent performance.
+PixelGym-OSWorld is a pixel-only Gymnasium environment for one deterministic synthetic
+vendor-onboarding form. A privileged host-side evaluator is the only source of reward, an optional
+backend runs the same form inside a VM pinned to OSWorld-V2, and every environment contract it
+claims (reset determinism, reward timing, space integrity, and a reward-hacking audit) is backed by
+stored evidence. It is a narrow, inspectable environment, not a broad desktop-agent benchmark.
 
 [![CI](https://github.com/elanthus/OSWorldTasks/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/elanthus/OSWorldTasks/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Python](https://img.shields.io/badge/python-3.12-blue)
 
-## At a glance
+## Start here
 
-- Pixel-only Gymnasium environment with a privileged evaluator; five bitwise identical real OSWorld resets at 1024×768 on one host ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json)).
-- 100 paired examples (10 target controls x 10 seeds): 56/100 raw, 100/100 marks, +44.0 percentage points, example-level 95% CI [+35.0, +54.0] (target-clustered 95% CI [+21.0, +67.0], [supplement](artifacts/grounding-clustered-analysis-v1.md)); marks are selection among 10 labelled candidates with proposal coverage 100% by the retention rule ([protocol](artifacts/grounding-protocol.md)); moving `gpt-5.4-mini` alias, DOM-derived offline marks ([current report v2](artifacts/grounding-report-v2.md), [frozen original v1 report](artifacts/grounding-report.md), [capture implementation](pixelgym/grounding/capture.py)).
-- Documented reproduction workflow: ruff, strict mypy, offline unit tests, and a non-mutating grounding-evidence verifier ([reproduction guide](docs/reproduction.md)).
+Five files hold the contract:
+
+- [pixelgym/env.py](pixelgym/env.py) — `PixelGuiEnv`, the Gymnasium interface. The RGB screenshot
+  is the only observation.
+- [pixelgym/actions.py](pixelgym/actions.py) — `NOOP`, bounded `CLICK(x, y)`, and `KEY(index)`
+  from a versioned allowlist. Invalid actions are rejected before they reach a backend.
+- [pixelgym/evaluator.py](pixelgym/evaluator.py) — the privileged, host-side evaluator.
+- [pixelgym/task_spec.py](pixelgym/task_spec.py) — typed task and submission contracts.
+- [pixelgym/backends/](pixelgym/backends/) — the backend protocol, the in-process fake, and the
+  pinned OSWorld adapter.
+
+<!-- readme-snippet:start -->
+```python
+import gymnasium as gym
+from pixelgym.actions import KEY_ALLOWLIST
+
+env = gym.make("PixelGym/VendorForm-v0")  # in-process fake backend, registered on install
+obs, info = env.reset(seed=7)  # info holds only an opaque episode id
+obs, reward, *_ = env.step({"action_type": 1, "x": 768, "y": 94, "key": 0})  # CLICK a field
+obs, reward, *_ = env.step({"action_type": 2, "x": 0, "y": 0, "key": KEY_ALLOWLIST.index("A")})
+assert obs.shape == (768, 1024, 3) and reward == 0.0  # 0 until an exact submission, then 1 once
+```
+<!-- readme-snippet:end -->
+
+The unit suite runs this snippet ([test](tests/unit/test_readme_snippet.py)). Setup is
+`pip install -e ".[dev]"` with Python 3.12; see [Quickstart](#quickstart).
+
+## Results
+
+- **Environment.** Five real OSWorld resets of seed 7 were bitwise identical at 1024×768 on one
+  host ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json)). The
+  fake backend runs 1181 random-policy steps/s, up from 207 before a renderer change that kept
+  all 6044 compared frames byte-identical ([throughput report](artifacts/throughput/REPORT.md)).
+  A randomized differential test checks the fake against the real page in Chromium after every
+  action ([test](tests/integration/test_vendor_form_differential.py)), and an
+  input-acknowledgement barrier pays reward on the step whose action caused the submission
+  ([test](tests/integration/test_vendor_form_input_barrier.py)). On the OSWorld guest, one run at
+  an earlier revision of that work paid its only reward at the golden trajectory's last step, and
+  seven input sequences flagged in review submitted the same values as the fake
+  ([guest check](artifacts/osworld-guest-check-2026-11-11/README.md)).
+- **Grounding.** On 100 paired screenshots (20 task seeds × 5 screen states; each of 10 target
+  controls appears 10 times), `gpt-5.4-mini` scored 56/100 with raw coordinates and 100/100 when
+  choosing among 10 labelled marks: +44 points, target-clustered 95% CI [+21, +67]
+  ([report](artifacts/grounding-report-v2.md),
+  [clustered supplement](artifacts/grounding-clustered-analysis-v2.md)). Half of the raw misses,
+  22 of 44, land on the read-only request card in the target's own row (company name 9, contact
+  phone 10, contact email 3). Counting those as correct gives raw 78/100 and +22 points,
+  target-clustered 95% CI [+6, +42] ([ambiguity split](artifacts/grounding-ambiguity-split-v1.md)).
+- **Agent rollouts.** Claude Haiku 4.5 on 192 multi-screen episodes succeeded 106, 62, and 132
+  times with its screenshot history and 15, 20, and 20 times without it, in three campaigns. The
+  stateless arm sits at chance by design: two three-way choices whose answers appear only on
+  earlier screens give an otherwise-perfect guesser 1/9, about 21 of 192
+  ([chance supplement](artifacts/grounding-v5-stateless-chance-ceiling-v1.md)). All v5 model
+  runs used the in-process PIL backend
+  ([pixelgym/grounding/v5/backend.py](pixelgym/grounding/v5/backend.py)); the v5 code has no
+  browser or OSWorld backend.
+- **Learning.** Behaviour cloning from a scripted oracle (4 to 256 demonstration episodes, two
+  training seeds each) reached 40% teacher-forced step accuracy and 0 of 400 closed-loop
+  successes; the click head did not learn ([BC report](artifacts/bc-experiment/REPORT.md)).
+
+What these results do not show is under [Limitations](#limitations).
 
 ![Real OSWorld episode](artifacts/day-3/review/real-osworld-episode.gif)
 
@@ -32,8 +91,12 @@ python3.12 -m venv .venv
 .venv/bin/python scripts/verify_grounding_report.py
 ```
 
-The unit suite is offline: it does not bind sockets or require a browser, Docker, OSWorld, provider
-credentials, or external services. The grounding verifier reads frozen evidence, recomputes the
+The same commands are the documented reproduction workflow: ruff, strict mypy, offline unit
+tests, and a non-mutating grounding-evidence verifier ([reproduction guide](docs/reproduction.md)).
+
+The unit suite is offline: it does not require a browser, Docker, OSWorld, provider credentials,
+or external services. It binds loopback sockets in one file, which tests the v5 egress proxy
+([test](tests/unit/test_grounding_v5_egress_proxy.py)). The grounding verifier reads frozen evidence, recomputes the
 headline, verifies stored hashes, and leaves tracked files unchanged. Numerical recomputation is
 supported; cross-platform byte-for-byte PNG regeneration is not claimed
 ([verification guide](docs/grounding-verification.md)).
@@ -126,8 +189,8 @@ truncation, and stepping after either ending raises an error
 
 ### Frozen grounding experiment
 
-On **100 paired examples (10 target controls x 10 seeds)** from the same 1024×768 synthetic form, the Codex CLI provider using the
-moving `gpt-5.4-mini` alias scored **56/100 with raw coordinates and 100/100 with marks**. The
+On **100 paired examples (20 task seeds × 5 screen states; each of 10 target controls appears 10
+times)** from the same 1024×768 synthetic form, the Codex CLI provider using the moving `gpt-5.4-mini` alias scored **56/100 with raw coordinates and 100/100 with marks**. The
 paired difference was **+44.0 percentage points**, with a fixed-seed percentile-bootstrap **95% CI
 of [+35.0, +54.0]** ([current report v2](artifacts/grounding-report-v2.md) with
 [its provenance](artifacts/grounding-report-provenance-v2.json),
@@ -136,7 +199,7 @@ of [+35.0, +54.0]** ([current report v2](artifacts/grounding-report-v2.md) with
 [provenance](artifacts/grounding-report-provenance-v1.json)). That interval treats the 100 examples
 as independent; resampling the 10 target controls instead gives a target-clustered 95% CI of
 [+21.0, +67.0], and 7 of 10 targets favour marks with none favouring raw (exact sign test
-p = 0.0156) ([clustered supplement](artifacts/grounding-clustered-analysis-v1.md)). Proposal
+p = 0.0156) ([clustered supplement](artifacts/grounding-clustered-analysis-v2.md)). Proposal
 coverage was **100/100**, which holds by construction: the retention rule requires the target to
 occur exactly once among the independently collected candidates
 ([protocol, retention rule](artifacts/grounding-protocol.md#retention-validation-and-exclusions)).
@@ -197,11 +260,16 @@ without being promoted to a headline result
 - The privileged state endpoint exists inside the guest. App-mode navigation containment was
   tested, while browser and guest-OS exploits remain outside the threat model. Digest pinning does
   not remove third-party publisher risk ([reward-hacking audit](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json)).
-- The +44 pp result is specific to `gpt-5.4-mini` with prompt v1. With a revised prompt, Claude
-  Haiku 4.5 scored 100/100 raw on the same 100 examples
-  ([v3 Haiku/Gemini report](artifacts/grounding-v3-haiku-gemini-report.md)).
+- The +44 pp result is specific to `gpt-5.4-mini` with prompt v1. Claude Haiku 4.5 scored 100/100
+  raw on the same 100 examples ([v3 Haiku/Gemini report](artifacts/grounding-v3-haiku-gemini-report.md)).
+  That run is labelled prompt v2, but its raw-condition prompt was byte-identical to v1 (every raw
+  record's `prompt_sha256` matches the v1 record for the same example); v2 changed the marks prompt.
+  The parser version (v2) and the harness (Claude Code CLI rather than Codex CLI) did differ.
+- The request-card split of the 44 raw misses is a post-hoc sensitivity analysis on the same 100
+  examples. A click on the request card is wrong under the frozen protocol, and the frozen 56/100
+  is unchanged ([ambiguity split](artifacts/grounding-ambiguity-split-v1.md)).
 - The headline calls ran through the Codex CLI harness and averaged about 11,900 input tokens per
-  screenshot-plus-instruction ([clustered supplement](artifacts/grounding-clustered-analysis-v1.md),
+  screenshot-plus-instruction ([clustered supplement](artifacts/grounding-clustered-analysis-v2.md),
   derived from [predictions](artifacts/grounding-predictions.jsonl)). The harness
   prompt is not part of the recorded prompt v1, and it is not recorded whether the harness prompt
   was identical across conditions.
@@ -209,6 +277,17 @@ without being promoted to a headline result
   descriptive, and the D5.10 gate covers the environment, platform, and evidence discipline, not a
   pre-registered confirmatory result or a model ranking; v5 stateful serving (S8) has not been
   rehearsed ([evidence index](docs/evidence-index.md), [gate record](artifacts/grounding-v5-d510/human-gate.json)).
+- The v5 stateful-versus-stateless result is descriptive: same direction in three campaigns,
+  magnitude unresolved, and the third campaign is a post-hoc parser-sensitivity rerun of the same
+  task. The 1/9 chance level assumes an otherwise-perfect policy guessing uniformly; correct answers
+  are not exactly balanced across screen positions, and the best fixed-position guess would match
+  26 of 192 ([chance supplement](artifacts/grounding-v5-stateless-chance-ceiling-v1.md)).
+- The OSWorld guest check is one run of seven hand-picked sequences at commit `627e09b`. A later
+  commit in the same pull request changed the guest form server and page script, so it is not
+  evidence for the merged guest code ([provenance](artifacts/osworld-guest-check-2026-11-11/provenance.json)).
+- Throughput and the behaviour-cloning result describe the in-process fake backend on one host.
+  The cloning experiment had no recovery data and no hyperparameter search, and validation accuracy
+  was still rising when training stopped ([BC report](artifacts/bc-experiment/REPORT.md)).
 
 ## Related work and demonstrated contribution
 
