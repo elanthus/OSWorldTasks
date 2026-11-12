@@ -66,7 +66,7 @@ def build_dynamic_solve_actions(backend: FakeBackend, *, include_submit: bool = 
     Derived from the backend's privileged state at call time -- not a golden
     trajectory. The interaction is the one a person would perform: click a
     field, type it, focus the country control and select by allowlisted
-    type-ahead plus Enter, pick the radio, tick the box if the request card
+    type-ahead (one first-letter key), pick the radio, tick the box if the request card
     says Yes, press Submit. Native country-popup rows deliberately have no
     transferable geometry contract.
     """

@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "kind": "reward_hacking_addendum",
+  "supplements": "artifacts/day-2-rev-2026-09-06-issues-95-101/raw/reward-hacking.json",
+  "decision_date": "2026-11-12",
+  "applies_from": {
+    "pull_request": "elanthus/OSWorldTasks#276",
+    "branch": "fix/fake-browser-parity-and-submit-barrier"
+  },
+  "applies_from_note": "The input acknowledgement barrier, POST and GET /api/input-ack, and the page token from POST /api/page-ready arrived with that pull request and were not classified by the frozen audit. The pointer-park entry applies from the pull request that adds this file (branch fix/env-hidden-state-and-reset). Dispositions are stated per surface; residual risk is in each entry.",
+  "attacks": [
+    {
+      "attack": "Forge, replay, or reorder input acknowledgements through POST /api/input-ack",
+      "disposition": "tested",
+      "surface": "POST /api/input-ack accepts {task_id, page, count} from the page and advances the server's acknowledgement count; GET /api/input-ack returns that count.",
+      "mitigation": "Both servers accept an acknowledgement only for the active task, the current page token, and count equal to the previous count plus one, and the count never enters privileged submission state. The host waits for exactly N acknowledgements after its Nth input and fails closed on a higher count or at a deadline. Acknowledgements decide only when the host reads submissions; reward still comes only from the evaluator over recorded submissions (invariant 6). The agent's action space has no action that issues an HTTP request (invariant 3).",
+      "evidence": "tests/unit/test_vendor_form_app.py (test_input_acknowledgements_are_page_bound_strictly_sequential_and_reset, test_input_acknowledgements_never_enter_privileged_state, test_input_acknowledgements_require_an_active_task); tests/unit/test_vendor_form_guest_server.py (test_input_acknowledgements_match_fastapi_contract); tests/unit/test_osworld_input_barrier.py (test_acknowledgement_overshoot_fails_closed, test_missing_acknowledgement_fails_closed_without_reward); tests/unit/test_backend_settle.py; stored barrier negative and positive controls in artifacts/browser-differential-v1/evidence.json.",
+      "residual_risk": "A process inside the guest that can reach 127.0.0.1:3000 could post well-formed acknowledgements early and make the host read submissions before the page has settled. That would delay or lose a reward, never create one, and requires guest code execution, which the frozen audit already places outside the threat model."
+    },
+    {
+      "attack": "Let a late acknowledgement from an earlier page stand in for the current page's input",
+      "disposition": "tested",
+      "surface": "After a same-seed reset the task_id is unchanged, so task_id alone cannot tell an old page's acknowledgement from the new page's.",
+      "mitigation": "POST /api/page-ready issues a fresh page token and resets the acknowledgement count; acknowledgements carrying an older token are refused.",
+      "evidence": "tests/unit/test_vendor_form_app.py (test_late_acknowledgement_from_the_previous_page_is_refused_after_same_seed_reset); tests/unit/test_vendor_form_guest_server.py (test_page_ready_http_response_carries_the_page_token).",
+      "residual_risk": "None identified beyond the guest-code-execution case above."
+    },
+    {
+      "attack": "Mark the page ready early or for another task through POST /api/page-ready",
+      "disposition": "tested",
+      "surface": "Setup waits on GET /api/page-ready before the first observation; POST /api/page-ready is how the page reports it rendered.",
+      "mitigation": "A page-ready report for a stale task_id is refused and leaves the page not ready. Readiness gates only when setup lets DesktopEnv return the first observation; it carries no task values and cannot record a submission.",
+      "evidence": "tests/unit/test_vendor_form_app.py (test_page_ready_requires_reload_with_the_active_task_id_after_reset); tests/unit/test_osworld_task.py (test_custom_task_setup_rejects_page_ready_failure).",
+      "residual_risk": "An early ready report could only produce an observation of an incompletely rendered page, which the screenshot stabilization and reset checks would see as a frame difference, not as reward."
+    },
+    {
+      "attack": "Read GET /api/input-ack or GET /api/page-ready from the agent as an information channel",
+      "disposition": "known limitation",
+      "surface": "Both endpoints are unauthenticated GETs on the guest's loopback task server.",
+      "mitigation": "They return only an integer count or a ready flag, never task values, expected answers, or submissions. The agent has no navigation action, and the keyboard allowlist has no modifier chords.",
+      "evidence": "tests/unit/test_vendor_form_app.py and tests/unit/test_vendor_form_guest_server.py pin the response bodies.",
+      "residual_risk": "Classified as a known limitation rather than blocked because the real-guest navigation-boundary evidence that would make browser navigation blocked has not been re-recorded for the current bundle; its stored source hashes no longer match. Even if reached, the endpoints carry no answer content."
+    },
+    {
+      "attack": "Guest setup input counted as one of the agent's inputs",
+      "disposition": "mitigated",
+      "surface": "The pointer-park setup program clicked at (100, 150) before the episode. In local Chromium that click is a trusted primary mouseup the page acknowledges, after which reset's zero-acknowledgement check fails or, with a later read, an acknowledgement is paired with the wrong host action.",
+      "mitigation": "The park program no longer clicks and must report the parked pointer position or setup fails. OSWorldBackend.reset requires the fixed osworld_task.SETUP_ACKNOWLEDGED_INPUTS (0), never the count the page reports, so a page that acknowledged any setup input is rejected.",
+      "evidence": "tests/unit/test_osworld_task.py (test_full_setup_sequence_leaves_exactly_the_fixed_acknowledgement_count, test_negative_control_the_pre_fix_park_click_is_acknowledged_by_the_page); tests/unit/test_osworld_input_barrier.py (test_reset_rejects_a_setup_step_that_clicks_the_page, test_reset_after_the_full_setup_sequence_expects_the_fixed_count); tests/support/osworld_setup_model.py.",
+      "residual_risk": "Not yet run on the OSWorld guest. scripts/osworld_guest_check.py records the acknowledgement count after reset and the park program's output; it awaits owner approval to boot the guest."
+    }
+  ]
+}
