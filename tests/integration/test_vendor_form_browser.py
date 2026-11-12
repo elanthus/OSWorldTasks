@@ -430,7 +430,19 @@ def test_keyboard_focus_is_visible_in_pixels_on_every_control() -> None:
             browser.close()
 
 
-def test_suppressed_focus_ring_failure_names_the_invisible_widget() -> None:
+@pytest.mark.parametrize(
+    ("selector", "message"),
+    [
+        # The select draws no caret, so with its ring suppressed focusing it changes no pixels.
+        ("#country", "country: focusing the control changed no pixels"),
+        # A focused text input also draws the static caret (input contract v3), so its frame
+        # still changes; the suppressed ring is caught by the outline check instead.
+        ("#contact_email", "contact_email: outline-style is none"),
+    ],
+)
+def test_suppressed_focus_ring_failure_names_the_invisible_widget(
+    selector: str, message: str
+) -> None:
     playwright_api = pytest.importorskip("playwright.sync_api")
 
     with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:
@@ -441,11 +453,9 @@ def test_suppressed_focus_ring_failure_names_the_invisible_widget() -> None:
             page = browser.new_page(viewport={"width": DESIGN_WIDTH, "height": DESIGN_HEIGHT})
             page.goto(base_url)
             page.locator(READY_SELECTOR).wait_for(state="attached")
-            page.add_style_tag(content="#contact_email:focus-visible { outline: none; }")
+            page.add_style_tag(content=f"{selector}:focus-visible {{ outline: none; }}")
 
-            with pytest.raises(
-                AssertionError, match="contact_email: focusing the control changed no pixels"
-            ):
+            with pytest.raises(AssertionError, match=message):
                 _assert_tab_focus_is_visible(page, layout_for(task, DESIGN_WIDTH, DESIGN_HEIGHT))
         finally:
             browser.close()
