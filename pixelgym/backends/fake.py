@@ -252,19 +252,37 @@ class FakeBackend:
             raise ValueError("fake-backend checkpoint screen mismatch")
         if value["country_open"] is not False:
             raise ValueError("fake-backend checkpoint contains unsupported country popup state")
-        self.closed = False
-        record = self.reset(value["seed"])
-        if record["task_id"] != value["task_id"]:
+        # Validate the v2 interaction fields before the live state is replaced, so a malformed
+        # checkpoint cannot leave a half-restored form or a value the event handlers would trip on.
+        seed = value["seed"]
+        if type(seed) is not int:
+            raise ValueError("fake-backend checkpoint seed must be an int")
+        expected_record = generator.generate_task(seed)
+        if expected_record["task_id"] != value["task_id"]:
             raise ValueError("fake-backend checkpoint task mismatch")
+        try:
+            focus = None if value["focus"] is None else ui.WidgetId(value["focus"])
+        except ValueError as exc:
+            raise ValueError("fake-backend checkpoint focus is not a form widget") from exc
+        payment_focus_index = value["payment_focus_index"]
+        option_count = len(expected_record["options"]["payment_terms"])
+        if payment_focus_index is not None and (
+            type(payment_focus_index) is not int or not 0 <= payment_focus_index < option_count
+        ):
+            raise ValueError("fake-backend checkpoint radio focus index is out of range")
+        if (focus is ui.WidgetId.PAYMENT_TERMS) != (payment_focus_index is not None):
+            raise ValueError("fake-backend checkpoint radio focus is inconsistent with focus")
+        if type(value["tab_exited_form"]) is not bool:
+            raise ValueError("fake-backend checkpoint tab_exited_form must be a bool")
+        self.closed = False
+        self.reset(seed)
         _record, _layout, form = self._require_task()
         form.text = {ui.WidgetId(name): text for name, text in value["text"].items()}
         form.country_index = value["country_index"]
         form.payment_index = value["payment_index"]
         form.expedited = value["expedited"]
-        form.focus = None if value["focus"] is None else ui.WidgetId(value["focus"])
-        form.payment_focus_index = value["payment_focus_index"]
-        if (form.focus is ui.WidgetId.PAYMENT_TERMS) != (form.payment_focus_index is not None):
-            raise ValueError("fake-backend checkpoint radio focus is inconsistent with focus")
+        form.focus = focus
+        form.payment_focus_index = payment_focus_index
         form.tab_exited_form = value["tab_exited_form"]
         form.status = value["status"]
         self._submissions = [Submission.from_record(row) for row in value["submissions"]]

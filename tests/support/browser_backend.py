@@ -68,21 +68,36 @@ def _free_port() -> int:
 
 
 @contextlib.contextmanager
-def vendor_form_server(*, submit_delay: float = 0.0) -> Iterator[str]:
-    """Serve the FastAPI task app on loopback, optionally delaying every ``POST /api/submit``.
+def vendor_form_server(
+    *,
+    submit_delay: float = 0.0,
+    submit_gate: threading.Event | None = None,
+    submit_arrived: threading.Event | None = None,
+) -> Iterator[str]:
+    """Serve the FastAPI task app on loopback, optionally holding every ``POST /api/submit``.
 
-    The delay is applied inside the server before the request is handled, so a submission is
-    recorded only after it -- the shape of a slow guest service or a loaded VM.
+    ``submit_delay`` sleeps inside the server before the request is handled, so a submission is
+    recorded only after it -- the shape of a slow guest service or a loaded VM. ``submit_gate``
+    holds each submit until the test sets the event (bounded at 30 s), which lets a test fix the
+    order of "evaluator read" and "submission recorded" without relying on elapsed time.
+    ``submit_arrived`` is set when a submit request reaches the server, before any hold.
     """
 
     app = create_app()
 
-    if submit_delay:
+    if submit_delay or submit_gate is not None or submit_arrived is not None:
 
         @app.middleware("http")
-        async def _delay_submit(request: Any, call_next: Any) -> Any:
+        async def _hold_submit(request: Any, call_next: Any) -> Any:
             if request.method == "POST" and request.url.path == "/api/submit":
-                await asyncio.sleep(submit_delay)
+                if submit_arrived is not None:
+                    submit_arrived.set()
+                if submit_delay:
+                    await asyncio.sleep(submit_delay)
+                if submit_gate is not None:
+                    released = await asyncio.to_thread(submit_gate.wait, 30.0)
+                    if not released:
+                        raise RuntimeError("test submit gate was never released")
             return await call_next(request)
 
     port = _free_port()
@@ -100,6 +115,16 @@ def vendor_form_server(*, submit_delay: float = 0.0) -> Iterator[str]:
     finally:
         server.should_exit = True
         thread.join(timeout=5.0)
+
+
+def wait_until(predicate: Any, *, timeout: float = 30.0, what: str) -> None:
+    """Poll `predicate` until it is truthy; fail after `timeout` seconds instead of hanging."""
+
+    deadline = time.monotonic() + timeout
+    while not predicate():
+        if time.monotonic() > deadline:
+            raise AssertionError(f"timed out after {timeout:.0f}s waiting for {what}")
+        time.sleep(0.01)
 
 
 def json_request(url: str, payload: Mapping[str, Any] | None = None) -> Any:
@@ -225,4 +250,5 @@ __all__ = [
     "json_request",
     "launch_chromium",
     "vendor_form_server",
+    "wait_until",
 ]

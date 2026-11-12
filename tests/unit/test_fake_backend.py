@@ -868,3 +868,27 @@ def test_checkpoint_with_inconsistent_radio_focus_is_rejected(backend):
 
     with pytest.raises(ValueError, match="radio focus is inconsistent"):
         FakeBackend().restore(json.dumps(value).encode())
+
+
+@pytest.mark.parametrize(
+    ("field", "bad", "message"),
+    [
+        ("payment_focus_index", "1", "out of range"),
+        ("payment_focus_index", True, "out of range"),
+        ("payment_focus_index", 3, "out of range"),
+        ("payment_focus_index", -1, "out of range"),
+        ("tab_exited_form", "false", "must be a bool"),
+        ("tab_exited_form", 0, "must be a bool"),
+        ("focus", "not-a-widget", "not a form widget"),
+    ],
+)
+def test_malformed_v2_fields_are_rejected_before_live_state_changes(backend, field, bad, message):
+    _tab_into_payment(backend)
+    good = backend.checkpoint()
+    value = json.loads(good)
+    value[field] = bad
+
+    with pytest.raises(ValueError, match=message):
+        backend.restore(json.dumps(value).encode())
+
+    assert backend.checkpoint() == good
