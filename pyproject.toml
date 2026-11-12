@@ -32,6 +32,11 @@ platform = [
     "httpx2==2.9.1",  # deployment smoke uses Starlette's TestClient at runtime
     "jinja2==3.1.6",  # control-plane web templates (pixelgym.platform.web)
 ]
+# Behaviour-cloning experiment (scripts/run_bc_experiment.py). Not needed by the core package,
+# the fast unit suite, or lint; tests that need torch skip without it.
+train = [
+    "torch>=2.4",
+]
 dev = [
     "coverage==7.16.0",
     "hypothesis==6.167.1",
@@ -51,6 +56,10 @@ dev = [
     "playwright>=1.52",  # deterministic grounding-dataset browser capture tooling
     "setuptools>=77",  # supports SPDX license metadata and no-isolation wheel tests
 ]
+
+[project.entry-points."gymnasium.envs"]
+# Gymnasium 0.28 runs this on `import gymnasium`; the entry-point name is the ID namespace.
+PixelGym = "pixelgym.registration:register_envs"
 
 [build-system]
 requires = ["setuptools>=77"]

@@ -1,0 +1,4155 @@
+{
+  "command": "scripts/run_bc_experiment.py",
+  "data": {
+    "generation_seconds": 30.41139641602058,
+    "pool_frames": 28018,
+    "test_frames": 5501,
+    "validation_frames": 3500
+  },
+  "design": {
+    "batch_size": 64,
+    "checkpoint_selection": "best validation teacher-forced step accuracy",
+    "click_cell_pixels": 16,
+    "click_grid": [
+      64,
+      48
+    ],
+    "eval_every": 500,
+    "max_episode_steps": 200,
+    "observation": "grayscale, 2x area-downsampled to 384x512 uint8",
+    "optimizer": "AdamW lr=3e-4 weight_decay=1e-4",
+    "oracle": "tests.support.golden_solver.build_dynamic_solve_actions",
+    "steps": 6000,
+    "test_seeds": [
+      10000,
+      10049
+    ],
+    "train_pool_seeds": [
+      0,
+      255
+    ],
+    "validation_seeds": [
+      256,
+      287
+    ]
+  },
+  "generated_at": "2026-11-12T07:37:35.182798+00:00",
+  "git_revision": "5f05d84223f028ff419d90078be7485dfe11afb6",
+  "host": {
+    "machine": "arm64",
+    "numpy": "1.26.4",
+    "python": "3.12.15",
+    "system": "Darwin",
+    "torch": "2.15.0"
+  },
+  "runs": [
+    {
+      "best_validation_step": 5000,
+      "best_validation_step_accuracy": 0.3202857142857143,
+      "closed_loop": {
+        "episodes": 50,
+        "episodes_with_any_submission": 50,
+        "fields_total": 7,
+        "mean_fields_correct": 0.48,
+        "mean_steps": 200.0,
+        "per_episode": [
+          {
+            "fields_correct": 1,
+            "seed": 10000,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10001,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10002,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10003,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10004,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10005,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10006,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10007,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10008,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10009,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10010,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10011,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10012,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10013,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10014,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10015,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10016,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10017,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10018,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10019,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10020,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10021,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10022,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10023,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10024,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10025,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10026,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10027,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10028,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10029,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10030,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10031,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10032,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10033,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10034,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10035,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10036,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10037,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10038,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10039,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10040,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10041,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10042,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10043,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10044,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10045,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10046,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10047,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10048,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10049,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          }
+        ],
+        "successes": 0
+      },
+      "demo_episodes": 4,
+      "demo_frames": 431,
+      "device": "mps",
+      "parameters": 3376938,
+      "teacher_forced": {
+        "action_type_accuracy": 0.9507362297764043,
+        "click_frames": 376,
+        "click_target_accuracy": 0.13297872340425532,
+        "frames": 5501,
+        "key_accuracy": 0.3492682926829268,
+        "key_frames": 5125,
+        "step_accuracy": 0.3166696964188329
+      },
+      "train_seconds": 955.6380782499909,
+      "training_seed": 0,
+      "validation_curve": [
+        {
+          "action_type_accuracy": 0.9551428571428572,
+          "click_frames": 240,
+          "click_target_accuracy": 0.04583333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.1374233128834356,
+          "key_frames": 3260,
+          "loss": 8.474302291870117,
+          "step": 500,
+          "step_accuracy": 0.12685714285714286
+        },
+        {
+          "action_type_accuracy": 0.9417142857142857,
+          "click_frames": 240,
+          "click_target_accuracy": 0.041666666666666664,
+          "frames": 3500,
+          "key_accuracy": 0.18190184049079755,
+          "key_frames": 3260,
+          "loss": 8.80785846710205,
+          "step": 1000,
+          "step_accuracy": 0.15914285714285714
+        },
+        {
+          "action_type_accuracy": 0.9494285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.04583333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.2263803680981595,
+          "key_frames": 3260,
+          "loss": 6.878429889678955,
+          "step": 1500,
+          "step_accuracy": 0.20085714285714285
+        },
+        {
+          "action_type_accuracy": 0.9397142857142857,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.2776073619631902,
+          "key_frames": 3260,
+          "loss": 5.806671142578125,
+          "step": 2000,
+          "step_accuracy": 0.24771428571428572
+        },
+        {
+          "action_type_accuracy": 0.9391428571428572,
+          "click_frames": 240,
+          "click_target_accuracy": 0.041666666666666664,
+          "frames": 3500,
+          "key_accuracy": 0.29141104294478526,
+          "key_frames": 3260,
+          "loss": 5.94710111618042,
+          "step": 2500,
+          "step_accuracy": 0.2542857142857143
+        },
+        {
+          "action_type_accuracy": 0.9537142857142857,
+          "click_frames": 240,
+          "click_target_accuracy": 0.041666666666666664,
+          "frames": 3500,
+          "key_accuracy": 0.3042944785276074,
+          "key_frames": 3260,
+          "loss": 5.3733625411987305,
+          "step": 3000,
+          "step_accuracy": 0.27
+        },
+        {
+          "action_type_accuracy": 0.9471428571428572,
+          "click_frames": 240,
+          "click_target_accuracy": 0.041666666666666664,
+          "frames": 3500,
+          "key_accuracy": 0.3352760736196319,
+          "key_frames": 3260,
+          "loss": 3.4767961502075195,
+          "step": 3500,
+          "step_accuracy": 0.29828571428571427
+        },
+        {
+          "action_type_accuracy": 0.9465714285714286,
+          "click_frames": 240,
+          "click_target_accuracy": 0.04583333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.34386503067484664,
+          "key_frames": 3260,
+          "loss": 6.391631126403809,
+          "step": 4000,
+          "step_accuracy": 0.3057142857142857
+        },
+        {
+          "action_type_accuracy": 0.9402857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3337423312883436,
+          "key_frames": 3260,
+          "loss": 4.077013969421387,
+          "step": 4500,
+          "step_accuracy": 0.30114285714285716
+        },
+        {
+          "action_type_accuracy": 0.9462857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3530674846625767,
+          "key_frames": 3260,
+          "loss": 3.4379208087921143,
+          "step": 5000,
+          "step_accuracy": 0.3202857142857143
+        },
+        {
+          "action_type_accuracy": 0.9468571428571428,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3478527607361963,
+          "key_frames": 3260,
+          "loss": 5.221518516540527,
+          "step": 5500,
+          "step_accuracy": 0.316
+        },
+        {
+          "action_type_accuracy": 0.9434285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.041666666666666664,
+          "frames": 3500,
+          "key_accuracy": 0.34846625766871164,
+          "key_frames": 3260,
+          "loss": 4.982065677642822,
+          "step": 6000,
+          "step_accuracy": 0.30914285714285716
+        }
+      ]
+    },
+    {
+      "best_validation_step": 6000,
+      "best_validation_step_accuracy": 0.34685714285714286,
+      "closed_loop": {
+        "episodes": 50,
+        "episodes_with_any_submission": 0,
+        "fields_total": 7,
+        "mean_fields_correct": 0.48,
+        "mean_steps": 200.0,
+        "per_episode": [
+          {
+            "fields_correct": 1,
+            "seed": 10000,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10001,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10002,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10003,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10004,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10005,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10006,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10007,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10008,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10009,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10010,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10011,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10012,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10013,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10014,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10015,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10016,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10017,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10018,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10019,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10020,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10021,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10022,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10023,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10024,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10025,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10026,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10027,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10028,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10029,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10030,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10031,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10032,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10033,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10034,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10035,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10036,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10037,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10038,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10039,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10040,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10041,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10042,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10043,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10044,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10045,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10046,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10047,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10048,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10049,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          }
+        ],
+        "successes": 0
+      },
+      "demo_episodes": 4,
+      "demo_frames": 431,
+      "device": "mps",
+      "parameters": 3376938,
+      "teacher_forced": {
+        "action_type_accuracy": 0.9687329576440648,
+        "click_frames": 376,
+        "click_target_accuracy": 0.06914893617021277,
+        "frames": 5501,
+        "key_accuracy": 0.3697560975609756,
+        "key_frames": 5125,
+        "step_accuracy": 0.34557353208507546
+      },
+      "train_seconds": 940.7855347079458,
+      "training_seed": 1,
+      "validation_curve": [
+        {
+          "action_type_accuracy": 0.9314285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.041666666666666664,
+          "frames": 3500,
+          "key_accuracy": 0.08496932515337423,
+          "key_frames": 3260,
+          "loss": 9.549302101135254,
+          "step": 500,
+          "step_accuracy": 0.07914285714285714
+        },
+        {
+          "action_type_accuracy": 0.936,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.13466257668711656,
+          "key_frames": 3260,
+          "loss": 8.367046356201172,
+          "step": 1000,
+          "step_accuracy": 0.12542857142857142
+        },
+        {
+          "action_type_accuracy": 0.9568571428571429,
+          "click_frames": 240,
+          "click_target_accuracy": 0.041666666666666664,
+          "frames": 3500,
+          "key_accuracy": 0.14294478527607363,
+          "key_frames": 3260,
+          "loss": 7.566675662994385,
+          "step": 1500,
+          "step_accuracy": 0.13314285714285715
+        },
+        {
+          "action_type_accuracy": 0.9334285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.04583333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.18282208588957055,
+          "key_frames": 3260,
+          "loss": 5.151052474975586,
+          "step": 2000,
+          "step_accuracy": 0.15971428571428573
+        },
+        {
+          "action_type_accuracy": 0.9534285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.20061349693251534,
+          "key_frames": 3260,
+          "loss": 6.655989170074463,
+          "step": 2500,
+          "step_accuracy": 0.19
+        },
+        {
+          "action_type_accuracy": 0.9577142857142857,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.2579754601226994,
+          "key_frames": 3260,
+          "loss": 7.499171733856201,
+          "step": 3000,
+          "step_accuracy": 0.23742857142857143
+        },
+        {
+          "action_type_accuracy": 0.9597142857142857,
+          "click_frames": 240,
+          "click_target_accuracy": 0.04583333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.2665644171779141,
+          "key_frames": 3260,
+          "loss": 6.070197105407715,
+          "step": 3500,
+          "step_accuracy": 0.2397142857142857
+        },
+        {
+          "action_type_accuracy": 0.9425714285714286,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.3049079754601227,
+          "key_frames": 3260,
+          "loss": 6.419188976287842,
+          "step": 4000,
+          "step_accuracy": 0.2705714285714286
+        },
+        {
+          "action_type_accuracy": 0.9591428571428572,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3334355828220859,
+          "key_frames": 3260,
+          "loss": 5.537567138671875,
+          "step": 4500,
+          "step_accuracy": 0.3097142857142857
+        },
+        {
+          "action_type_accuracy": 0.9617142857142857,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3355828220858896,
+          "key_frames": 3260,
+          "loss": 3.446256637573242,
+          "step": 5000,
+          "step_accuracy": 0.3097142857142857
+        },
+        {
+          "action_type_accuracy": 0.9637142857142857,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.36165644171779143,
+          "key_frames": 3260,
+          "loss": 6.1605377197265625,
+          "step": 5500,
+          "step_accuracy": 0.334
+        },
+        {
+          "action_type_accuracy": 0.9654285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.3745398773006135,
+          "key_frames": 3260,
+          "loss": 4.526913642883301,
+          "step": 6000,
+          "step_accuracy": 0.34685714285714286
+        }
+      ]
+    },
+    {
+      "best_validation_step": 6000,
+      "best_validation_step_accuracy": 0.3782857142857143,
+      "closed_loop": {
+        "episodes": 50,
+        "episodes_with_any_submission": 50,
+        "fields_total": 7,
+        "mean_fields_correct": 0.48,
+        "mean_steps": 200.0,
+        "per_episode": [
+          {
+            "fields_correct": 1,
+            "seed": 10000,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10001,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10002,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10003,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10004,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10005,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10006,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10007,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10008,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10009,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10010,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10011,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10012,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10013,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10014,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10015,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10016,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10017,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10018,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10019,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10020,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10021,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10022,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10023,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10024,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10025,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10026,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10027,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10028,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10029,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10030,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10031,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10032,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10033,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10034,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10035,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10036,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10037,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10038,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10039,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10040,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10041,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10042,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10043,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10044,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10045,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10046,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10047,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10048,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10049,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          }
+        ],
+        "successes": 0
+      },
+      "demo_episodes": 16,
+      "demo_frames": 1764,
+      "device": "mps",
+      "parameters": 3376938,
+      "teacher_forced": {
+        "action_type_accuracy": 0.9776404290129067,
+        "click_frames": 376,
+        "click_target_accuracy": 0.13297872340425532,
+        "frames": 5501,
+        "key_accuracy": 0.3960975609756098,
+        "key_frames": 5125,
+        "step_accuracy": 0.3706598800218142
+      },
+      "train_seconds": 983.8027648749994,
+      "training_seed": 0,
+      "validation_curve": [
+        {
+          "action_type_accuracy": 0.9468571428571428,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.1334355828220859,
+          "key_frames": 3260,
+          "loss": 2.9549896717071533,
+          "step": 500,
+          "step_accuracy": 0.128
+        },
+        {
+          "action_type_accuracy": 0.9545714285714286,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.1598159509202454,
+          "key_frames": 3260,
+          "loss": 8.087514877319336,
+          "step": 1000,
+          "step_accuracy": 0.15771428571428572
+        },
+        {
+          "action_type_accuracy": 0.9562857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.17300613496932515,
+          "key_frames": 3260,
+          "loss": 7.209250450134277,
+          "step": 1500,
+          "step_accuracy": 0.16742857142857143
+        },
+        {
+          "action_type_accuracy": 0.9565714285714285,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.21012269938650308,
+          "key_frames": 3260,
+          "loss": 7.685921669006348,
+          "step": 2000,
+          "step_accuracy": 0.1997142857142857
+        },
+        {
+          "action_type_accuracy": 0.9648571428571429,
+          "click_frames": 240,
+          "click_target_accuracy": 0.04583333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.24846625766871167,
+          "key_frames": 3260,
+          "loss": 6.829309463500977,
+          "step": 2500,
+          "step_accuracy": 0.2302857142857143
+        },
+        {
+          "action_type_accuracy": 0.972,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3,
+          "key_frames": 3260,
+          "loss": 6.101497650146484,
+          "step": 3000,
+          "step_accuracy": 0.2862857142857143
+        },
+        {
+          "action_type_accuracy": 0.9648571428571429,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.31349693251533745,
+          "key_frames": 3260,
+          "loss": 6.899776458740234,
+          "step": 3500,
+          "step_accuracy": 0.296
+        },
+        {
+          "action_type_accuracy": 0.9728571428571429,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.350920245398773,
+          "key_frames": 3260,
+          "loss": 5.75806999206543,
+          "step": 4000,
+          "step_accuracy": 0.32542857142857146
+        },
+        {
+          "action_type_accuracy": 0.9774285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.37668711656441717,
+          "key_frames": 3260,
+          "loss": 5.944561004638672,
+          "step": 4500,
+          "step_accuracy": 0.35285714285714287
+        },
+        {
+          "action_type_accuracy": 0.9768571428571429,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.38773006134969323,
+          "key_frames": 3260,
+          "loss": 5.411629676818848,
+          "step": 5000,
+          "step_accuracy": 0.36114285714285715
+        },
+        {
+          "action_type_accuracy": 0.9742857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.041666666666666664,
+          "frames": 3500,
+          "key_accuracy": 0.3932515337423313,
+          "key_frames": 3260,
+          "loss": 6.068227767944336,
+          "step": 5500,
+          "step_accuracy": 0.36257142857142854
+        },
+        {
+          "action_type_accuracy": 0.9754285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.405521472392638,
+          "key_frames": 3260,
+          "loss": 5.881309509277344,
+          "step": 6000,
+          "step_accuracy": 0.3782857142857143
+        }
+      ]
+    },
+    {
+      "best_validation_step": 5500,
+      "best_validation_step_accuracy": 0.3251428571428571,
+      "closed_loop": {
+        "episodes": 50,
+        "episodes_with_any_submission": 50,
+        "fields_total": 7,
+        "mean_fields_correct": 0.48,
+        "mean_steps": 200.0,
+        "per_episode": [
+          {
+            "fields_correct": 1,
+            "seed": 10000,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10001,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10002,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10003,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10004,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10005,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10006,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10007,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10008,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10009,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10010,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10011,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10012,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10013,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10014,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10015,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10016,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10017,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10018,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10019,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10020,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10021,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10022,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10023,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10024,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10025,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10026,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10027,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10028,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10029,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10030,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10031,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10032,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10033,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10034,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10035,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10036,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10037,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10038,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10039,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10040,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10041,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10042,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10043,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10044,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10045,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10046,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10047,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10048,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10049,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          }
+        ],
+        "successes": 0
+      },
+      "demo_episodes": 16,
+      "demo_frames": 1764,
+      "device": "mps",
+      "parameters": 3376938,
+      "teacher_forced": {
+        "action_type_accuracy": 0.9709143792037811,
+        "click_frames": 376,
+        "click_target_accuracy": 0.13297872340425532,
+        "frames": 5501,
+        "key_accuracy": 0.343609756097561,
+        "key_frames": 5125,
+        "step_accuracy": 0.3163061261588802
+      },
+      "train_seconds": 922.9158077499596,
+      "training_seed": 1,
+      "validation_curve": [
+        {
+          "action_type_accuracy": 0.9314285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.05889570552147239,
+          "key_frames": 3260,
+          "loss": 9.519577980041504,
+          "step": 500,
+          "step_accuracy": 0.054857142857142854
+        },
+        {
+          "action_type_accuracy": 0.9308571428571428,
+          "click_frames": 240,
+          "click_target_accuracy": 0.04583333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.12791411042944786,
+          "key_frames": 3260,
+          "loss": 7.208301544189453,
+          "step": 1000,
+          "step_accuracy": 0.114
+        },
+        {
+          "action_type_accuracy": 0.9451428571428572,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.1383435582822086,
+          "key_frames": 3260,
+          "loss": 9.360392570495605,
+          "step": 1500,
+          "step_accuracy": 0.138
+        },
+        {
+          "action_type_accuracy": 0.9625714285714285,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.15061349693251533,
+          "key_frames": 3260,
+          "loss": 8.19261360168457,
+          "step": 2000,
+          "step_accuracy": 0.1437142857142857
+        },
+        {
+          "action_type_accuracy": 0.9614285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.17147239263803682,
+          "key_frames": 3260,
+          "loss": 7.76841926574707,
+          "step": 2500,
+          "step_accuracy": 0.15485714285714286
+        },
+        {
+          "action_type_accuracy": 0.9654285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.17331288343558282,
+          "key_frames": 3260,
+          "loss": 6.9599809646606445,
+          "step": 3000,
+          "step_accuracy": 0.16085714285714287
+        },
+        {
+          "action_type_accuracy": 0.9691428571428572,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.21012269938650308,
+          "key_frames": 3260,
+          "loss": 7.355839729309082,
+          "step": 3500,
+          "step_accuracy": 0.19514285714285715
+        },
+        {
+          "action_type_accuracy": 0.9734285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.26319018404907973,
+          "key_frames": 3260,
+          "loss": 5.6717119216918945,
+          "step": 4000,
+          "step_accuracy": 0.24371428571428572
+        },
+        {
+          "action_type_accuracy": 0.9708571428571429,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.28865030674846626,
+          "key_frames": 3260,
+          "loss": 6.392343997955322,
+          "step": 4500,
+          "step_accuracy": 0.26457142857142857
+        },
+        {
+          "action_type_accuracy": 0.9705714285714285,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.31809815950920245,
+          "key_frames": 3260,
+          "loss": 4.609264850616455,
+          "step": 5000,
+          "step_accuracy": 0.2914285714285714
+        },
+        {
+          "action_type_accuracy": 0.9677142857142857,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3576687116564417,
+          "key_frames": 3260,
+          "loss": 6.327728748321533,
+          "step": 5500,
+          "step_accuracy": 0.3251428571428571
+        },
+        {
+          "action_type_accuracy": 0.9754285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.04583333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.35552147239263804,
+          "key_frames": 3260,
+          "loss": 6.264273643493652,
+          "step": 6000,
+          "step_accuracy": 0.32485714285714284
+        }
+      ]
+    },
+    {
+      "best_validation_step": 6000,
+      "best_validation_step_accuracy": 0.4582857142857143,
+      "closed_loop": {
+        "episodes": 50,
+        "episodes_with_any_submission": 50,
+        "fields_total": 7,
+        "mean_fields_correct": 0.48,
+        "mean_steps": 200.0,
+        "per_episode": [
+          {
+            "fields_correct": 1,
+            "seed": 10000,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10001,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10002,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10003,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10004,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10005,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10006,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10007,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10008,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10009,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10010,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10011,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10012,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10013,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10014,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10015,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10016,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10017,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10018,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10019,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10020,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10021,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10022,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10023,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10024,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10025,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10026,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10027,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10028,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10029,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10030,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10031,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10032,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10033,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10034,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10035,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10036,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10037,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10038,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10039,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10040,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10041,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10042,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10043,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10044,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10045,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10046,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10047,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10048,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10049,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          }
+        ],
+        "successes": 0
+      },
+      "demo_episodes": 64,
+      "demo_frames": 7028,
+      "device": "mps",
+      "parameters": 3376938,
+      "teacher_forced": {
+        "action_type_accuracy": 0.9838211234321033,
+        "click_frames": 376,
+        "click_target_accuracy": 0.13297872340425532,
+        "frames": 5501,
+        "key_accuracy": 0.4708292682926829,
+        "key_frames": 5125,
+        "step_accuracy": 0.4441010725322669
+      },
+      "train_seconds": 947.3560477920109,
+      "training_seed": 0,
+      "validation_curve": [
+        {
+          "action_type_accuracy": 0.9462857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.15061349693251533,
+          "key_frames": 3260,
+          "loss": 8.580166816711426,
+          "step": 500,
+          "step_accuracy": 0.14142857142857143
+        },
+        {
+          "action_type_accuracy": 0.9542857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.04583333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.1656441717791411,
+          "key_frames": 3260,
+          "loss": 8.273185729980469,
+          "step": 1000,
+          "step_accuracy": 0.15428571428571428
+        },
+        {
+          "action_type_accuracy": 0.96,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.2343558282208589,
+          "key_frames": 3260,
+          "loss": 8.273550033569336,
+          "step": 1500,
+          "step_accuracy": 0.22257142857142856
+        },
+        {
+          "action_type_accuracy": 0.9591428571428572,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.2766871165644172,
+          "key_frames": 3260,
+          "loss": 7.922380447387695,
+          "step": 2000,
+          "step_accuracy": 0.266
+        },
+        {
+          "action_type_accuracy": 0.9748571428571429,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3076687116564417,
+          "key_frames": 3260,
+          "loss": 5.721848487854004,
+          "step": 2500,
+          "step_accuracy": 0.2905714285714286
+        },
+        {
+          "action_type_accuracy": 0.9762857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3674846625766871,
+          "key_frames": 3260,
+          "loss": 6.051159858703613,
+          "step": 3000,
+          "step_accuracy": 0.3457142857142857
+        },
+        {
+          "action_type_accuracy": 0.9771428571428571,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.402760736196319,
+          "key_frames": 3260,
+          "loss": 7.346982479095459,
+          "step": 3500,
+          "step_accuracy": 0.36657142857142855
+        },
+        {
+          "action_type_accuracy": 0.9791428571428571,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.4294478527607362,
+          "key_frames": 3260,
+          "loss": 5.292236804962158,
+          "step": 4000,
+          "step_accuracy": 0.39485714285714285
+        },
+        {
+          "action_type_accuracy": 0.9774285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.4358895705521472,
+          "key_frames": 3260,
+          "loss": 6.713694095611572,
+          "step": 4500,
+          "step_accuracy": 0.4082857142857143
+        },
+        {
+          "action_type_accuracy": 0.9817142857142858,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.4616564417177914,
+          "key_frames": 3260,
+          "loss": 5.635039329528809,
+          "step": 5000,
+          "step_accuracy": 0.428
+        },
+        {
+          "action_type_accuracy": 0.9822857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.041666666666666664,
+          "frames": 3500,
+          "key_accuracy": 0.47116564417177914,
+          "key_frames": 3260,
+          "loss": 6.236027717590332,
+          "step": 5500,
+          "step_accuracy": 0.4328571428571429
+        },
+        {
+          "action_type_accuracy": 0.982,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.48773006134969327,
+          "key_frames": 3260,
+          "loss": 6.51296854019165,
+          "step": 6000,
+          "step_accuracy": 0.4582857142857143
+        }
+      ]
+    },
+    {
+      "best_validation_step": 6000,
+      "best_validation_step_accuracy": 0.368,
+      "closed_loop": {
+        "episodes": 50,
+        "episodes_with_any_submission": 50,
+        "fields_total": 7,
+        "mean_fields_correct": 0.48,
+        "mean_steps": 200.0,
+        "per_episode": [
+          {
+            "fields_correct": 1,
+            "seed": 10000,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10001,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10002,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10003,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10004,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10005,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10006,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10007,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10008,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10009,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10010,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10011,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10012,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10013,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10014,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10015,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10016,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10017,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10018,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10019,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10020,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10021,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10022,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10023,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10024,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10025,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10026,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10027,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10028,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10029,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10030,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10031,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10032,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10033,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10034,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10035,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10036,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10037,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10038,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10039,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10040,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10041,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10042,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10043,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10044,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10045,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10046,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10047,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10048,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10049,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          }
+        ],
+        "successes": 0
+      },
+      "demo_episodes": 64,
+      "demo_frames": 7028,
+      "device": "mps",
+      "parameters": 3376938,
+      "teacher_forced": {
+        "action_type_accuracy": 0.9825486275222687,
+        "click_frames": 376,
+        "click_target_accuracy": 0.13297872340425532,
+        "frames": 5501,
+        "key_accuracy": 0.38458536585365855,
+        "key_frames": 5125,
+        "step_accuracy": 0.36102526813306673
+      },
+      "train_seconds": 876.4863952909363,
+      "training_seed": 1,
+      "validation_curve": [
+        {
+          "action_type_accuracy": 0.9314285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.05889570552147239,
+          "key_frames": 3260,
+          "loss": 9.199125289916992,
+          "step": 500,
+          "step_accuracy": 0.054857142857142854
+        },
+        {
+          "action_type_accuracy": 0.936,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.13588957055214723,
+          "key_frames": 3260,
+          "loss": 10.229910850524902,
+          "step": 1000,
+          "step_accuracy": 0.12657142857142858
+        },
+        {
+          "action_type_accuracy": 0.9557142857142857,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.17392638036809815,
+          "key_frames": 3260,
+          "loss": 9.834035873413086,
+          "step": 1500,
+          "step_accuracy": 0.17114285714285715
+        },
+        {
+          "action_type_accuracy": 0.9602857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.16748466257668712,
+          "key_frames": 3260,
+          "loss": 7.915813446044922,
+          "step": 2000,
+          "step_accuracy": 0.15371428571428572
+        },
+        {
+          "action_type_accuracy": 0.9557142857142857,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.2223926380368098,
+          "key_frames": 3260,
+          "loss": 6.922929763793945,
+          "step": 2500,
+          "step_accuracy": 0.20342857142857143
+        },
+        {
+          "action_type_accuracy": 0.9648571428571429,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.26932515337423313,
+          "key_frames": 3260,
+          "loss": 7.099426746368408,
+          "step": 3000,
+          "step_accuracy": 0.26
+        },
+        {
+          "action_type_accuracy": 0.9674285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.2785276073619632,
+          "key_frames": 3260,
+          "loss": 7.085842609405518,
+          "step": 3500,
+          "step_accuracy": 0.264
+        },
+        {
+          "action_type_accuracy": 0.9634285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3076687116564417,
+          "key_frames": 3260,
+          "loss": 5.945050239562988,
+          "step": 4000,
+          "step_accuracy": 0.28
+        },
+        {
+          "action_type_accuracy": 0.9765714285714285,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.34570552147239264,
+          "key_frames": 3260,
+          "loss": 6.402612686157227,
+          "step": 4500,
+          "step_accuracy": 0.31971428571428573
+        },
+        {
+          "action_type_accuracy": 0.9774285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.36503067484662577,
+          "key_frames": 3260,
+          "loss": 6.89085054397583,
+          "step": 5000,
+          "step_accuracy": 0.3485714285714286
+        },
+        {
+          "action_type_accuracy": 0.9771428571428571,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.38128834355828223,
+          "key_frames": 3260,
+          "loss": 7.178365707397461,
+          "step": 5500,
+          "step_accuracy": 0.34914285714285714
+        },
+        {
+          "action_type_accuracy": 0.9791428571428571,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3911042944785276,
+          "key_frames": 3260,
+          "loss": 6.5119853019714355,
+          "step": 6000,
+          "step_accuracy": 0.368
+        }
+      ]
+    },
+    {
+      "best_validation_step": 6000,
+      "best_validation_step_accuracy": 0.42114285714285715,
+      "closed_loop": {
+        "episodes": 50,
+        "episodes_with_any_submission": 50,
+        "fields_total": 7,
+        "mean_fields_correct": 0.48,
+        "mean_steps": 200.0,
+        "per_episode": [
+          {
+            "fields_correct": 1,
+            "seed": 10000,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10001,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10002,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10003,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10004,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10005,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10006,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10007,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10008,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10009,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10010,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10011,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10012,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10013,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10014,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10015,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10016,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10017,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10018,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10019,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10020,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10021,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10022,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10023,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10024,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10025,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10026,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10027,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10028,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10029,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10030,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10031,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10032,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10033,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10034,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10035,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10036,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10037,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10038,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10039,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10040,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10041,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10042,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10043,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10044,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10045,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10046,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10047,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10048,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10049,
+            "steps": 200,
+            "submissions": 1,
+            "success": false
+          }
+        ],
+        "successes": 0
+      },
+      "demo_episodes": 256,
+      "demo_frames": 28018,
+      "device": "mps",
+      "parameters": 3376938,
+      "teacher_forced": {
+        "action_type_accuracy": 0.9834575531721506,
+        "click_frames": 376,
+        "click_target_accuracy": 0.13297872340425532,
+        "frames": 5501,
+        "key_accuracy": 0.44253658536585366,
+        "key_frames": 5125,
+        "step_accuracy": 0.41228867478640246
+      },
+      "train_seconds": 879.7214544169838,
+      "training_seed": 0,
+      "validation_curve": [
+        {
+          "action_type_accuracy": 0.944,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.14355828220858896,
+          "key_frames": 3260,
+          "loss": 8.093579292297363,
+          "step": 500,
+          "step_accuracy": 0.1357142857142857
+        },
+        {
+          "action_type_accuracy": 0.95,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.17239263803680982,
+          "key_frames": 3260,
+          "loss": 8.564040184020996,
+          "step": 1000,
+          "step_accuracy": 0.15571428571428572
+        },
+        {
+          "action_type_accuracy": 0.9614285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.22607361963190184,
+          "key_frames": 3260,
+          "loss": 7.666423797607422,
+          "step": 1500,
+          "step_accuracy": 0.21685714285714286
+        },
+        {
+          "action_type_accuracy": 0.9602857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.24723926380368097,
+          "key_frames": 3260,
+          "loss": 8.092876434326172,
+          "step": 2000,
+          "step_accuracy": 0.23914285714285713
+        },
+        {
+          "action_type_accuracy": 0.9622857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.3042944785276074,
+          "key_frames": 3260,
+          "loss": 7.0485029220581055,
+          "step": 2500,
+          "step_accuracy": 0.2877142857142857
+        },
+        {
+          "action_type_accuracy": 0.9762857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.35030674846625764,
+          "key_frames": 3260,
+          "loss": 6.0485076904296875,
+          "step": 3000,
+          "step_accuracy": 0.32971428571428574
+        },
+        {
+          "action_type_accuracy": 0.9702857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3773006134969325,
+          "key_frames": 3260,
+          "loss": 6.424586296081543,
+          "step": 3500,
+          "step_accuracy": 0.3568571428571429
+        },
+        {
+          "action_type_accuracy": 0.9785714285714285,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.37975460122699384,
+          "key_frames": 3260,
+          "loss": 6.181407928466797,
+          "step": 4000,
+          "step_accuracy": 0.3605714285714286
+        },
+        {
+          "action_type_accuracy": 0.9728571428571429,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.3889570552147239,
+          "key_frames": 3260,
+          "loss": 6.2069292068481445,
+          "step": 4500,
+          "step_accuracy": 0.3557142857142857
+        },
+        {
+          "action_type_accuracy": 0.9777142857142858,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.4156441717791411,
+          "key_frames": 3260,
+          "loss": 6.472460746765137,
+          "step": 5000,
+          "step_accuracy": 0.388
+        },
+        {
+          "action_type_accuracy": 0.9797142857142858,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.43374233128834355,
+          "key_frames": 3260,
+          "loss": 7.8389763832092285,
+          "step": 5500,
+          "step_accuracy": 0.41285714285714287
+        },
+        {
+          "action_type_accuracy": 0.9782857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.45245398773006135,
+          "key_frames": 3260,
+          "loss": 7.145240783691406,
+          "step": 6000,
+          "step_accuracy": 0.42114285714285715
+        }
+      ]
+    },
+    {
+      "best_validation_step": 6000,
+      "best_validation_step_accuracy": 0.3911428571428571,
+      "closed_loop": {
+        "episodes": 50,
+        "episodes_with_any_submission": 48,
+        "fields_total": 7,
+        "mean_fields_correct": 0.48,
+        "mean_steps": 200.0,
+        "per_episode": [
+          {
+            "fields_correct": 1,
+            "seed": 10000,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10001,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10002,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10003,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10004,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10005,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10006,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10007,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10008,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10009,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10010,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10011,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10012,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10013,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10014,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10015,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10016,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10017,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10018,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10019,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10020,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10021,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10022,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10023,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10024,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10025,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10026,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10027,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10028,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10029,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10030,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10031,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10032,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10033,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10034,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10035,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10036,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10037,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10038,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10039,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10040,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10041,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10042,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10043,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10044,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10045,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10046,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10047,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10048,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10049,
+            "steps": 200,
+            "submissions": 200,
+            "success": false
+          }
+        ],
+        "successes": 0
+      },
+      "demo_episodes": 256,
+      "demo_frames": 28018,
+      "device": "mps",
+      "parameters": 3376938,
+      "teacher_forced": {
+        "action_type_accuracy": 0.9758225777131431,
+        "click_frames": 376,
+        "click_target_accuracy": 0.13297872340425532,
+        "frames": 5501,
+        "key_accuracy": 0.4117073170731707,
+        "key_frames": 5125,
+        "step_accuracy": 0.3882930376295219
+      },
+      "train_seconds": 875.7743947079871,
+      "training_seed": 1,
+      "validation_curve": [
+        {
+          "action_type_accuracy": 0.9314285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.0687116564417178,
+          "key_frames": 3260,
+          "loss": 10.755897521972656,
+          "step": 500,
+          "step_accuracy": 0.064
+        },
+        {
+          "action_type_accuracy": 0.9222857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.13987730061349693,
+          "key_frames": 3260,
+          "loss": 7.058074474334717,
+          "step": 1000,
+          "step_accuracy": 0.12114285714285715
+        },
+        {
+          "action_type_accuracy": 0.9505714285714286,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.1450920245398773,
+          "key_frames": 3260,
+          "loss": 7.634720802307129,
+          "step": 1500,
+          "step_accuracy": 0.14285714285714285
+        },
+        {
+          "action_type_accuracy": 0.9622857142857143,
+          "click_frames": 240,
+          "click_target_accuracy": 0.04583333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.17484662576687116,
+          "key_frames": 3260,
+          "loss": 6.289743423461914,
+          "step": 2000,
+          "step_accuracy": 0.16057142857142856
+        },
+        {
+          "action_type_accuracy": 0.9534285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.18834355828220858,
+          "key_frames": 3260,
+          "loss": 7.474095344543457,
+          "step": 2500,
+          "step_accuracy": 0.1757142857142857
+        },
+        {
+          "action_type_accuracy": 0.9637142857142857,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.25306748466257667,
+          "key_frames": 3260,
+          "loss": 2.2559401988983154,
+          "step": 3000,
+          "step_accuracy": 0.2397142857142857
+        },
+        {
+          "action_type_accuracy": 0.9591428571428572,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.29754601226993865,
+          "key_frames": 3260,
+          "loss": 6.042486190795898,
+          "step": 3500,
+          "step_accuracy": 0.2817142857142857
+        },
+        {
+          "action_type_accuracy": 0.9691428571428572,
+          "click_frames": 240,
+          "click_target_accuracy": 0.04583333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3414110429447853,
+          "key_frames": 3260,
+          "loss": 7.071752548217773,
+          "step": 4000,
+          "step_accuracy": 0.314
+        },
+        {
+          "action_type_accuracy": 0.9754285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.06666666666666667,
+          "frames": 3500,
+          "key_accuracy": 0.35644171779141104,
+          "key_frames": 3260,
+          "loss": 6.960700035095215,
+          "step": 4500,
+          "step_accuracy": 0.3354285714285714
+        },
+        {
+          "action_type_accuracy": 0.9774285714285714,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3696319018404908,
+          "key_frames": 3260,
+          "loss": 7.275664806365967,
+          "step": 5000,
+          "step_accuracy": 0.3437142857142857
+        },
+        {
+          "action_type_accuracy": 0.9791428571428571,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.3987730061349693,
+          "key_frames": 3260,
+          "loss": 7.8222808837890625,
+          "step": 5500,
+          "step_accuracy": 0.37114285714285716
+        },
+        {
+          "action_type_accuracy": 0.9728571428571429,
+          "click_frames": 240,
+          "click_target_accuracy": 0.13333333333333333,
+          "frames": 3500,
+          "key_accuracy": 0.4144171779141104,
+          "key_frames": 3260,
+          "loss": 6.727100372314453,
+          "step": 6000,
+          "step_accuracy": 0.3911428571428571
+        }
+      ]
+    }
+  ],
+  "schema_version": "pixelgym-bc-experiment-v1",
+  "scope_note": "Behaviour cloning from a privileged scripted oracle on the in-process fake backend. No recovery data (no DAgger); one host; no hyperparameter search. Not a claim about OSWorld, browsers, or other tasks.",
+  "total_seconds": 8487.673889499973,
+  "worktree_clean": true
+}

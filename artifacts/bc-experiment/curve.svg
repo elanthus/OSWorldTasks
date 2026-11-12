@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="380" viewBox="0 0 640 380" font-family="sans-serif" font-size="12">
+<rect width="640" height="380" fill="#ffffff"/>
+<line x1="64" y1="328.0" x2="480" y2="328.0" stroke="#dddddd"/>
+<text x="56" y="332.0" text-anchor="end">0%</text>
+<line x1="64" y1="252.0" x2="480" y2="252.0" stroke="#dddddd"/>
+<text x="56" y="256.0" text-anchor="end">25%</text>
+<line x1="64" y1="176.0" x2="480" y2="176.0" stroke="#dddddd"/>
+<text x="56" y="180.0" text-anchor="end">50%</text>
+<line x1="64" y1="100.0" x2="480" y2="100.0" stroke="#dddddd"/>
+<text x="56" y="104.0" text-anchor="end">75%</text>
+<line x1="64" y1="24.0" x2="480" y2="24.0" stroke="#dddddd"/>
+<text x="56" y="28.0" text-anchor="end">100%</text>
+<text x="64.0" y="346" text-anchor="middle">4</text>
+<text x="202.7" y="346" text-anchor="middle">16</text>
+<text x="341.3" y="346" text-anchor="middle">64</text>
+<text x="480.0" y="346" text-anchor="middle">256</text>
+<text x="272.0" y="368" text-anchor="middle">Demonstration episodes (log scale)</text>
+<text x="16" y="176.0" text-anchor="middle" transform="rotate(-90 16 176.0)">Held-out teacher-forced accuracy</text>
+<circle cx="64.0" cy="39.0" r="2.5" fill="none" stroke="#1f77b4"/>
+<circle cx="64.0" cy="33.5" r="2.5" fill="none" stroke="#1f77b4"/>
+<circle cx="202.7" cy="30.8" r="2.5" fill="none" stroke="#1f77b4"/>
+<circle cx="202.7" cy="32.8" r="2.5" fill="none" stroke="#1f77b4"/>
+<circle cx="341.3" cy="28.9" r="2.5" fill="none" stroke="#1f77b4"/>
+<circle cx="341.3" cy="29.3" r="2.5" fill="none" stroke="#1f77b4"/>
+<circle cx="480.0" cy="29.0" r="2.5" fill="none" stroke="#1f77b4"/>
+<circle cx="480.0" cy="31.3" r="2.5" fill="none" stroke="#1f77b4"/>
+<polyline points="64.0,36.2 202.7,31.8 341.3,29.1 480.0,30.2" fill="none" stroke="#1f77b4" stroke-width="2"/>
+<line x1="496" y1="36" x2="516" y2="36" stroke="#1f77b4" stroke-width="2"/>
+<text x="522" y="40">Action type</text>
+<circle cx="64.0" cy="287.6" r="2.5" fill="none" stroke="#2ca02c"/>
+<circle cx="64.0" cy="307.0" r="2.5" fill="none" stroke="#2ca02c"/>
+<circle cx="202.7" cy="287.6" r="2.5" fill="none" stroke="#2ca02c"/>
+<circle cx="202.7" cy="287.6" r="2.5" fill="none" stroke="#2ca02c"/>
+<circle cx="341.3" cy="287.6" r="2.5" fill="none" stroke="#2ca02c"/>
+<circle cx="341.3" cy="287.6" r="2.5" fill="none" stroke="#2ca02c"/>
+<circle cx="480.0" cy="287.6" r="2.5" fill="none" stroke="#2ca02c"/>
+<circle cx="480.0" cy="287.6" r="2.5" fill="none" stroke="#2ca02c"/>
+<polyline points="64.0,297.3 202.7,287.6 341.3,287.6 480.0,287.6" fill="none" stroke="#2ca02c" stroke-width="2"/>
+<line x1="496" y1="56" x2="516" y2="56" stroke="#2ca02c" stroke-width="2"/>
+<text x="522" y="60">Click target</text>
+<circle cx="64.0" cy="221.8" r="2.5" fill="none" stroke="#d62728"/>
+<circle cx="64.0" cy="215.6" r="2.5" fill="none" stroke="#d62728"/>
+<circle cx="202.7" cy="207.6" r="2.5" fill="none" stroke="#d62728"/>
+<circle cx="202.7" cy="223.5" r="2.5" fill="none" stroke="#d62728"/>
+<circle cx="341.3" cy="184.9" r="2.5" fill="none" stroke="#d62728"/>
+<circle cx="341.3" cy="211.1" r="2.5" fill="none" stroke="#d62728"/>
+<circle cx="480.0" cy="193.5" r="2.5" fill="none" stroke="#d62728"/>
+<circle cx="480.0" cy="202.8" r="2.5" fill="none" stroke="#d62728"/>
+<polyline points="64.0,218.7 202.7,215.6 341.3,198.0 480.0,198.2" fill="none" stroke="#d62728" stroke-width="2"/>
+<line x1="496" y1="76" x2="516" y2="76" stroke="#d62728" stroke-width="2"/>
+<text x="522" y="80">Key</text>
+<circle cx="64.0" cy="231.7" r="2.5" fill="none" stroke="#111111"/>
+<circle cx="64.0" cy="222.9" r="2.5" fill="none" stroke="#111111"/>
+<circle cx="202.7" cy="215.3" r="2.5" fill="none" stroke="#111111"/>
+<circle cx="202.7" cy="231.8" r="2.5" fill="none" stroke="#111111"/>
+<circle cx="341.3" cy="193.0" r="2.5" fill="none" stroke="#111111"/>
+<circle cx="341.3" cy="218.2" r="2.5" fill="none" stroke="#111111"/>
+<circle cx="480.0" cy="202.7" r="2.5" fill="none" stroke="#111111"/>
+<circle cx="480.0" cy="210.0" r="2.5" fill="none" stroke="#111111"/>
+<polyline points="64.0,227.3 202.7,223.6 341.3,205.6 480.0,206.3" fill="none" stroke="#111111" stroke-width="2"/>
+<line x1="496" y1="96" x2="516" y2="96" stroke="#111111" stroke-width="2"/>
+<text x="522" y="100">Whole step</text>
+</svg>
