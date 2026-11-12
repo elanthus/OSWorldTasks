@@ -119,9 +119,10 @@
         throw new Error("page-ready report failed");
       }
       var ready = await response.json();
-      if (ready.ready !== true) {
+      if (ready.ready !== true || typeof ready.page !== "number") {
         throw new Error("page-ready report was not acknowledged");
       }
+      pageToken = ready.page;
       document.body.dataset.pixelgymReady = "true";
     } catch (_error) {
       markInitializationError(failureStage);
@@ -293,6 +294,9 @@
   // A CLICK ends with one primary-button mouseup and a KEY with one non-modifier keyup.
   var MODIFIER_KEYS = ["Shift", "Control", "Alt", "Meta", "AltGraph", "CapsLock"];
   var inputsProcessed = 0;
+  // Issued by the server at page-ready; acknowledgements from an earlier page carry an old token
+  // and are refused, so a late one can never stand in for this page's input.
+  var pageToken = null;
   var acknowledgementChain = Promise.resolve();
   var pendingSubmission = Promise.resolve();
 
@@ -320,7 +324,11 @@
     return fetch("/api/input-ack", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ task_id: document.getElementById("task_id").value, count: count }),
+      body: JSON.stringify({
+        task_id: document.getElementById("task_id").value,
+        page: pageToken,
+        count: count,
+      }),
     }).catch(function () {
       // A lost acknowledgement leaves the host waiting; it fails closed at its own deadline.
     });

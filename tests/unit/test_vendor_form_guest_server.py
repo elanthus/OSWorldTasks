@@ -132,22 +132,43 @@ def test_input_acknowledgements_match_fastapi_contract(state):
     task = generator.generate_task(7)
     assert state.inputs_acknowledged() == 0
 
-    assert state.acknowledge_input({"task_id": task["task_id"], "count": 1}) == {"acknowledged": 1}
+    def ack(page, count, task_id=task["task_id"]):
+        return state.acknowledge_input({"task_id": task_id, "page": page, "count": count})
+
     with pytest.raises(TaskConflictError):
-        state.acknowledge_input({"task_id": task["task_id"], "count": 1})
+        ack(1, 1)  # no page has reported ready
+    page = state.mark_page_ready(task["task_id"])
+
+    assert ack(page, 1) == {"acknowledged": 1}
+    for bad_page, bad_count in ((page, 1), (page, 3), (page + 1, 2)):
+        with pytest.raises(TaskConflictError):
+            ack(bad_page, bad_count)
     with pytest.raises(TaskConflictError):
-        state.acknowledge_input({"task_id": task["task_id"], "count": 3})
-    with pytest.raises(TaskConflictError):
-        state.acknowledge_input({"task_id": "vf-stale", "count": 2})
+        ack(page, 2, task_id="vf-stale")
     with pytest.raises(PayloadValidationError):
-        state.acknowledge_input({"task_id": task["task_id"], "count": True})
+        ack(page, True)
     with pytest.raises(PayloadValidationError):
-        state.acknowledge_input({"task_id": task["task_id"]})
+        state.acknowledge_input({"task_id": task["task_id"], "count": 2})
     assert state.inputs_acknowledged() == 1
 
-    state.mark_page_ready(task["task_id"])
-    assert state.inputs_acknowledged() == 0
-    state.acknowledge_input({"task_id": task["task_id"], "count": 1})
+    # Same seed, same task_id: only the page token separates the old page from the new one.
     state.reset(7)
-    assert state.inputs_acknowledged() == 0
+    new_page = state.mark_page_ready(task["task_id"])
+    assert new_page != page
+    with pytest.raises(TaskConflictError):
+        ack(page, 1)
+    assert ack(new_page, 1) == {"acknowledged": 1}
     assert set(state.privileged_state()) == {"task", "submissions"}
+
+
+def test_page_ready_http_response_carries_the_page_token():
+    fastapi_page = TestClient(create_app())
+    fastapi_page.post("/api/reset", json={"seed": 7})
+    task_id = fastapi_page.get("/api/task").json()["task_id"]
+    fastapi_ready = fastapi_page.post("/api/page-ready", json={"task_id": task_id}).json()
+
+    guest = GuestTaskState(generator.generate_task(7))
+    guest.reset(7)
+
+    assert set(fastapi_ready) == {"ready", "page"}
+    assert fastapi_ready["page"] == guest.mark_page_ready(task_id)
