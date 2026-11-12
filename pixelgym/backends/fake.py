@@ -88,7 +88,10 @@ class FakeBackend:
         self._form: ui.FormState | None = None
         self._submissions: list[Submission] = []
         self._frame: Frame | None = None
-        self._static: Any = None  # render.render_static for the active task, built at reset
+        # render.render_static for the active task, built on the first screenshot after reset.
+        # It can legitimately be None (single-pass layouts), so a flag tracks whether it is built.
+        self._static: Any = None
+        self._static_built = False
         self.click_calls: list[tuple[int, int]] = []
         self.key_calls: list[str] = []
         self.noop_calls = 0
@@ -122,7 +125,8 @@ class FakeBackend:
         self.key_calls = []
         self.noop_calls = 0
         self._frame = None
-        self._static = render.render_static(record, self._layout)
+        self._static = None
+        self._static_built = False
         return record
 
     def screenshot(self) -> Frame:
@@ -134,6 +138,9 @@ class FakeBackend:
         """
         record, layout, form = self._require_task()
         if self._frame is None:
+            if not self._static_built:
+                self._static = render.render_static(record, layout)
+                self._static_built = True
             self._frame = render.render(record, form, layout, static=self._static)
         return self._frame.copy()
 
