@@ -1,0 +1,118 @@
+{
+  "answer_positions": {
+    "consumer_stage_5": [
+      68,
+      62,
+      62
+    ],
+    "consumer_stage_7": [
+      56,
+      60,
+      76
+    ]
+  },
+  "best_fixed_position": {
+    "positions": [
+      1,
+      2
+    ],
+    "successes_if_otherwise_perfect": 26
+  },
+  "campaigns": {
+    "historical": {
+      "binomial_cdf_at_observed_under_uniform_guess": 0.08558197432367844,
+      "episodes_per_arm": 192,
+      "first_attempts": null,
+      "history_successes": 106,
+      "source": "artifacts/grounding-v5-d59-haiku-results/report.json",
+      "stateless_classifications": {
+        "invalid_output": 19,
+        "step_limit_truncation": 158,
+        "success_termination": 15
+      },
+      "stateless_successes": 15
+    },
+    "parser_sensitivity": {
+      "binomial_cdf_at_observed_under_uniform_guess": 0.4355505870620943,
+      "episodes_per_arm": 192,
+      "first_attempts": {
+        "both_first_attempts_correct": 22,
+        "both_reached": 179,
+        "consumer_stage_5": {
+          "correct": 65,
+          "reached": 182
+        },
+        "consumer_stage_7": {
+          "correct": 53,
+          "reached": 179
+        },
+        "successes_without_both_first_attempts_correct": 0
+      },
+      "history_successes": 132,
+      "source": "artifacts/grounding-v5-d59-action-extraction-results/report.json",
+      "stateless_classifications": {
+        "invalid_output": 1,
+        "step_limit_truncation": 171,
+        "success_termination": 20
+      },
+      "stateless_successes": 20
+    },
+    "replication": {
+      "binomial_cdf_at_observed_under_uniform_guess": 0.4355505870620943,
+      "episodes_per_arm": 192,
+      "first_attempts": {
+        "both_first_attempts_correct": 26,
+        "both_reached": 166,
+        "consumer_stage_5": {
+          "correct": 68,
+          "reached": 168
+        },
+        "consumer_stage_7": {
+          "correct": 53,
+          "reached": 166
+        },
+        "successes_without_both_first_attempts_correct": 0
+      },
+      "history_successes": 62,
+      "source": "artifacts/grounding-v5-d59-replication-results/report.json",
+      "stateless_classifications": {
+        "invalid_output": 36,
+        "step_limit_truncation": 136,
+        "success_termination": 20
+      },
+      "stateless_successes": 20
+    }
+  },
+  "consumer_stage_design": {
+    "decision_stage_fact": "The source <request|verification> reference is no longer visible.",
+    "dependencies": [
+      "request_ref",
+      "verification_ref"
+    ],
+    "options_per_choice": 3
+  },
+  "episodes_per_arm": 192,
+  "inputs": [
+    "artifacts/grounding-v5-d59-freeze/task-manifest.json",
+    "artifacts/grounding-v5-d59-haiku-results/report.json",
+    "artifacts/grounding-v5-d59-replication-results/report.json",
+    "artifacts/grounding-v5-d59-action-extraction-results/report.json"
+  ],
+  "joint_answer_positions": {
+    "0,0": 24,
+    "0,1": 19,
+    "0,2": 25,
+    "1,0": 14,
+    "1,1": 22,
+    "1,2": 26,
+    "2,0": 18,
+    "2,1": 19,
+    "2,2": 25
+  },
+  "schema_version": "pixelgym-v5-stateless-chance-ceiling-v1",
+  "scope_note": "Reference levels assume a policy that is perfect everywhere except the two consumer choices. They are not proven upper bounds for every possible stateless policy. The three campaigns ran on the in-process PIL backend (pixelgym/grounding/v5/backend.py and its memory-focus subclass), not a browser or OSWorld.",
+  "uniform_guess": {
+    "expected_successes": 21.333333333333332,
+    "success_probability": "1/9"
+  }
+}
