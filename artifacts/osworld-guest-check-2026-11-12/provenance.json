@@ -1,0 +1,74 @@
+{
+  "schema_version": "pixelgym-osworld-guest-check-provenance-v1",
+  "git_revision": "d4e711eacca9904d9082cc3c59ce3deafe574f33",
+  "worktree_clean_at_start": true,
+  "worktree_clean_evidence": "`git status --porcelain --untracked-files=no` was empty immediately before each attempt.",
+  "guest_bundle_sha256_recorded": "505a15bf40bac294ff27c9e17536245e5bae9d351931ac34a35c46aeb8b9e770",
+  "guest_bundle_sha256_rebuilt_at_git_revision": "505a15bf40bac294ff27c9e17536245e5bae9d351931ac34a35c46aeb8b9e770",
+  "supersedes_for_merged_code": "artifacts/osworld-guest-check-2026-11-11 (commit 627e09b, before ded68da changed the guest page)",
+  "attempts": {
+    "attempt-1": {
+      "git_revision": "d4e711eacca9904d9082cc3c59ce3deafe574f33",
+      "started_utc": "2026-11-12T20:06:26Z",
+      "files": {
+        "results.json": {
+          "sha256_as_recorded": "19b1acf7b6c776b7bc629139c121d9e0dc14ab97357514f82bf540424b0fc6e3",
+          "sha256_checked_in": "0ed2a850974e5f5243340b132a4a78c7db0370cb20d80b37422dd606f6af759a",
+          "replacements": {
+            "<repository root>": 19
+          }
+        }
+      },
+      "worktree_clean_at_start": true,
+      "driver": "artifacts/osworld-guest-check-2026-11-11/driver.py, unchanged, all steps",
+      "ended_utc": "2026-11-12T20:49:37Z",
+      "outcome": "Golden replay and 'caret click near left edge' did not run: OSWorld's Docker provider raised 'VM failed to become ready within timeout period' (its fixed 300 s readiness wait). The other six review sequences ran and matched the fake."
+    },
+    "attempt-2": {
+      "git_revision": "d4e711eacca9904d9082cc3c59ce3deafe574f33",
+      "started_utc": "2026-11-12T20:54:46Z",
+      "files": {
+        "results.json": {
+          "sha256_as_recorded": "90d8e11ecf65e716bdae73789556c787b0b67ad70433022cacb86e625e75f7d3",
+          "sha256_checked_in": "21b0eda8fb67421de9e446365e4f5114e875c20afa3d2e46a2c12dc6fe99c99c",
+          "replacements": {
+            "artifacts/osworld-guest-check-2026-11-12/driver_subset.py": 2,
+            "<repository root>": 63
+          }
+        }
+      },
+      "worktree_clean_at_start": true,
+      "driver": "artifacts/osworld-guest-check-2026-11-12/driver_subset.py --cases 'caret click near left edge' (golden included)",
+      "ended_utc": "2026-11-12T20:55:00Z",
+      "outcome": "Nothing ran. Docker Desktop received a quit request from its own window at 20:54:53Z and stopped; both steps failed on the missing Docker socket."
+    },
+    "attempt-3": {
+      "git_revision": "d4e711eacca9904d9082cc3c59ce3deafe574f33",
+      "started_utc": "2026-11-12T21:07:37Z",
+      "files": {
+        "results.json": {
+          "sha256_as_recorded": "c975ea7c15d07d2fbc150981def3a0b1a4312e395532eeb5bfca37c19f9f4c7b",
+          "sha256_checked_in": "c975ea7c15d07d2fbc150981def3a0b1a4312e395532eeb5bfca37c19f9f4c7b",
+          "replacements": {}
+        },
+        "real-golden-episode.json": {
+          "sha256_as_recorded": "4896db3c55accc4ff5d110afd497a0ab35c56f649d0926991439a8e7bc658df4",
+          "sha256_checked_in": "fb419d22953302e07d0f899239975703503c9a8d45366963fcd47cb059c1a6de",
+          "replacements": {
+            "artifacts/osworld-guest-check-2026-11-12/attempt-3/": 113
+          }
+        }
+      },
+      "worktree_clean_at_start": true,
+      "driver": "artifacts/osworld-guest-check-2026-11-12/driver_subset.py --cases 'caret click near left edge' (golden included), after Docker Desktop was restarted",
+      "ended_utc": "2026-11-12T21:25:23Z",
+      "outcome": "Golden replay and 'caret click near left edge' both ran; see README.md."
+    }
+  },
+  "infrastructure_minutes_total": 61,
+  "transformations": [
+    "Absolute local paths in results.json and real-golden-episode.json were made repository-relative (the repository root removed, the run's output folder and the retry driver mapped to this folder). Each file's SHA-256 before and after is listed under attempts.",
+    "driver_subset.py is a byte-for-byte copy of the retry driver: the 2026-11-11 driver plus a step-subset option and a check rejecting unknown case names.",
+    "Frame PNGs are not in git. attempt-3/images.manifest.json lists their sizes and SHA-256 digests; the contact sheet is checked in."
+  ]
+}
