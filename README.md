@@ -41,17 +41,20 @@ The unit suite runs this snippet ([test](tests/unit/test_readme_snippet.py)). Se
 
 - **Environment.** Five real OSWorld resets of seed 7 were bitwise identical at 1024×768 on one
   host ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json)). The
-  fake backend runs 1168 random-policy steps/s, up from 206 before a renderer change that kept
-  all 6002 compared frames byte-identical ([throughput report](artifacts/throughput/REPORT.md)).
+  fake backend runs 1181 random-policy steps/s, up from 207 before a renderer change that kept
+  all 6044 compared frames byte-identical ([throughput report](artifacts/throughput/REPORT.md)).
   A randomized differential test checks the fake against the real page in Chromium after every
   action ([test](tests/integration/test_vendor_form_differential.py)), and an
   input-acknowledgement barrier pays reward on the step whose action caused the submission
-  ([test](tests/integration/test_vendor_form_input_barrier.py)).
+  ([test](tests/integration/test_vendor_form_input_barrier.py)). On the OSWorld guest, one run at
+  an earlier revision of that work paid its only reward at the golden trajectory's last step, and
+  seven input sequences flagged in review submitted the same values as the fake
+  ([guest check](artifacts/osworld-guest-check-2026-11-11/README.md)).
 - **Grounding.** On 100 paired screenshots (20 task seeds × 5 screen states; each of 10 target
   controls appears 10 times), `gpt-5.4-mini` scored 56/100 with raw coordinates and 100/100 when
   choosing among 10 labelled marks: +44 points, target-clustered 95% CI [+21, +67]
   ([report](artifacts/grounding-report-v2.md),
-  [clustered supplement](artifacts/grounding-clustered-analysis-v1.md)). Half of the raw misses,
+  [clustered supplement](artifacts/grounding-clustered-analysis-v2.md)). Half of the raw misses,
   22 of 44, land on the read-only request card in the target's own row (company name 9, contact
   phone 10, contact email 3). Counting those as correct gives raw 78/100 and +22 points,
   target-clustered 95% CI [+6, +42] ([ambiguity split](artifacts/grounding-ambiguity-split-v1.md)).
@@ -196,7 +199,7 @@ of [+35.0, +54.0]** ([current report v2](artifacts/grounding-report-v2.md) with
 [provenance](artifacts/grounding-report-provenance-v1.json)). That interval treats the 100 examples
 as independent; resampling the 10 target controls instead gives a target-clustered 95% CI of
 [+21.0, +67.0], and 7 of 10 targets favour marks with none favouring raw (exact sign test
-p = 0.0156) ([clustered supplement](artifacts/grounding-clustered-analysis-v1.md)). Proposal
+p = 0.0156) ([clustered supplement](artifacts/grounding-clustered-analysis-v2.md)). Proposal
 coverage was **100/100**, which holds by construction: the retention rule requires the target to
 occur exactly once among the independently collected candidates
 ([protocol, retention rule](artifacts/grounding-protocol.md#retention-validation-and-exclusions)).
@@ -266,7 +269,7 @@ without being promoted to a headline result
   examples. A click on the request card is wrong under the frozen protocol, and the frozen 56/100
   is unchanged ([ambiguity split](artifacts/grounding-ambiguity-split-v1.md)).
 - The headline calls ran through the Codex CLI harness and averaged about 11,900 input tokens per
-  screenshot-plus-instruction ([clustered supplement](artifacts/grounding-clustered-analysis-v1.md),
+  screenshot-plus-instruction ([clustered supplement](artifacts/grounding-clustered-analysis-v2.md),
   derived from [predictions](artifacts/grounding-predictions.jsonl)). The harness
   prompt is not part of the recorded prompt v1, and it is not recorded whether the harness prompt
   was identical across conditions.
@@ -279,6 +282,9 @@ without being promoted to a headline result
   task. The 1/9 chance level assumes an otherwise-perfect policy guessing uniformly; correct answers
   are not exactly balanced across screen positions, and the best fixed-position guess would match
   26 of 192 ([chance supplement](artifacts/grounding-v5-stateless-chance-ceiling-v1.md)).
+- The OSWorld guest check is one run of seven hand-picked sequences at commit `627e09b`. A later
+  commit in the same pull request changed the guest form server and page script, so it is not
+  evidence for the merged guest code ([provenance](artifacts/osworld-guest-check-2026-11-11/provenance.json)).
 - Throughput and the behaviour-cloning result describe the in-process fake backend on one host.
   The cloning experiment had no recovery data and no hyperparameter search, and validation accuracy
   was still rising when training stopped ([BC report](artifacts/bc-experiment/REPORT.md)).

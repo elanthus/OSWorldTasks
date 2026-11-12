@@ -1,0 +1,917 @@
+{
+  "started_unix": 1794444889.7265651,
+  "golden": {
+    "summary": {
+      "positive_reward_count": 1,
+      "first_positive_reward_step": 112,
+      "terminal_step": 112,
+      "provider_closed": true,
+      "passed": true
+    },
+    "seconds": 773.8461987499613,
+    "backend_metadata": {
+      "upstream_repository": "https://github.com/xlang-ai/OSWorld-V2",
+      "upstream_tag": "v2026.06.24",
+      "upstream_commit": "2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6",
+      "release": "osworld-v2-2026.06.24",
+      "release_manifest_url": "https://github.com/xlang-ai/OSWorld-V2/blob/v2026.06.24/benchmark_releases/osworld-v2-2026.06.24.json",
+      "provider": "docker-local",
+      "python_version": "3.12.15",
+      "screen_size": [
+        1024,
+        768
+      ],
+      "runtime_image": "docker.io/pixelgym/osworld-qemu-arm64:qemux-6.18",
+      "runtime_image_base": "docker.io/qemux/qemu@sha256:b51ff8a5d69c10e57d3515c7a40dbbd47c410152b1491f849d12ede7607b80be",
+      "runtime_source_commit": "c698406b5a447234379b3fdede03d7f6e4e3fa6c",
+      "guest_artifact_repository": "xlangai/v2-image",
+      "guest_artifact_tag": "v2026.06.24",
+      "guest_artifact_name": "osworld-v2-ubuntu-x86.qcow2.zip",
+      "guest_artifact_sha256": "sha256:eb737ae70b49849e24af407de6a518439a23de05a8497096a948334ce0a909aa",
+      "guest_image_path": ".cache/osworld/osworld-v2-ubuntu-x86.qcow2",
+      "guest_volume_size_gb": 50,
+      "task_bundle_sha256": "4067dc638dbaaa8eaa6374ad51f81979b4ad6d11b3a3d7fee3f74405d03eb9c2",
+      "input_contract": "pixelgym-vendor-form-input-v2",
+      "input_acknowledgement_barrier": true,
+      "browser_launch": {
+        "presentation_mode": "app",
+        "presentation_mode_fallback_from": "kiosk",
+        "presentation_mode_reason": "kiosk did not preserve the required full-frame 1024x768 task observation in the pinned OSWorld guest",
+        "renderer_contract": {
+          "version": "pixelgym-chromium-renderer-v1",
+          "identity": "sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5",
+          "flags": [
+            "--disable-font-subpixel-positioning",
+            "--disable-gpu",
+            "--disable-lcd-text",
+            "--disable-skia-runtime-opts",
+            "--force-color-profile=srgb",
+            "--force-device-scale-factor=1"
+          ]
+        },
+        "effective_argv": [
+          "google-chrome",
+          "--disable-font-subpixel-positioning",
+          "--disable-gpu",
+          "--disable-lcd-text",
+          "--disable-skia-runtime-opts",
+          "--force-color-profile=srgb",
+          "--force-device-scale-factor=1",
+          "--user-data-dir=/dev/shm/pixelgym-chrome-profile",
+          "--no-first-run",
+          "--disable-default-apps",
+          "--disable-session-crashed-bubble",
+          "--disable-dev-shm-usage",
+          "--app=http://127.0.0.1:3000/",
+          "--start-fullscreen",
+          "--window-position=0,0",
+          "--window-size=1024,768"
+        ]
+      },
+      "host_port_allocator": "socket-bind-plus-docker-port-map"
+    },
+    "rewards": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  },
+  "cases": {
+    "caret ArrowLeft": {
+      "match": true,
+      "guest_submissions": [
+        {
+          "company_name": "abc",
+          "contact_email": "",
+          "contact_phone": "",
+          "country": "",
+          "expedited_onboarding": false,
+          "payment_terms": "",
+          "tax_id": ""
+        }
+      ],
+      "fake_submissions": [
+        {
+          "company_name": "abc",
+          "contact_email": "",
+          "contact_phone": "",
+          "tax_id": "",
+          "country": "",
+          "payment_terms": "",
+          "expedited_onboarding": false
+        }
+      ],
+      "steps": [
+        {
+          "action": [
+            "click",
+            [
+              768,
+              94
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.14,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.999508082983084
+        },
+        {
+          "action": [
+            "key",
+            "a"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.56,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9769632919924334
+        },
+        {
+          "action": [
+            "key",
+            "b"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.58,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0172316670650616
+        },
+        {
+          "action": [
+            "key",
+            "ArrowLeft"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.69,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0346275420160964
+        },
+        {
+          "action": [
+            "key",
+            "c"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.03,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.5453237500041723
+        },
+        {
+          "action": [
+            "click",
+            [
+              578,
+              486
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.53,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0069534169742838
+        }
+      ],
+      "seconds": 417.2
+    },
+    "caret ArrowUp": {
+      "match": true,
+      "guest_submissions": [
+        {
+          "company_name": "abc",
+          "contact_email": "",
+          "contact_phone": "",
+          "country": "",
+          "expedited_onboarding": false,
+          "payment_terms": "",
+          "tax_id": ""
+        }
+      ],
+      "fake_submissions": [
+        {
+          "company_name": "abc",
+          "contact_email": "",
+          "contact_phone": "",
+          "tax_id": "",
+          "country": "",
+          "payment_terms": "",
+          "expedited_onboarding": false
+        }
+      ],
+      "steps": [
+        {
+          "action": [
+            "click",
+            [
+              768,
+              94
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.99,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9962885000277311
+        },
+        {
+          "action": [
+            "key",
+            "a"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.34,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.958248500013724
+        },
+        {
+          "action": [
+            "key",
+            "b"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.29,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9758708329172805
+        },
+        {
+          "action": [
+            "key",
+            "ArrowUp"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.27,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9467270419700071
+        },
+        {
+          "action": [
+            "key",
+            "c"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.77,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.5098993750289083
+        },
+        {
+          "action": [
+            "click",
+            [
+              578,
+              486
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.29,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0411567910341546
+        }
+      ],
+      "seconds": 234.5
+    },
+    "caret click near left edge": {
+      "match": true,
+      "guest_submissions": [
+        {
+          "company_name": "abcX",
+          "contact_email": "",
+          "contact_phone": "",
+          "country": "",
+          "expedited_onboarding": false,
+          "payment_terms": "",
+          "tax_id": ""
+        }
+      ],
+      "fake_submissions": [
+        {
+          "company_name": "abcX",
+          "contact_email": "",
+          "contact_phone": "",
+          "tax_id": "",
+          "country": "",
+          "payment_terms": "",
+          "expedited_onboarding": false
+        }
+      ],
+      "steps": [
+        {
+          "action": [
+            "click",
+            [
+              768,
+              94
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.8,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.118166041909717
+        },
+        {
+          "action": [
+            "key",
+            "a"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.14,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9302162079839036
+        },
+        {
+          "action": [
+            "key",
+            "b"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 2.95,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9124060000758618
+        },
+        {
+          "action": [
+            "key",
+            "c"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.55,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.4543305829865858
+        },
+        {
+          "action": [
+            "click",
+            [
+              768,
+              280
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.02,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9224318329943344
+        },
+        {
+          "action": [
+            "click",
+            [
+              540,
+              94
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.23,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9659814588958398
+        },
+        {
+          "action": [
+            "key",
+            "X"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.27,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9658940830267966
+        },
+        {
+          "action": [
+            "click",
+            [
+              578,
+              486
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.36,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0472626249538735
+        }
+      ],
+      "seconds": 236.0
+    },
+    "label click focuses": {
+      "match": true,
+      "guest_submissions": [
+        {
+          "company_name": "Z",
+          "contact_email": "",
+          "contact_phone": "",
+          "country": "",
+          "expedited_onboarding": false,
+          "payment_terms": "",
+          "tax_id": ""
+        }
+      ],
+      "fake_submissions": [
+        {
+          "company_name": "Z",
+          "contact_email": "",
+          "contact_phone": "",
+          "tax_id": "",
+          "country": "",
+          "payment_terms": "",
+          "expedited_onboarding": false
+        }
+      ],
+      "steps": [
+        {
+          "action": [
+            "click",
+            [
+              768,
+              280
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.92,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0068655830109492
+        },
+        {
+          "action": [
+            "click",
+            [
+              768,
+              67
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.28,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9543549590744078
+        },
+        {
+          "action": [
+            "key",
+            "Z"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.36,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9953071249183267
+        },
+        {
+          "action": [
+            "click",
+            [
+              578,
+              486
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.24,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9927088749827817
+        }
+      ],
+      "seconds": 228.8
+    },
+    "Tab into radios then ArrowDown": {
+      "match": true,
+      "guest_submissions": [
+        {
+          "company_name": "",
+          "contact_email": "",
+          "contact_phone": "",
+          "country": "",
+          "expedited_onboarding": false,
+          "payment_terms": "Net 30",
+          "tax_id": ""
+        }
+      ],
+      "fake_submissions": [
+        {
+          "company_name": "",
+          "contact_email": "",
+          "contact_phone": "",
+          "tax_id": "",
+          "country": "",
+          "payment_terms": "Net 30",
+          "expedited_onboarding": false
+        }
+      ],
+      "steps": [
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.34,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.8968275419902056
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 2.9,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9302173330215737
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 2.88,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9086865419521928
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.02,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9556098750326782
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.37,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9699588749790564
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.19,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9471021660137922
+        },
+        {
+          "action": [
+            "key",
+            "ArrowDown"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 2.96,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.944082000060007
+        },
+        {
+          "action": [
+            "click",
+            [
+              578,
+              486
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.07,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9477005420485511
+        }
+      ],
+      "seconds": 227.3
+    },
+    "Tab into radios then Space": {
+      "match": true,
+      "guest_submissions": [
+        {
+          "company_name": "",
+          "contact_email": "",
+          "contact_phone": "",
+          "country": "",
+          "expedited_onboarding": false,
+          "payment_terms": "Net 15",
+          "tax_id": ""
+        }
+      ],
+      "fake_submissions": [
+        {
+          "company_name": "",
+          "contact_email": "",
+          "contact_phone": "",
+          "tax_id": "",
+          "country": "",
+          "payment_terms": "Net 15",
+          "expedited_onboarding": false
+        }
+      ],
+      "steps": [
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.64,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0166845000348985
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.23,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9381914170226082
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.2,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9322697499301285
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.19,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0083852499956265
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.11,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9425212920177728
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.16,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9814989579608664
+        },
+        {
+          "action": [
+            "key",
+            " "
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.06,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9353081249864772
+        },
+        {
+          "action": [
+            "click",
+            [
+              578,
+              486
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.13,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.957856708089821
+        }
+      ],
+      "seconds": 582.6
+    },
+    "select ArrowDown twice": {
+      "match": true,
+      "guest_submissions": [
+        {
+          "company_name": "",
+          "contact_email": "",
+          "contact_phone": "",
+          "country": "Brazil",
+          "expedited_onboarding": false,
+          "payment_terms": "",
+          "tax_id": ""
+        }
+      ],
+      "fake_submissions": [
+        {
+          "company_name": "",
+          "contact_email": "",
+          "contact_phone": "",
+          "tax_id": "",
+          "country": "Brazil",
+          "payment_terms": "",
+          "expedited_onboarding": false
+        }
+      ],
+      "steps": [
+        {
+          "action": [
+            "click",
+            [
+              768,
+              343
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.32,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9140301250154153
+        },
+        {
+          "action": [
+            "key",
+            "ArrowDown"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.15,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9238999160006642
+        },
+        {
+          "action": [
+            "key",
+            "ArrowDown"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.27,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9659132501110435
+        },
+        {
+          "action": [
+            "click",
+            [
+              578,
+              486
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 3.29,
+          "ack_reads": 1,
+          "stabilization_seconds": 0.9868025840260088
+        }
+      ],
+      "seconds": 210.1
+    }
+  },
+  "provider_closed": true,
+  "total_seconds": 2913.987208375009
+}
