@@ -1,0 +1,2097 @@
+{
+  "baselines": {
+    "standard": {
+      "always_key": {
+        "closed_loop": {
+          "episodes": 50,
+          "episodes_with_any_submission": 0,
+          "fields_total": 7,
+          "mean_fields_correct": 0.48,
+          "mean_steps": 200.0,
+          "per_episode": [
+            {
+              "fields_correct": 1,
+              "seed": 10000,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10001,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10002,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10003,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10004,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10005,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10006,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10007,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10008,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10009,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10010,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10011,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10012,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10013,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10014,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10015,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10016,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10017,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10018,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10019,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10020,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10021,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10022,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10023,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10024,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10025,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10026,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10027,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10028,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10029,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10030,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10031,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10032,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10033,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10034,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10035,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10036,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10037,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10038,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10039,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10040,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10041,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10042,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10043,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10044,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10045,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10046,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10047,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10048,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10049,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            }
+          ],
+          "successes": 0
+        },
+        "definition": "KEY with the most frequent training key on every frame",
+        "key": "-",
+        "teacher_forced": {
+          "action_type_accuracy": 0.9310218308567235,
+          "click_frames": 376,
+          "click_target_accuracy": 0.0,
+          "frames": 5451,
+          "key_accuracy": 0.06896551724137931,
+          "key_frames": 5075,
+          "step_accuracy": 0.0642084021280499
+        }
+      },
+      "card_blind": {
+        "definition": "oracle action type; for KEY, the most frequent training continuation of the keys already typed into the clicked control; every click wrong. Uses privileged form state, never the request card, so it has no closed-loop rollout",
+        "teacher_forced": {
+          "action_type_accuracy": 1.0,
+          "click_frames": 376,
+          "click_target_accuracy": 0.0,
+          "frames": 5451,
+          "key_accuracy": 0.812807881773399,
+          "key_frames": 5075,
+          "step_accuracy": 0.7567418822234453
+        }
+      },
+      "constant_click": {
+        "cell": 368,
+        "closed_loop": {
+          "episodes": 50,
+          "episodes_with_any_submission": 0,
+          "fields_total": 7,
+          "mean_fields_correct": 0.48,
+          "mean_steps": 200.0,
+          "per_episode": [
+            {
+              "fields_correct": 1,
+              "seed": 10000,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10001,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10002,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10003,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10004,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10005,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10006,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10007,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10008,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10009,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10010,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10011,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10012,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10013,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10014,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10015,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10016,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10017,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10018,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10019,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10020,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10021,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10022,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10023,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10024,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10025,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10026,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10027,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10028,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10029,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10030,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10031,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10032,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10033,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10034,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10035,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10036,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10037,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10038,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10039,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10040,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10041,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10042,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10043,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10044,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 1,
+              "seed": 10045,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10046,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10047,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10048,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            },
+            {
+              "fields_correct": 0,
+              "seed": 10049,
+              "steps": 200,
+              "submissions": 0,
+              "success": false
+            }
+          ],
+          "successes": 0
+        },
+        "definition": "CLICK on the most frequent training click cell on every frame",
+        "teacher_forced": {
+          "action_type_accuracy": 0.06897816914327647,
+          "click_frames": 376,
+          "click_target_accuracy": 0.13297872340425532,
+          "frames": 5451,
+          "key_accuracy": 0.01064039408866995,
+          "key_frames": 5075,
+          "step_accuracy": 0.0091726288754357
+        }
+      },
+      "lookup_table": {
+        "closed_loop": {
+          "episodes": 50,
+          "episodes_with_any_submission": 50,
+          "fields_total": 7,
+          "mean_fields_correct": 7.0,
+          "mean_steps": 109.02,
+          "per_episode": [
+            {
+              "fields_correct": 7,
+              "seed": 10000,
+              "steps": 97,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10001,
+              "steps": 97,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10002,
+              "steps": 110,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10003,
+              "steps": 97,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10004,
+              "steps": 112,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10005,
+              "steps": 99,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10006,
+              "steps": 97,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10007,
+              "steps": 114,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10008,
+              "steps": 112,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10009,
+              "steps": 109,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10010,
+              "steps": 97,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10011,
+              "steps": 109,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10012,
+              "steps": 112,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10013,
+              "steps": 110,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10014,
+              "steps": 111,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10015,
+              "steps": 111,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10016,
+              "steps": 115,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10017,
+              "steps": 113,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10018,
+              "steps": 109,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10019,
+              "steps": 112,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10020,
+              "steps": 98,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10021,
+              "steps": 113,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10022,
+              "steps": 113,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10023,
+              "steps": 110,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10024,
+              "steps": 113,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10025,
+              "steps": 100,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10026,
+              "steps": 114,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10027,
+              "steps": 111,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10028,
+              "steps": 109,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10029,
+              "steps": 112,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10030,
+              "steps": 111,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10031,
+              "steps": 97,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10032,
+              "steps": 110,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10033,
+              "steps": 111,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10034,
+              "steps": 112,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10035,
+              "steps": 109,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10036,
+              "steps": 113,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10037,
+              "steps": 110,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10038,
+              "steps": 114,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10039,
+              "steps": 108,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10040,
+              "steps": 114,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10041,
+              "steps": 115,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10042,
+              "steps": 111,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10043,
+              "steps": 114,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10044,
+              "steps": 113,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10045,
+              "steps": 107,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10046,
+              "steps": 111,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10047,
+              "steps": 113,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10048,
+              "steps": 111,
+              "submissions": 1,
+              "success": true
+            },
+            {
+              "fields_correct": 7,
+              "seed": 10049,
+              "steps": 111,
+              "submissions": 1,
+              "success": true
+            }
+          ],
+          "successes": 50
+        },
+        "conflicting_frames": 0,
+        "definition": "frame digest -> oracle action, built on the test demonstrations",
+        "teacher_forced": {
+          "action_type_accuracy": 1.0,
+          "click_frames": 376,
+          "click_target_accuracy": 1.0,
+          "frames": 5451,
+          "key_accuracy": 1.0,
+          "key_frames": 5075,
+          "step_accuracy": 1.0
+        }
+      },
+      "oracle": {
+        "closed_loop": {
+          "episodes": 50,
+          "successes": 50
+        },
+        "definition": "the scripted oracle that produced the demonstrations",
+        "teacher_forced": {
+          "action_type_accuracy": 1.0,
+          "click_frames": 376,
+          "click_target_accuracy": 1.0,
+          "frames": 5451,
+          "key_accuracy": 1.0,
+          "key_frames": 5075,
+          "step_accuracy": 1.0
+        }
+      }
+    }
+  },
+  "command": "scripts/run_bc_experiment_v2.py small --output-dir artifacts/bc-experiment-v2/small-2 --processes 8",
+  "config": {
+    "batch_size": 64,
+    "cell_pixels": 16,
+    "click_branch_channels": 64,
+    "click_context_dim": 32,
+    "click_dilations": [
+      1,
+      2,
+      4
+    ],
+    "demo_counts": [
+      4,
+      16,
+      64,
+      256
+    ],
+    "eval_every": 500,
+    "gate_overfit_frames": 30,
+    "gate_overfit_min_correct": 29,
+    "gate_overfit_steps": 2000,
+    "gate_single_demo_seed": 0,
+    "gate_single_demo_steps": 5000,
+    "global_dim": 256,
+    "holdout_every": 4,
+    "holdout_test_start": 20000,
+    "holdout_train_start": 0,
+    "holdout_validation_start": 50000,
+    "key_branch_channels": 64,
+    "key_context_dim": 32,
+    "key_dilations": [
+      1,
+      2
+    ],
+    "key_value_dim": 128,
+    "learning_rate": 0.0003,
+    "max_episode_steps": 200,
+    "observation_height": 384,
+    "observation_width": 512,
+    "small": {
+      "demo_count": 16,
+      "split": "standard",
+      "steps": 2000,
+      "training_seed": 0
+    },
+    "standard_test_start": 10000,
+    "standard_train_start": 0,
+    "standard_validation_start": 256,
+    "steps": 6000,
+    "test_size": 50,
+    "train_pool_size": 256,
+    "training_seeds": [
+      0,
+      1
+    ],
+    "validation_size": 32,
+    "weight_decay": 0.0001
+  },
+  "data": {
+    "standard": {
+      "name_overlap": {
+        "distinct_names_total": 48,
+        "test_distinct_names": 29,
+        "test_distinct_names_in_train": 29,
+        "test_episodes": 50,
+        "test_episodes_with_name_in_train": 50,
+        "train_distinct_names": 48
+      },
+      "pool_frames": 27762,
+      "test_frames": 5451,
+      "test_seeds": [
+        10000,
+        10001,
+        10002,
+        10003,
+        10004,
+        10005,
+        10006,
+        10007,
+        10008,
+        10009,
+        10010,
+        10011,
+        10012,
+        10013,
+        10014,
+        10015,
+        10016,
+        10017,
+        10018,
+        10019,
+        10020,
+        10021,
+        10022,
+        10023,
+        10024,
+        10025,
+        10026,
+        10027,
+        10028,
+        10029,
+        10030,
+        10031,
+        10032,
+        10033,
+        10034,
+        10035,
+        10036,
+        10037,
+        10038,
+        10039,
+        10040,
+        10041,
+        10042,
+        10043,
+        10044,
+        10045,
+        10046,
+        10047,
+        10048,
+        10049
+      ],
+      "train_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117,
+        118,
+        119,
+        120,
+        121,
+        122,
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145,
+        146,
+        147,
+        148,
+        149,
+        150,
+        151,
+        152,
+        153,
+        154,
+        155,
+        156,
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163,
+        164,
+        165,
+        166,
+        167,
+        168,
+        169,
+        170,
+        171,
+        172,
+        173,
+        174,
+        175,
+        176,
+        177,
+        178,
+        179,
+        180,
+        181,
+        182,
+        183,
+        184,
+        185,
+        186,
+        187,
+        188,
+        189,
+        190,
+        191,
+        192,
+        193,
+        194,
+        195,
+        196,
+        197,
+        198,
+        199,
+        200,
+        201,
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209,
+        210,
+        211,
+        212,
+        213,
+        214,
+        215,
+        216,
+        217,
+        218,
+        219,
+        220,
+        221,
+        222,
+        223,
+        224,
+        225,
+        226,
+        227,
+        228,
+        229,
+        230,
+        231,
+        232,
+        233,
+        234,
+        235,
+        236,
+        237,
+        238,
+        239,
+        240,
+        241,
+        242,
+        243,
+        244,
+        245,
+        246,
+        247,
+        248,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255
+      ],
+      "validation_frames": 3468,
+      "validation_seeds": [
+        256,
+        257,
+        258,
+        259,
+        260,
+        261,
+        262,
+        263,
+        264,
+        265,
+        266,
+        267,
+        268,
+        269,
+        270,
+        271,
+        272,
+        273,
+        274,
+        275,
+        276,
+        277,
+        278,
+        279,
+        280,
+        281,
+        282,
+        283,
+        284,
+        285,
+        286,
+        287
+      ]
+    }
+  },
+  "gates": {
+    "all_passed": true,
+    "lookup_table_test_seeds": {
+      "standard": {
+        "conflicting_frames": 0,
+        "episodes": 50,
+        "passed": true,
+        "successes": 50
+      }
+    },
+    "overfit_30_click_frames": {
+      "click_targets_correct": 30,
+      "frames": 30,
+      "min_correct": 29,
+      "passed": true,
+      "training": {
+        "best_validation_step": null,
+        "best_validation_step_accuracy": null,
+        "device": "mps",
+        "final_loss": 3.7872190475463867,
+        "parameters": 3706475,
+        "steps": 2000,
+        "train_seconds": 252.54465004103258,
+        "validation_curve": []
+      }
+    },
+    "single_demo_closed_loop": {
+      "closed_loop": {
+        "fields_correct": 7,
+        "seed": 0,
+        "steps": 113,
+        "submissions": 1,
+        "success": true
+      },
+      "frames": 113,
+      "passed": true,
+      "seed": 0,
+      "teacher_forced": {
+        "action_type_accuracy": 1.0,
+        "click_frames": 8,
+        "click_target_accuracy": 1.0,
+        "frames": 113,
+        "key_accuracy": 1.0,
+        "key_frames": 105,
+        "step_accuracy": 1.0
+      },
+      "training": {
+        "best_validation_step": null,
+        "best_validation_step_accuracy": null,
+        "device": "mps",
+        "final_loss": 3.2911927700042725,
+        "parameters": 3706475,
+        "steps": 5000,
+        "train_seconds": 2350.9706338340184,
+        "validation_curve": []
+      }
+    }
+  },
+  "generated_at": "2026-11-13T22:09:30.598203+00:00",
+  "generation_seconds": 72.01617945800535,
+  "git_revision": "a042fdcec5441f3320341cf1e52261ca1a7e8a65",
+  "held_out_names": [
+    "Amber Field Distribution LLC",
+    "Amber Field Supply Co.",
+    "Blue Harbor Logistics Group",
+    "Cedar Hollow Distribution LLC",
+    "Cedar Hollow Supply Co.",
+    "Copper Vale Logistics Group",
+    "Granite Bay Distribution LLC",
+    "Granite Bay Supply Co.",
+    "Marble Point Logistics Group",
+    "North Ridge Distribution LLC",
+    "North Ridge Supply Co.",
+    "Silver Creek Logistics Group"
+  ],
+  "host": {
+    "device": "mps",
+    "machine": "arm64",
+    "mps_available": true,
+    "numpy": "1.26.4",
+    "processor": "arm",
+    "python": "3.12.15",
+    "release": "27.0.0",
+    "system": "Darwin",
+    "torch": "2.15.0"
+  },
+  "phase": "small",
+  "runs": [
+    {
+      "best_validation_step": 2000,
+      "best_validation_step_accuracy": 0.3073817762399077,
+      "closed_loop": {
+        "episodes": 50,
+        "episodes_with_any_submission": 42,
+        "fields_total": 7,
+        "mean_fields_correct": 1.12,
+        "mean_steps": 200.0,
+        "per_episode": [
+          {
+            "fields_correct": 1,
+            "seed": 10000,
+            "steps": 200,
+            "submissions": 55,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10001,
+            "steps": 200,
+            "submissions": 20,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10002,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 2,
+            "seed": 10003,
+            "steps": 200,
+            "submissions": 56,
+            "success": false
+          },
+          {
+            "fields_correct": 2,
+            "seed": 10004,
+            "steps": 200,
+            "submissions": 48,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10005,
+            "steps": 200,
+            "submissions": 109,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10006,
+            "steps": 200,
+            "submissions": 56,
+            "success": false
+          },
+          {
+            "fields_correct": 2,
+            "seed": 10007,
+            "steps": 200,
+            "submissions": 36,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10008,
+            "steps": 200,
+            "submissions": 46,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10009,
+            "steps": 200,
+            "submissions": 86,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10010,
+            "steps": 200,
+            "submissions": 57,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10011,
+            "steps": 200,
+            "submissions": 49,
+            "success": false
+          },
+          {
+            "fields_correct": 2,
+            "seed": 10012,
+            "steps": 200,
+            "submissions": 43,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10013,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 2,
+            "seed": 10014,
+            "steps": 200,
+            "submissions": 49,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10015,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 2,
+            "seed": 10016,
+            "steps": 200,
+            "submissions": 40,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10017,
+            "steps": 200,
+            "submissions": 52,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10018,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10019,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10020,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10021,
+            "steps": 200,
+            "submissions": 94,
+            "success": false
+          },
+          {
+            "fields_correct": 2,
+            "seed": 10022,
+            "steps": 200,
+            "submissions": 46,
+            "success": false
+          },
+          {
+            "fields_correct": 2,
+            "seed": 10023,
+            "steps": 200,
+            "submissions": 48,
+            "success": false
+          },
+          {
+            "fields_correct": 2,
+            "seed": 10024,
+            "steps": 200,
+            "submissions": 46,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10025,
+            "steps": 200,
+            "submissions": 15,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10026,
+            "steps": 200,
+            "submissions": 47,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10027,
+            "steps": 200,
+            "submissions": 47,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10028,
+            "steps": 200,
+            "submissions": 40,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10029,
+            "steps": 200,
+            "submissions": 45,
+            "success": false
+          },
+          {
+            "fields_correct": 2,
+            "seed": 10030,
+            "steps": 200,
+            "submissions": 45,
+            "success": false
+          },
+          {
+            "fields_correct": 2,
+            "seed": 10031,
+            "steps": 200,
+            "submissions": 54,
+            "success": false
+          },
+          {
+            "fields_correct": 3,
+            "seed": 10032,
+            "steps": 200,
+            "submissions": 50,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10033,
+            "steps": 200,
+            "submissions": 44,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10034,
+            "steps": 200,
+            "submissions": 46,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10035,
+            "steps": 200,
+            "submissions": 47,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10036,
+            "steps": 200,
+            "submissions": 44,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10037,
+            "steps": 200,
+            "submissions": 48,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10038,
+            "steps": 200,
+            "submissions": 48,
+            "success": false
+          },
+          {
+            "fields_correct": 2,
+            "seed": 10039,
+            "steps": 200,
+            "submissions": 44,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10040,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10041,
+            "steps": 200,
+            "submissions": 49,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10042,
+            "steps": 200,
+            "submissions": 51,
+            "success": false
+          },
+          {
+            "fields_correct": 2,
+            "seed": 10043,
+            "steps": 200,
+            "submissions": 43,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10044,
+            "steps": 200,
+            "submissions": 46,
+            "success": false
+          },
+          {
+            "fields_correct": 3,
+            "seed": 10045,
+            "steps": 200,
+            "submissions": 51,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10046,
+            "steps": 200,
+            "submissions": 11,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10047,
+            "steps": 200,
+            "submissions": 45,
+            "success": false
+          },
+          {
+            "fields_correct": 0,
+            "seed": 10048,
+            "steps": 200,
+            "submissions": 0,
+            "success": false
+          },
+          {
+            "fields_correct": 1,
+            "seed": 10049,
+            "steps": 200,
+            "submissions": 43,
+            "success": false
+          }
+        ],
+        "successes": 0
+      },
+      "demo_episodes": 16,
+      "demo_frames": 1748,
+      "device": "mps",
+      "final_loss": 6.359701156616211,
+      "name": "standard-n16-seed0-steps2000",
+      "parameters": 3706475,
+      "predictions": "artifacts/bc-experiment-v2/small-2/predictions/standard-n16-seed0-steps2000.json",
+      "split": "standard",
+      "steps": 2000,
+      "teacher_forced": {
+        "action_type_accuracy": 0.9774353329664281,
+        "click_frames": 376,
+        "click_target_accuracy": 0.851063829787234,
+        "frames": 5451,
+        "key_accuracy": 0.27251231527093595,
+        "key_frames": 5075,
+        "step_accuracy": 0.3028802054668868
+      },
+      "train_seconds": 983.0524764999282,
+      "training_seed": 0,
+      "validation_curve": [
+        {
+          "action_type_accuracy": 0.9446366782006921,
+          "click_frames": 240,
+          "click_target_accuracy": 0.8083333333333333,
+          "frames": 3468,
+          "key_accuracy": 0.13382899628252787,
+          "key_frames": 3228,
+          "loss": 7.320713996887207,
+          "step": 500,
+          "step_accuracy": 0.13350634371395617
+        },
+        {
+          "action_type_accuracy": 0.9728950403690888,
+          "click_frames": 240,
+          "click_target_accuracy": 0.8541666666666666,
+          "frames": 3468,
+          "key_accuracy": 0.17534076827757125,
+          "key_frames": 3228,
+          "loss": 6.7343597412109375,
+          "step": 1000,
+          "step_accuracy": 0.1986735870818916
+        },
+        {
+          "action_type_accuracy": 0.9806805074971164,
+          "click_frames": 240,
+          "click_target_accuracy": 0.8458333333333333,
+          "frames": 3468,
+          "key_accuracy": 0.23915737298636927,
+          "key_frames": 3228,
+          "loss": 6.466029644012451,
+          "step": 1500,
+          "step_accuracy": 0.26412918108419836
+        },
+        {
+          "action_type_accuracy": 0.9777970011534025,
+          "click_frames": 240,
+          "click_target_accuracy": 0.85,
+          "frames": 3468,
+          "key_accuracy": 0.2788104089219331,
+          "key_frames": 3228,
+          "loss": 6.359701156616211,
+          "step": 2000,
+          "step_accuracy": 0.3073817762399077
+        }
+      ],
+      "weights": {
+        "bytes": 14961485,
+        "path": ".cache/bc-experiment-v2/weights/standard-n16-seed0-steps2000.pt",
+        "sha256": "1b0febcf37f08e548337c7c9f08fc744ce2ef1f5987fc57b1940ccca09b037a8"
+      }
+    }
+  ],
+  "schema_version": "pixelgym-bc-experiment-v2",
+  "total_seconds": 4002.0617530000163,
+  "worktree_clean": true
+}
