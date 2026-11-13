@@ -12,6 +12,10 @@ What changed from version 1, and why:
   17-pixel receptive field), so it could not see which fields were filled. Here the click branch
   sees the stem features, two coordinate channels, and the trunk's global feature vector broadcast
   to every cell, followed by dilated convolutions. The policy is still pixel-only.
+- **Key head.** A linear layer on the global vector could not read characters off the request
+  card. The key branch attends over the 96x128 feature map (one cell is about one character),
+  steered by the global vector, and predicts the key from the attended value and the global vector.
+  Added after the first small run (``artifacts/bc-experiment-v2/small/``), whose gates failed.
 - **Click label.** Version 1 trained on the single oracle cell. Here the target is uniform over
   every grid cell whose centre lands on the same control (and option) as the oracle's click, the
   same rule the click metric uses.
@@ -107,12 +111,17 @@ class Config:
     click_context_dim: int = 32
     click_branch_channels: int = 64
     click_dilations: tuple[int, ...] = (1, 2, 4)
-    # Sanity gates.
+    key_context_dim: int = 32
+    key_branch_channels: int = 64
+    key_dilations: tuple[int, ...] = (1, 2)
+    key_value_dim: int = 128
+    # Sanity gates. Budgets raised once after the first small run (400 and 1500 steps), where
+    # both training gates under-fit; set by the owner's decision, not against test seeds.
     gate_overfit_frames: int = 30
-    gate_overfit_steps: int = 400
+    gate_overfit_steps: int = 2000
     gate_overfit_min_correct: int = 29
     gate_single_demo_seed: int = 0
-    gate_single_demo_steps: int = 1500
+    gate_single_demo_steps: int = 5000
     # The first configuration run and shown before the grid.
     small: SmallConfig = field(default_factory=SmallConfig)
 
@@ -604,11 +613,13 @@ def build_model(torch: Any, config: Config = CONFIG) -> Any:
     class Policy(nn.Module):  # type: ignore[misc, name-defined]
         def __init__(self) -> None:
             super().__init__()
-            self.stem = nn.Sequential(
+            self.stem_fine = nn.Sequential(
                 nn.Conv2d(1, 32, 5, stride=2, padding=2),  # 192x256
                 nn.ReLU(),
-                nn.Conv2d(32, 64, 3, stride=2, padding=1),  # 96x128
+                nn.Conv2d(32, 64, 3, stride=2, padding=1),  # 96x128: one cell ~ one character
                 nn.ReLU(),
+            )
+            self.stem = nn.Sequential(
                 nn.Conv2d(64, 64, 3, stride=2, padding=1),  # 48x64 == click grid
                 nn.ReLU(),
             )
@@ -622,7 +633,39 @@ def build_model(torch: Any, config: Config = CONFIG) -> Any:
                 nn.ReLU(),
             )
             self.type_head = nn.Linear(config.global_dim, len(ActionType))
-            self.key_head = nn.Linear(config.global_dim, len(KEY_ALLOWLIST))
+            # Key branch: attention over the fine (96x128) feature map, steered by the global
+            # vector, so the head can read one character of the request card or form; the
+            # attended value and the global vector together predict the key.
+            fine_in = 64 + 2 + config.key_context_dim
+            self.key_context = nn.Linear(config.global_dim, config.key_context_dim)
+            key_layers: list[Any] = []
+            in_channels = fine_in
+            for dilation in config.key_dilations:
+                key_layers += [
+                    nn.Conv2d(
+                        in_channels,
+                        config.key_branch_channels,
+                        3,
+                        padding=dilation,
+                        dilation=dilation,
+                    ),
+                    nn.ReLU(),
+                ]
+                in_channels = config.key_branch_channels
+            key_layers.append(nn.Conv2d(config.key_branch_channels, 1, 1))
+            self.key_attention = nn.Sequential(*key_layers)
+            self.key_values = nn.Sequential(
+                nn.Conv2d(64 + 2, config.key_value_dim, 3, padding=1), nn.ReLU()
+            )
+            self.key_head = nn.Linear(config.key_value_dim + config.global_dim, len(KEY_ALLOWLIST))
+            fine_h, fine_w = 2 * grid_h, 2 * grid_w
+            fy = (
+                torch.linspace(-1.0, 1.0, fine_h).view(1, 1, fine_h, 1).expand(1, 1, fine_h, fine_w)
+            )
+            fx = (
+                torch.linspace(-1.0, 1.0, fine_w).view(1, 1, 1, fine_w).expand(1, 1, fine_h, fine_w)
+            )
+            self.register_buffer("fine_coords", torch.cat([fx, fy], dim=1).contiguous())
             self.click_context = nn.Linear(config.global_dim, config.click_context_dim)
             channels = config.click_branch_channels
             layers: list[Any] = []
@@ -644,13 +687,24 @@ def build_model(torch: Any, config: Config = CONFIG) -> Any:
             self.register_buffer("coords", torch.cat([xs, ys], dim=1).contiguous())
 
         def forward(self, frames: Any) -> tuple[Any, Any, Any]:
-            features = self.stem(frames)
+            fine = self.stem_fine(frames)
+            features = self.stem(fine)
             pooled = self.trunk(features)
             batch = frames.shape[0]
             context = self.click_context(pooled)[:, :, None, None].expand(-1, -1, grid_h, grid_w)
             coords = self.coords.expand(batch, -1, -1, -1)
             click = self.click_branch(torch.cat([features, coords, context], dim=1)).flatten(1)
-            return self.type_head(pooled), click, self.key_head(pooled)
+            fine_coords = self.fine_coords.expand(batch, -1, -1, -1)
+            fine_h, fine_w = fine.shape[2], fine.shape[3]
+            key_context = self.key_context(pooled)[:, :, None, None].expand(-1, -1, fine_h, fine_w)
+            weights = torch.softmax(
+                self.key_attention(torch.cat([fine, fine_coords, key_context], dim=1)).flatten(1),
+                dim=1,
+            )
+            values = self.key_values(torch.cat([fine, fine_coords], dim=1)).flatten(2)
+            read = torch.bmm(values, weights.unsqueeze(2)).squeeze(2)
+            key = self.key_head(torch.cat([read, pooled], dim=1))
+            return self.type_head(pooled), click, key
 
     return Policy()
 

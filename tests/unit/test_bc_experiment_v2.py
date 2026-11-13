@@ -99,17 +99,27 @@ def test_report_rejects_an_unknown_schema() -> None:
         report.render({"schema_version": "other"})
 
 
-@pytest.mark.skipif(not (SMALL / "results.json").is_file(), reason="small run not stored yet")
-def test_checked_in_small_report_is_generated_from_its_results() -> None:
-    results = json.loads((SMALL / "results.json").read_text(encoding="utf-8"))
-    assert (SMALL / "REPORT.md").read_text(encoding="utf-8") == report.render(results)
+STORED = [ROOT / "artifacts/bc-experiment-v2" / name for name in ("small", "small-2", "")]
+
+
+def test_at_least_one_v2_run_is_stored() -> None:
+    assert (SMALL / "results.json").is_file()
+
+
+@pytest.mark.parametrize("folder", STORED, ids=lambda f: f.name or "grid")
+def test_checked_in_report_is_generated_from_its_results(folder: Path) -> None:
+    if not (folder / "results.json").is_file():
+        pytest.skip(f"{folder.name or 'grid'} run not stored yet")
+    results = json.loads((folder / "results.json").read_text(encoding="utf-8"))
+    assert (folder / "REPORT.md").read_text(encoding="utf-8") == report.render(results)
     assert results["worktree_clean"] is True
 
 
-def test_limits_section_states_only_computed_values_or_design() -> None:
-    if not (SMALL / "results.json").is_file():
-        pytest.skip("small run not stored yet")
-    text = report.render(json.loads((SMALL / "results.json").read_text(encoding="utf-8")))
+@pytest.mark.parametrize("folder", STORED, ids=lambda f: f.name or "grid")
+def test_limits_section_states_only_computed_values_or_design(folder: Path) -> None:
+    if not (folder / "results.json").is_file():
+        pytest.skip(f"{folder.name or 'grid'} run not stored yet")
+    text = report.render(json.loads((folder / "results.json").read_text(encoding="utf-8")))
     limits = text.split("## Limits", 1)[1].strip().splitlines()
     for line in limits:
         assert line.startswith("- "), line
