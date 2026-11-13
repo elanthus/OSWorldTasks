@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -112,11 +113,29 @@ def test_report_rejects_an_unknown_schema(tiny_evidence: dict) -> None:
         render({**tiny_evidence, "schema_version": "other"})
 
 
-def test_checked_in_report_is_generated_from_the_checked_in_evidence() -> None:
-    evidence = json.loads(ARTIFACT.read_text(encoding="utf-8"))
-    assert REPORT.read_text(encoding="utf-8") == render(evidence)
+@pytest.mark.parametrize("folder", [ARTIFACT.parent, ROOT / "artifacts/throughput-v2"])
+def test_checked_in_report_is_generated_from_the_checked_in_evidence(folder: Path) -> None:
+    evidence = json.loads((folder / "fake-throughput.json").read_text(encoding="utf-8"))
+    assert (folder / "REPORT.md").read_text(encoding="utf-8") == render(evidence)
     assert evidence["worktree_clean"] is True
     assert all(row["mismatched_frames"] == 0 for row in evidence["byte_identity"])
+
+
+def test_re_measurement_records_the_action_types_and_an_ancestor_revision() -> None:
+    folder = ROOT / "artifacts/throughput-v2"
+    evidence = json.loads((folder / "fake-throughput.json").read_text(encoding="utf-8"))
+    for workload in ("random", "golden"):
+        types = evidence["workloads"][workload]["action_types"]
+        assert sum(types["counts"].values()) == types["steps"], workload
+        assert types["steps"] == evidence["parameters"]["steps"], workload
+    ancestor = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", evidence["git_revision"], "HEAD"],
+        cwd=ROOT,
+        check=False,
+    )
+    assert ancestor.returncode == 0
+    load = json.loads((folder / "host-load.json").read_text(encoding="utf-8"))
+    assert [sample["when"] for sample in load["samples"]] == ["before", "after"]
 
 
 def test_action_type_counts_cover_every_step_and_report_the_noop_share() -> None:
