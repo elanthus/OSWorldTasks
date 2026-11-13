@@ -28,18 +28,61 @@ class _Env:
             raise self.error
 
 
+class _ClosingBackend:
+    def __init__(self, suppressed: list[str] | None = None) -> None:
+        self.suppressed_close_errors = list(suppressed or [])
+
+
 def test_close_that_returns_is_recorded_as_returned() -> None:
     env = _Env(None)
 
-    assert driver._close(env) == {"attempted": True, "returned": True, "error": None}  # type: ignore[arg-type]
+    assert driver._close(env, _ClosingBackend()) == {  # type: ignore[arg-type]
+        "attempted": True,
+        "returned": True,
+        "error": None,
+        "suppressed_close_errors": [],
+    }
     assert env.closed
 
 
 def test_close_that_raises_is_recorded_with_its_error_and_not_raised() -> None:
-    record = driver._close(_Env(RuntimeError("docker stop failed")))  # type: ignore[arg-type]
+    record = driver._close(_Env(RuntimeError("docker stop failed")), _ClosingBackend())  # type: ignore[arg-type]
 
     assert record["attempted"] is True and record["returned"] is False
     assert "docker stop failed" in record["error"]
+
+
+def test_a_close_failure_suppressed_by_a_failed_reset_is_not_reported_as_returned() -> None:
+    # The failed reset already closed the provider and kept only the reset error; the driver's own
+    # close then finds no provider and returns. The earlier failure must still be reported.
+    backend = _ClosingBackend(["failed to close OSWorld provider: docker stop failed"])
+
+    record = driver._close(_Env(None), backend)  # type: ignore[arg-type]
+
+    assert record["returned"] is False and record["error"] is None
+    assert record["suppressed_close_errors"] == [
+        "failed to close OSWorld provider: docker stop failed"
+    ]
+
+
+def test_backend_keeps_the_close_error_that_failure_cleanup_suppresses() -> None:
+    from pixelgym.backends.osworld import OSWorldBackend, OSWorldBackendConfig
+
+    class _Provider:
+        def close(self) -> None:
+            raise RuntimeError("docker stop failed")
+
+    backend = OSWorldBackend(OSWorldBackendConfig(guest_image_path=Path("guest.qcow2")))
+    backend._env = _Provider()
+
+    backend._close_after_failure()
+
+    assert backend._env is None
+    assert backend.suppressed_close_errors == [
+        "failed to close OSWorld provider: docker stop failed"
+    ]
+    backend.close()  # a later close finds no provider and returns
+    assert len(backend.suppressed_close_errors) == 1
 
 
 def _patch_parts(monkeypatch: pytest.MonkeyPatch, *, cases_close: dict[str, Any]) -> None:
@@ -82,6 +125,7 @@ class _Backend:
         self.root = root
         self._env: _DesktopEnv | None = None
         self._task = _Task()
+        self.suppressed_close_errors: list[str] = []
 
     def reset(self, seed: int) -> None:
         task_dir = self.root / "desktop-env" / f"vf-{seed}"

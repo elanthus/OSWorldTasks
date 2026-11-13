@@ -47,7 +47,7 @@
       "surface": "The pointer-park setup program clicked at (100, 150) before the episode. In local Chromium that click is a trusted primary mouseup the page acknowledges, after which reset's zero-acknowledgement check fails or, with a later read, an acknowledgement is paired with the wrong host action.",
       "mitigation": "The park program no longer clicks and must report the parked pointer position or setup fails. OSWorldBackend.reset requires the fixed osworld_task.SETUP_ACKNOWLEDGED_INPUTS (0), never the count the page reports, so a page that acknowledged any setup input is rejected.",
       "evidence": "tests/unit/test_osworld_task.py (test_full_setup_sequence_leaves_exactly_the_fixed_acknowledgement_count, test_negative_control_the_pre_fix_park_click_is_acknowledged_by_the_page); tests/unit/test_osworld_input_barrier.py (test_reset_rejects_a_setup_step_that_clicks_the_page, test_reset_after_the_full_setup_sequence_expects_the_fixed_count); tests/support/osworld_setup_model.py.",
-      "residual_risk": "Not yet run on the OSWorld guest. scripts/osworld_guest_check.py records the acknowledgement count after reset and the park program's output; it awaits owner approval to boot the guest."
+      "residual_risk": "Run once on the OSWorld guest at 248097d (artifacts/osworld-guest-check-2026-11-12-248097d/results.json): all three resets returned, and the page reported 0 acknowledgements after each. The driver recorded the park output as null because of a path defect; the park files left on the host, the last output per task id, each report the pointer at the park target with empty stderr, in park-output-supplement.json in the same folder. That run does not cover later revisions."
     }
   ]
 }

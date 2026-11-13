@@ -59,3 +59,12 @@ def test_the_new_endpoints_are_each_classified() -> None:
 
     for surface in ("POST /api/input-ack", "GET /api/input-ack", "/api/page-ready", "page token"):
         assert surface in text, surface
+
+
+def test_every_cited_artifact_exists() -> None:
+    # The pointer-park entry cites the 248097d guest run; a stale or moved path would let the
+    # residual risk point at evidence that is not there.
+    cited = re.findall(r"artifacts/[\w./-]+\.json", json.dumps(_load()))
+    assert any("osworld-guest-check-2026-11-12-248097d" in path for path in cited)
+    for path in cited:
+        assert (REPO_ROOT / path).is_file(), path

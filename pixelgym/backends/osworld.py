@@ -214,6 +214,9 @@ class OSWorldBackend:
         self._last_input_ack_reads: int | None = None
         self._closed = False
         self._last_stabilization_seconds: float | None = None
+        # Provider-close errors that failure cleanup suppressed to keep the original error. A later
+        # close() finds no provider and returns, so callers that report cleanup read these.
+        self.suppressed_close_errors: list[str] = []
 
     @property
     def width(self) -> int:
@@ -643,10 +646,12 @@ class OSWorldBackend:
     def _close_after_failure(self) -> None:
         try:
             self.close()
-        except OSWorldBackendError:
+        except OSWorldBackendError as exc:
             # Preserve the original integration failure while still making a
             # best-effort cleanup attempt.  The provider's own constructor and
-            # reset paths also clean up partial containers.
+            # reset paths also clean up partial containers.  The close error is
+            # kept so the cleanup failure is not lost.
+            self.suppressed_close_errors.append(str(exc))
             return
 
 

@@ -124,14 +124,27 @@ def _action(item: tuple[str, Any]) -> dict[str, int]:
     return {"action_type": int(ActionType.KEY), "x": 0, "y": 0, "key": KEY[argument]}
 
 
-def _close(env: PixelGuiEnv) -> dict[str, Any]:
-    """Close one provider and report what happened, never raising."""
+def _close(env: PixelGuiEnv, backend: OSWorldBackend) -> dict[str, Any]:
+    """Close one provider and report what happened, never raising.
+
+    A failed reset already closed its provider and, to keep the reset error, suppressed any close
+    error (``OSWorldBackend.suppressed_close_errors``). The close here then finds no provider and
+    returns, so those earlier failures are reported too and make ``returned`` false.
+    """
 
     try:
         env.close()
     except Exception:  # noqa: BLE001 - recorded, not swallowed: the exit status reflects it
-        return {"attempted": True, "returned": False, "error": traceback.format_exc()}
-    return {"attempted": True, "returned": True, "error": None}
+        error: str | None = traceback.format_exc()
+    else:
+        error = None
+    earlier = list(backend.suppressed_close_errors)
+    return {
+        "attempted": True,
+        "returned": error is None and not earlier,
+        "error": error,
+        "suppressed_close_errors": earlier,
+    }
 
 
 def _write(path: Path, value: dict[str, Any]) -> None:
@@ -214,7 +227,7 @@ def _run_resets(guest_image: Path, results: dict[str, Any]) -> None:
                     }
                 )
     finally:
-        results["resets"] = {"records": records, "provider_close": _close(env)}
+        results["resets"] = {"records": records, "provider_close": _close(env, backend)}
 
 
 def _run_golden(guest_image: Path, output: Path, results: dict[str, Any]) -> None:
@@ -296,7 +309,7 @@ def _run_cases(guest_image: Path, results: dict[str, Any], deadline: float) -> N
                     "seconds": round(time.monotonic() - started, 1),
                 }
     finally:
-        results["cases"] = {"records": cases, "provider_close": _close(env)}
+        results["cases"] = {"records": cases, "provider_close": _close(env, backend)}
 
 
 def _run_oracle(guest_image: Path, results: dict[str, Any], deadline: float) -> None:
@@ -331,7 +344,7 @@ def _run_oracle(guest_image: Path, results: dict[str, Any], deadline: float) -> 
         record["error"] = traceback.format_exc()
         record["pairs"] = pairs
     finally:
-        record["provider_close"] = _close(env)
+        record["provider_close"] = _close(env, backend)
         results["oracle"] = record
 
 
