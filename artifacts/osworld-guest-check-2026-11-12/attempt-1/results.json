@@ -1,0 +1,612 @@
+{
+  "started_unix": 1794513988.892716,
+  "golden": {
+    "error": "Traceback (most recent call last):\n  File \"pixelgym/backends/osworld.py\", line 566, in _ensure_env\n    self._env = factory(\n                ^^^^^^^^\n  File \".venv/lib/python3.12/site-packages/desktop_env/desktop_env.py\", line 131, in __init__\n    self._start_emulator()\n  File \".venv/lib/python3.12/site-packages/desktop_env/desktop_env.py\", line 180, in _start_emulator\n    self.provider.start_emulator(self.path_to_vm, self.headless, self.os_type)\n  File \".venv/lib/python3.12/site-packages/desktop_env/providers/docker/provider.py\", line 171, in start_emulator\n    raise e\n  File \".venv/lib/python3.12/site-packages/desktop_env/providers/docker/provider.py\", line 161, in start_emulator\n    self._wait_for_vm_ready()\n  File \".venv/lib/python3.12/site-packages/desktop_env/providers/docker/provider.py\", line 113, in _wait_for_vm_ready\n    raise TimeoutError(\"VM failed to become ready within timeout period\")\nTimeoutError: VM failed to become ready within timeout period\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"artifacts/osworld-guest-check-2026-11-11/driver.py\", line 55, in main\n    golden = record_real(DEFAULT_FIXTURE, GUEST, OUT / \"real-golden\")\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"scripts/osworld_golden_trajectory.py\", line 158, in record_real\n    observation, _info = env.reset(seed=fixture[\"seed\"])\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"pixelgym/env.py\", line 123, in reset\n    record = self.backend.reset(task_seed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"pixelgym/backends/osworld.py\", line 242, in reset\n    env = self._ensure_env()\n          ^^^^^^^^^^^^^^^^^^\n  File \"pixelgym/backends/osworld.py\", line 583, in _ensure_env\n    raise OSWorldBackendError(f\"failed to construct OSWorld DesktopEnv: {exc}\") from exc\npixelgym.backends.osworld.OSWorldBackendError: failed to construct OSWorld DesktopEnv: VM failed to become ready within timeout period\n",
+    "seconds": 309.0558395839762
+  },
+  "cases": {
+    "caret ArrowLeft": {
+      "match": true,
+      "guest_submissions": [
+        {
+          "company_name": "abc",
+          "contact_email": "",
+          "contact_phone": "",
+          "country": "",
+          "expedited_onboarding": false,
+          "payment_terms": "",
+          "tax_id": ""
+        }
+      ],
+      "fake_submissions": [
+        {
+          "company_name": "abc",
+          "contact_email": "",
+          "contact_phone": "",
+          "tax_id": "",
+          "country": "",
+          "payment_terms": "",
+          "expedited_onboarding": false
+        }
+      ],
+      "steps": [
+        {
+          "action": [
+            "click",
+            [
+              768,
+              94
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 5.21,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.2169097500154749
+        },
+        {
+          "action": [
+            "key",
+            "a"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.88,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.180351083050482
+        },
+        {
+          "action": [
+            "key",
+            "b"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.7,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1628518329234794
+        },
+        {
+          "action": [
+            "key",
+            "ArrowLeft"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.84,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1948872080538422
+        },
+        {
+          "action": [
+            "key",
+            "c"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.66,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1966601660242304
+        },
+        {
+          "action": [
+            "click",
+            [
+              578,
+              486
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.92,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.2826342090265825
+        }
+      ],
+      "seconds": 324.1
+    },
+    "caret ArrowUp": {
+      "match": true,
+      "guest_submissions": [
+        {
+          "company_name": "abc",
+          "contact_email": "",
+          "contact_phone": "",
+          "country": "",
+          "expedited_onboarding": false,
+          "payment_terms": "",
+          "tax_id": ""
+        }
+      ],
+      "fake_submissions": [
+        {
+          "company_name": "abc",
+          "contact_email": "",
+          "contact_phone": "",
+          "tax_id": "",
+          "country": "",
+          "payment_terms": "",
+          "expedited_onboarding": false
+        }
+      ],
+      "steps": [
+        {
+          "action": [
+            "click",
+            [
+              768,
+              94
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.59,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1361086249817163
+        },
+        {
+          "action": [
+            "key",
+            "a"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.71,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1414838749915361
+        },
+        {
+          "action": [
+            "key",
+            "b"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.23,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1351990839466453
+        },
+        {
+          "action": [
+            "key",
+            "ArrowUp"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.36,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.2158362079644576
+        },
+        {
+          "action": [
+            "key",
+            "c"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.97,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1859638749156147
+        },
+        {
+          "action": [
+            "click",
+            [
+              578,
+              486
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.98,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.212711124913767
+        }
+      ],
+      "seconds": 326.9
+    },
+    "caret click near left edge": {
+      "error": "Traceback (most recent call last):\n  File \"artifacts/osworld-guest-check-2026-11-11/driver.py\", line 76, in main\n    env.reset(seed=7)\n  File \"pixelgym/env.py\", line 123, in reset\n    record = self.backend.reset(task_seed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"pixelgym/backends/osworld.py\", line 244, in reset\n    observation = env.reset(task_config=task, seed=seed)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \".venv/lib/python3.12/site-packages/desktop_env/desktop_env.py\", line 333, in reset\n    self._start_emulator()\n  File \".venv/lib/python3.12/site-packages/desktop_env/desktop_env.py\", line 180, in _start_emulator\n    self.provider.start_emulator(self.path_to_vm, self.headless, self.os_type)\n  File \".venv/lib/python3.12/site-packages/desktop_env/providers/docker/provider.py\", line 171, in start_emulator\n    raise e\n  File \".venv/lib/python3.12/site-packages/desktop_env/providers/docker/provider.py\", line 161, in start_emulator\n    self._wait_for_vm_ready()\n  File \".venv/lib/python3.12/site-packages/desktop_env/providers/docker/provider.py\", line 113, in _wait_for_vm_ready\n    raise TimeoutError(\"VM failed to become ready within timeout period\")\nTimeoutError: VM failed to become ready within timeout period\n",
+      "seconds": 304.2
+    },
+    "label click focuses": {
+      "match": true,
+      "guest_submissions": [
+        {
+          "company_name": "Z",
+          "contact_email": "",
+          "contact_phone": "",
+          "country": "",
+          "expedited_onboarding": false,
+          "payment_terms": "",
+          "tax_id": ""
+        }
+      ],
+      "fake_submissions": [
+        {
+          "company_name": "Z",
+          "contact_email": "",
+          "contact_phone": "",
+          "tax_id": "",
+          "country": "",
+          "payment_terms": "",
+          "expedited_onboarding": false
+        }
+      ],
+      "steps": [
+        {
+          "action": [
+            "click",
+            [
+              768,
+              280
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.78,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.18836108292453
+        },
+        {
+          "action": [
+            "click",
+            [
+              768,
+              67
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.52,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1116975840413943
+        },
+        {
+          "action": [
+            "key",
+            "Z"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.43,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0987388750072569
+        },
+        {
+          "action": [
+            "click",
+            [
+              578,
+              486
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.44,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1619092089822516
+        }
+      ],
+      "seconds": 349.0
+    },
+    "Tab into radios then ArrowDown": {
+      "match": true,
+      "guest_submissions": [
+        {
+          "company_name": "",
+          "contact_email": "",
+          "contact_phone": "",
+          "country": "",
+          "expedited_onboarding": false,
+          "payment_terms": "Net 30",
+          "tax_id": ""
+        }
+      ],
+      "fake_submissions": [
+        {
+          "company_name": "",
+          "contact_email": "",
+          "contact_phone": "",
+          "tax_id": "",
+          "country": "",
+          "payment_terms": "Net 30",
+          "expedited_onboarding": false
+        }
+      ],
+      "steps": [
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.77,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1374039159854874
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.47,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1431954589206725
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.25,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1599987919908017
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.1,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0856433330336586
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.19,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1011963329510763
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.41,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.104887541034259
+        },
+        {
+          "action": [
+            "key",
+            "ArrowDown"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.14,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0850807920796797
+        },
+        {
+          "action": [
+            "click",
+            [
+              578,
+              486
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.21,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1119600830134004
+        }
+      ],
+      "seconds": 325.5
+    },
+    "Tab into radios then Space": {
+      "match": true,
+      "guest_submissions": [
+        {
+          "company_name": "",
+          "contact_email": "",
+          "contact_phone": "",
+          "country": "",
+          "expedited_onboarding": false,
+          "payment_terms": "Net 15",
+          "tax_id": ""
+        }
+      ],
+      "fake_submissions": [
+        {
+          "company_name": "",
+          "contact_email": "",
+          "contact_phone": "",
+          "tax_id": "",
+          "country": "",
+          "payment_terms": "Net 15",
+          "expedited_onboarding": false
+        }
+      ],
+      "steps": [
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.52,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0980569169623777
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.18,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0736422500340268
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.17,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1858751670224592
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.16,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.084379457985051
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.24,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0995021249400452
+        },
+        {
+          "action": [
+            "key",
+            "Tab"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.37,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1406988749513403
+        },
+        {
+          "action": [
+            "key",
+            " "
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.51,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.0961368329590186
+        },
+        {
+          "action": [
+            "click",
+            [
+              578,
+              486
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.51,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1515147919999436
+        }
+      ],
+      "seconds": 322.2
+    },
+    "select ArrowDown twice": {
+      "match": true,
+      "guest_submissions": [
+        {
+          "company_name": "",
+          "contact_email": "",
+          "contact_phone": "",
+          "country": "Brazil",
+          "expedited_onboarding": false,
+          "payment_terms": "",
+          "tax_id": ""
+        }
+      ],
+      "fake_submissions": [
+        {
+          "company_name": "",
+          "contact_email": "",
+          "contact_phone": "",
+          "tax_id": "",
+          "country": "Brazil",
+          "payment_terms": "",
+          "expedited_onboarding": false
+        }
+      ],
+      "steps": [
+        {
+          "action": [
+            "click",
+            [
+              768,
+              343
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.35,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.139501666999422
+        },
+        {
+          "action": [
+            "key",
+            "ArrowDown"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.34,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.087014792021364
+        },
+        {
+          "action": [
+            "key",
+            "ArrowDown"
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.28,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.1726917079649866
+        },
+        {
+          "action": [
+            "click",
+            [
+              578,
+              486
+            ]
+          ],
+          "reward": 0.0,
+          "terminated": false,
+          "seconds": 4.23,
+          "ack_reads": 1,
+          "stabilization_seconds": 1.149087458034046
+        }
+      ],
+      "seconds": 322.3
+    }
+  },
+  "provider_closed": true,
+  "total_seconds": 2586.7528640000382
+}

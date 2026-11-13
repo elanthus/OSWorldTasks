@@ -4,13 +4,14 @@ PixelGym-OSWorld is a pixel-only Gymnasium environment for one deterministic syn
 vendor-onboarding form. A privileged host-side evaluator is the only source of reward, an optional
 backend runs the same form inside a VM pinned to OSWorld-V2, and every environment contract it
 claims (reset determinism, reward timing, space integrity, and a reward-hacking audit) is backed by
-stored evidence. It is a narrow, inspectable environment, not a broad desktop-agent benchmark.
+stored evidence. The [evidence index](docs/evidence-index.md) names the code revision and guest
+bundle each record was made against, and which records predate the current code. It is a narrow, inspectable environment, not a broad desktop-agent benchmark.
 
 [![CI](https://github.com/elanthus/OSWorldTasks/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/elanthus/OSWorldTasks/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Python](https://img.shields.io/badge/python-3.12-blue)
 
 ## Start here
 
-Five files hold the contract:
+Four files and one directory hold the contract:
 
 - [pixelgym/env.py](pixelgym/env.py) — `PixelGuiEnv`, the Gymnasium interface. The RGB screenshot
   is the only observation.
@@ -24,12 +25,12 @@ Five files hold the contract:
 <!-- readme-snippet:start -->
 ```python
 import gymnasium as gym
-from pixelgym.actions import KEY_ALLOWLIST
+from pixelgym.actions import KEY_ALLOWLIST as KEYS, ActionType
 
 env = gym.make("PixelGym/VendorForm-v0")  # in-process fake backend, registered on install
 obs, info = env.reset(seed=7)  # info holds only an opaque episode id
-obs, reward, *_ = env.step({"action_type": 1, "x": 768, "y": 94, "key": 0})  # CLICK a field
-obs, reward, *_ = env.step({"action_type": 2, "x": 0, "y": 0, "key": KEY_ALLOWLIST.index("A")})
+env.step({"action_type": ActionType.CLICK, "x": 768, "y": 94, "key": 0})  # focus a field
+obs, reward, *_ = env.step({"action_type": ActionType.KEY, "x": 0, "y": 0, "key": KEYS.index("A")})
 assert obs.shape == (768, 1024, 3) and reward == 0.0  # 0 until an exact submission, then 1 once
 ```
 <!-- readme-snippet:end -->
@@ -40,35 +41,36 @@ The unit suite runs this snippet ([test](tests/unit/test_readme_snippet.py)). Se
 ## Results
 
 - **Environment.** Five real OSWorld resets of seed 7 were bitwise identical at 1024×768 on one
-  host ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json)). The
+  host. That evidence records guest bundle `6a3fd2bd…` but no git revision or date, and it was
+  checked in with `01572d5` on 2026-09-06; the merged guest bundle is `505a15bf…`
+  ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json)). The
   fake backend runs 1181 random-policy steps/s, up from 207 before a renderer change that kept
   all 6044 compared frames byte-identical ([throughput report](artifacts/throughput/REPORT.md)).
-  A randomized differential test checks the fake against the real page in Chromium after every
-  action ([test](tests/integration/test_vendor_form_differential.py)), and an
-  input-acknowledgement barrier pays reward on the step whose action caused the submission
-  ([test](tests/integration/test_vendor_form_input_barrier.py)). On the OSWorld guest, one run at
-  an earlier revision of that work paid its only reward at the golden trajectory's last step, and
-  seven input sequences flagged in review submitted the same values as the fake
-  ([guest check](artifacts/osworld-guest-check-2026-11-11/README.md)).
+  Two opt-in Chromium tests, not part of the default unit suite, check the fake against the real
+  page after every action ([test](tests/integration/test_vendor_form_differential.py)) and check
+  that an input-acknowledgement barrier pays reward on the step whose action caused the
+  submission ([test](tests/integration/test_vendor_form_input_barrier.py)). On the OSWorld guest,
+  running merged `main` at `d4e711e` with guest bundle `505a15bf…`, the golden trajectory paid its
+  only reward at its last step, and seven input sequences flagged in review submitted the same
+  values as the fake ([guest check](artifacts/osworld-guest-check-2026-11-12/README.md)).
 - **Grounding.** On 100 paired screenshots (20 task seeds × 5 screen states; each of 10 target
   controls appears 10 times), `gpt-5.4-mini` scored 56/100 with raw coordinates and 100/100 when
   choosing among 10 labelled marks: +44 points, target-clustered 95% CI [+21, +67]
   ([report](artifacts/grounding-report-v2.md),
-  [clustered supplement](artifacts/grounding-clustered-analysis-v2.md)). Half of the raw misses,
-  22 of 44, land on the read-only request card in the target's own row (company name 9, contact
-  phone 10, contact email 3). Counting those as correct gives raw 78/100 and +22 points,
-  target-clustered 95% CI [+6, +42] ([ambiguity split](artifacts/grounding-ambiguity-split-v1.md)).
+  [clustered supplement](artifacts/grounding-clustered-analysis-v2.md)). The marks sit on
+  DOM-derived control locations collected offline, not proposed from pixels. Proposal coverage,
+  reported separately from that selection accuracy, was 100/100 by the dataset's retention rule.
+  In a post hoc split, half of the raw misses, 22 of 44, land on the read-only request card in the
+  target's own row (company name 9, contact phone 10, contact email 3). Counting those as correct
+  gives raw 78/100 and +22 points, target-clustered 95% CI [+6, +42]
+  ([ambiguity split](artifacts/grounding-ambiguity-split-v1.md)).
 - **Agent rollouts.** Claude Haiku 4.5 on 192 multi-screen episodes succeeded 106, 62, and 132
-  times with its screenshot history and 15, 20, and 20 times without it, in three campaigns. The
-  stateless arm sits at chance by design: two three-way choices whose answers appear only on
-  earlier screens give an otherwise-perfect guesser 1/9, about 21 of 192
-  ([chance supplement](artifacts/grounding-v5-stateless-chance-ceiling-v1.md)). All v5 model
-  runs used the in-process PIL backend
-  ([pixelgym/grounding/v5/backend.py](pixelgym/grounding/v5/backend.py)); the v5 code has no
-  browser or OSWorld backend.
-- **Learning.** Behaviour cloning from a scripted oracle (4 to 256 demonstration episodes, two
-  training seeds each) reached 40% teacher-forced step accuracy and 0 of 400 closed-loop
-  successes; the click head did not learn ([BC report](artifacts/bc-experiment/REPORT.md)).
+  times with its screenshot history and 15, 20, and 20 times without it, in three campaigns. A
+  post hoc chance-level analysis, written after the campaigns: two three-way choices whose answers
+  appear only on earlier screens give an otherwise-perfect guesser 1/9, about 21 of 192
+  ([chance supplement](artifacts/grounding-v5-stateless-chance-ceiling-v1.md)). No v5 model run
+  used a browser or the OSWorld backend; all ran on the in-process PIL backend
+  ([pixelgym/grounding/v5/backend.py](pixelgym/grounding/v5/backend.py)).
 
 What these results do not show is under [Limitations](#limitations).
 
@@ -95,8 +97,13 @@ The same commands are the documented reproduction workflow: ruff, strict mypy, o
 tests, and a non-mutating grounding-evidence verifier ([reproduction guide](docs/reproduction.md)).
 
 The unit suite is offline: it does not require a browser, Docker, OSWorld, provider credentials,
-or external services. It binds loopback sockets in one file, which tests the v5 egress proxy
-([test](tests/unit/test_grounding_v5_egress_proxy.py)). The grounding verifier reads frozen evidence, recomputes the
+or external services. Three unit test files bind loopback (`127.0.0.1`) sockets, each through
+the v5 egress proxy: [the egress proxy tests](tests/unit/test_grounding_v5_egress_proxy.py), and
+the tests that reach `EgressProxy(...).start()` in
+[`claude_code_policy.py`](pixelgym/grounding/v5/claude_code_policy.py)
+([test](tests/unit/test_grounding_v5_claude_code_transport.py)) and
+[`cli_sandbox_probe.py`](pixelgym/grounding/v5/cli_sandbox_probe.py)
+([test](tests/unit/test_grounding_v5_cli_sandbox_probe.py)). The grounding verifier reads frozen evidence, recomputes the
 headline, verifies stored hashes, and leaves tracked files unchanged. Numerical recomputation is
 supported; cross-platform byte-for-byte PNG regeneration is not claimed
 ([verification guide](docs/grounding-verification.md)).
@@ -282,9 +289,13 @@ without being promoted to a headline result
   task. The 1/9 chance level assumes an otherwise-perfect policy guessing uniformly; correct answers
   are not exactly balanced across screen positions, and the best fixed-position guess would match
   26 of 192 ([chance supplement](artifacts/grounding-v5-stateless-chance-ceiling-v1.md)).
-- The OSWorld guest check is one run of seven hand-picked sequences at commit `627e09b`. A later
-  commit in the same pull request changed the guest form server and page script, so it is not
-  evidence for the merged guest code ([provenance](artifacts/osworld-guest-check-2026-11-11/provenance.json)).
+- The OSWorld guest check covers seven hand-picked sequences, not a randomized differential test.
+  On the merged code it took three attempts: two VM boots missed OSWorld's fixed 300 s readiness
+  wait, and Docker Desktop was quit once. All attempts are kept, and the complete result combines
+  two of them at the same revision
+  ([provenance](artifacts/osworld-guest-check-2026-11-12/provenance.json)). An earlier run at
+  commit `627e09b`, before the guest page changed, is retained
+  ([earlier check](artifacts/osworld-guest-check-2026-11-11/README.md)).
 - Throughput and the behaviour-cloning result describe the in-process fake backend on one host.
   The cloning experiment had no recovery data and no hyperparameter search, and validation accuracy
   was still rising when training stopped ([BC report](artifacts/bc-experiment/REPORT.md)).
