@@ -10,13 +10,16 @@ from __future__ import annotations
 
 import json
 import re
+import tempfile
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+from pixelgym.tasks.vendor_form import generator, osworld_task
+
 ROOT = Path(__file__).resolve().parents[2]
 README = ROOT / "README.md"
-WORDS = {5: "Five", 7: "seven"}
+WORDS = {3: "three", 5: "Five", 10: "ten"}
 # A number in prose; digits glued to a letter, such as the version name "v5", are names.
 NUMBER = r"(?<![A-Za-z])\d+(?:[./]\d+)?"
 
@@ -59,35 +62,64 @@ def _claims() -> Iterator[str]:
     )
     yield f"guest bundle `{reset['backend_metadata']['task_bundle_sha256'][:8]}…`"
 
-    guest = _json("artifacts/osworld-guest-check-2026-11-12/provenance.json")
-    merged = guest["guest_bundle_sha256_recorded"][:8]
-    assert guest["guest_bundle_sha256_rebuilt_at_git_revision"].startswith(merged)
-    yield f"the merged guest bundle is `{merged}…`"
-    yield f"running merged `main` at `{guest['git_revision'][:7]}` with guest bundle `{merged}…`"
-    golden = _json("artifacts/osworld-guest-check-2026-11-12/attempt-3/results.json")["golden"]
-    summary = golden["summary"]
+    current = _json("artifacts/osworld-guest-check-2026-11-12-248097d/results.json")
+    provenance = current["provenance"]
+    bundle = provenance["guest_bundle_sha256_seed7"]
+    with tempfile.TemporaryDirectory() as tmp:
+        rebuilt = osworld_task.build_guest_bundle(generator.generate_task(7), Path(tmp) / "b.zip")
+    assert rebuilt == bundle, "the README calls this bundle current; the code no longer builds it"
+    yield f"the current guest bundle is `{bundle[:8]}…`"
+    yield (
+        f"with the current guest bundle `{bundle[:8]}…` (recorded at "
+        f"`{provenance['git_revision'][:7]}`)"
+    )
+    resets = current["resets"]["records"]
+    assert all(r["reset_returned"] and r["acknowledged_after_reset"] == 0 for r in resets)
+    yield f"{WORDS[len(resets)]} resets each reported 0 setup acknowledgements"
+    summary = current["golden"]["summary"]
     assert summary["positive_reward_count"] == 1
     assert summary["first_positive_reward_step"] == summary["terminal_step"]
     yield "the golden trajectory paid its only reward at its last step"
-    matched = {
-        name
-        for attempt in ("attempt-1", "attempt-3")
-        for name, case in _json(f"artifacts/osworld-guest-check-2026-11-12/{attempt}/results.json")[
-            "cases"
-        ].items()
-        if case.get("match") is True
-    }
-    yield f"{WORDS[len(matched)]} input sequences flagged in review submitted the same values"
+    cases = current["cases"]["records"].values()
+    assert all(case["match"] is True for case in cases)
+    yield f"{WORDS[len(cases)]} input sequences submitted the same values as the fake"
+    earlier = _json("artifacts/osworld-guest-check-2026-11-12/provenance.json")
+    yield f"An earlier run on bundle `{earlier['guest_bundle_sha256_recorded'][:8]}…` is retained"
 
-    throughput = _json("artifacts/throughput/fake-throughput.json")
-    random = throughput["workloads"]["random"]
+    throughput = _json("artifacts/throughput-v2/fake-throughput.json")
+    workloads = throughput["workloads"]
+
+    def median(workload: str, renderer: str) -> int:
+        return round(workloads[workload][renderer]["steps_per_second"]["median"])
+
     frames = throughput["byte_identity"]
     assert all(row["mismatched_frames"] == 0 for row in frames)
+    noop_share = workloads["random"]["action_types"]["noop_share"]
     yield (
-        f"runs {round(random['static_layer']['steps_per_second']['median'])} random-policy "
-        f"steps/s, up from {round(random['reference_single_pass']['steps_per_second']['median'])}"
+        f"replays the golden trajectory at {median('golden', 'static_layer')} steps/s, up from "
+        f"{median('golden', 'reference_single_pass')} with the earlier single-pass renderer, and "
+        f"runs a random policy at {median('random', 'static_layer')} steps/s (up from "
+        f"{median('random', 'reference_single_pass')}), of whose steps {noop_share:.1%} are NOOPs"
     )
-    yield f"all {sum(row['frames_compared'] for row in frames)} compared frames byte-identical"
+    yield (
+        f"all {sum(row['frames_compared'] for row in frames)} compared frames were "
+        f"byte-identical (recorded at `{throughput['git_revision'][:7]}`"
+    )
+
+    parity = _json("artifacts/browser-differential-v1/evidence.json")
+    runs = parity["runs"]
+    barrier = parity["barrier"]
+    (off,) = barrier["negative_control_barrier_off"]["in_step_reads"]
+    (on,) = barrier["positive_control_barrier_on"]["in_step_reads"]
+    yield (
+        f"replays {sum(r['sequence_count'] for r in runs)} seeded action sequences "
+        f"({sum(r['action_count'] for r in runs)} actions) on the fake and on the real page in "
+        f"Chromium, with {sum(r['divergence_count'] for r in runs)} divergent sequences"
+    )
+    yield (
+        f"read {off} submissions in the step without the input-acknowledgement barrier and {on} "
+        f"with it (recorded at `{parity['git_revision'][:7]}`"
+    )
 
     clustered = _json("artifacts/grounding-clustered-analysis-v2.json")
     allocation, counts = clustered["allocation"], clustered["counts"]
