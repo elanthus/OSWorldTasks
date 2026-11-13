@@ -45,5 +45,20 @@
         }
       ]
     }
-  ]
+  ],
+  "relocation": {
+    "reason": "PR #280 merged a different guest check (on main at d4e711e) into artifacts/osworld-guest-check-2026-11-12/ while this run was unmerged, so this run moved to its own folder",
+    "from_folder": "artifacts/osworld-guest-check-2026-11-12",
+    "to_folder": "artifacts/osworld-guest-check-2026-11-12-248097d",
+    "method": "exact string replacement of 'artifacts/osworld-guest-check-2026-11-12/' with 'artifacts/osworld-guest-check-2026-11-12-248097d/' in the recorded paths, applied after the redaction above; every rewritten path names a file present in the new folder; no other byte changed",
+    "files": [
+      {
+        "path": "raw/real-golden-episode.json",
+        "before_sha256": "1f952948c96a1e1fc6af2123de7250764af4805266ec1ef0a151521863a17518",
+        "after_sha256": "a16ca0e33893bee30be6f45d9d043ad253f62759487023ea249619be722d0957",
+        "changed_field_count": 113,
+        "first_changed_field": "/contact_sheet_path"
+      }
+    ]
+  }
 }

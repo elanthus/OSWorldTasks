@@ -1,7 +1,7 @@
 {
   "schema_version": "pixelgym.evidence-images-manifest.v1",
-  "set": "osworld-guest-check-2026-11-12",
-  "paths_relative_to": "artifacts/osworld-guest-check-2026-11-12",
+  "set": "osworld-guest-check-2026-11-12-248097d",
+  "paths_relative_to": "artifacts/osworld-guest-check-2026-11-12-248097d",
   "note": "Frame PNGs are not in git. Only their sizes and SHA-256 digests are; the contact sheet is checked in.",
   "file_count": 114,
   "files": [

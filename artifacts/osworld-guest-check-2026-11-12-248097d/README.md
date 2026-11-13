@@ -1,6 +1,7 @@
-# OSWorld guest check, 2026-11-12
+# OSWorld guest check at `248097d`, 2026-11-12
 
-One run of [`scripts/osworld_guest_check.py`](../../scripts/osworld_guest_check.py) on the pinned
+This is not the [guest check on merged `main`](../osworld-guest-check-2026-11-12/README.md) from the
+same day; that one ran revision `d4e711e`. One run of [`scripts/osworld_guest_check.py`](../../scripts/osworld_guest_check.py) on the pinned
 OSWorld-V2 guest (`v2026.06.24`, provider `docker-local`, 1024x768, no KVM). The run began at
 `2026-11-12T22:38:30Z` (`provenance.run_started_utc` in [`results.json`](results.json)), from
 commit `248097d` with a clean worktree. It exercises that revision's guest bundle: input contract
@@ -32,6 +33,11 @@ per task id; its `collection_method` states this. The driver was fixed in `5d3e6
 paths under the operator's home directory. They were replaced with repository-relative paths by
 exact string replacement before check-in. `redaction.json` lists each changed field and the
 SHA-256 of each file before and after. The original files are not checked in.
+
+**Relocation.** The run wrote to `artifacts/osworld-guest-check-2026-11-12/`. PR #280 then merged a
+different run into that folder name, so this run moved here. The recorded artifact paths in
+`raw/real-golden-episode.json` were rewritten to the new folder, after the redaction. The
+`relocation` section of `redaction.json` gives that file's SHA-256 before and after.
 
 **Limits.** This is one run on one host. The input sequences are hand-picked, not a randomized
 differential test, and the oracle pairs cover one seed.

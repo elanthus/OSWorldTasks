@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
-EVIDENCE = ROOT / "artifacts/osworld-guest-check-2026-11-12"
+EVIDENCE = ROOT / "artifacts/osworld-guest-check-2026-11-12-248097d"
 CHECKED_IN = (
     "results.json",
     "raw/real-golden-episode.json",
@@ -42,15 +42,44 @@ def test_redaction_record_matches_the_checked_in_files() -> None:
         "results.json",
         "raw/real-golden-episode.json",
     ]
+    relocated = {entry["path"]: entry for entry in record["relocation"]["files"]}
     for entry in record["files"]:
         data = (EVIDENCE / entry["path"]).read_bytes()
-        assert hashlib.sha256(data).hexdigest() == entry["redacted_sha256"], entry["path"]
+        digest = hashlib.sha256(data).hexdigest()
+        if entry["path"] in relocated:
+            # Relocation was applied to the redacted file, so the chain must be unbroken.
+            assert relocated[entry["path"]]["before_sha256"] == entry["redacted_sha256"]
+            assert digest == relocated[entry["path"]]["after_sha256"], entry["path"]
+        else:
+            assert digest == entry["redacted_sha256"], entry["path"]
         assert entry["original_sha256"] != entry["redacted_sha256"]
         document = json.loads(data)
         assert entry["changed_fields"], entry["path"]
         for field in entry["changed_fields"]:
             assert _pointer(document, field["json_pointer"]) == field["redacted_value"]
             assert not field["redacted_value"].startswith("/")
+
+
+def test_every_recorded_artifact_path_names_a_file_in_this_folder() -> None:
+    # The run first wrote to artifacts/osworld-guest-check-2026-11-12/, a name PR #280 then used
+    # for a different run; the relocation must not leave a path pointing into that folder.
+    episode = _json("raw/real-golden-episode.json")
+    recorded = [value for _, value in _strings(episode) if value.startswith("artifacts/")]
+    assert recorded
+    for value in recorded:
+        assert value.startswith("artifacts/osworld-guest-check-2026-11-12-248097d/"), value
+    # Frame PNGs are not checked in, so each recorded path must be listed in the image manifest.
+    listed = {f["path"] for f in _json("images.manifest.json")["files"]}
+    prefix = "artifacts/osworld-guest-check-2026-11-12-248097d/"
+    assert {value.removeprefix(prefix) for value in recorded} <= listed
+
+
+def _strings(value: Any, pointer: str = "") -> list[tuple[str, str]]:
+    if isinstance(value, dict):
+        return [s for key, item in value.items() for s in _strings(item, f"{pointer}/{key}")]
+    if isinstance(value, list):
+        return [s for index, item in enumerate(value) for s in _strings(item, f"{pointer}/{index}")]
+    return [(pointer, value)] if isinstance(value, str) else []
 
 
 def test_provenance_names_an_ancestor_revision_with_a_clean_worktree() -> None:
@@ -86,7 +115,7 @@ def test_golden_rewards_match_the_episode_trace() -> None:
     episode = _json("raw/real-golden-episode.json")
     assert [step["reward"] for step in episode["trace"]] == golden["rewards"]
     assert episode["contact_sheet_path"] == (
-        "artifacts/osworld-guest-check-2026-11-12/real-golden/contact-sheet.png"
+        "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/contact-sheet.png"
     )
     assert (ROOT / episode["contact_sheet_path"]).is_file()
 

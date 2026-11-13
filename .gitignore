@@ -93,5 +93,5 @@ artifacts/grounding-v5-d59-haiku-network-retry-approval.json
 /artifacts/grounding-v5-development-sample/**/*.png
 /artifacts/platform/**/*.png
 
-# 2026-11-12 guest check frames: listed in images.manifest.json, not checked in
-/artifacts/osworld-guest-check-2026-11-12/real-golden/frames/
+# 2026-11-12 guest check (248097d) frames: listed in images.manifest.json, not checked in
+/artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/

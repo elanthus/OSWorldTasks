@@ -61,7 +61,7 @@
     "upstream_repository": "https://github.com/xlang-ai/OSWorld-V2",
     "upstream_tag": "v2026.06.24"
   },
-  "contact_sheet_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/contact-sheet.png",
+  "contact_sheet_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/contact-sheet.png",
   "fixture_path": "tests/integration/fixtures/osworld_golden_trajectory_seed7.json",
   "real_reward_timing_subset": [
     {
@@ -118,7 +118,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-001.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-001.png",
       "step": 1,
       "terminated": false,
       "truncated": false
@@ -149,7 +149,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-002.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-002.png",
       "step": 2,
       "terminated": false,
       "truncated": false
@@ -180,7 +180,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-003.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-003.png",
       "step": 3,
       "terminated": false,
       "truncated": false
@@ -211,7 +211,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-004.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-004.png",
       "step": 4,
       "terminated": false,
       "truncated": false
@@ -242,7 +242,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-005.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-005.png",
       "step": 5,
       "terminated": false,
       "truncated": false
@@ -273,7 +273,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-006.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-006.png",
       "step": 6,
       "terminated": false,
       "truncated": false
@@ -304,7 +304,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-007.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-007.png",
       "step": 7,
       "terminated": false,
       "truncated": false
@@ -335,7 +335,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-008.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-008.png",
       "step": 8,
       "terminated": false,
       "truncated": false
@@ -366,7 +366,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-009.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-009.png",
       "step": 9,
       "terminated": false,
       "truncated": false
@@ -397,7 +397,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-010.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-010.png",
       "step": 10,
       "terminated": false,
       "truncated": false
@@ -428,7 +428,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-011.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-011.png",
       "step": 11,
       "terminated": false,
       "truncated": false
@@ -459,7 +459,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-012.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-012.png",
       "step": 12,
       "terminated": false,
       "truncated": false
@@ -490,7 +490,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-013.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-013.png",
       "step": 13,
       "terminated": false,
       "truncated": false
@@ -521,7 +521,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-014.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-014.png",
       "step": 14,
       "terminated": false,
       "truncated": false
@@ -552,7 +552,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-015.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-015.png",
       "step": 15,
       "terminated": false,
       "truncated": false
@@ -583,7 +583,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-016.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-016.png",
       "step": 16,
       "terminated": false,
       "truncated": false
@@ -614,7 +614,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-017.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-017.png",
       "step": 17,
       "terminated": false,
       "truncated": false
@@ -645,7 +645,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-018.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-018.png",
       "step": 18,
       "terminated": false,
       "truncated": false
@@ -676,7 +676,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-019.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-019.png",
       "step": 19,
       "terminated": false,
       "truncated": false
@@ -707,7 +707,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-020.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-020.png",
       "step": 20,
       "terminated": false,
       "truncated": false
@@ -738,7 +738,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-021.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-021.png",
       "step": 21,
       "terminated": false,
       "truncated": false
@@ -769,7 +769,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-022.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-022.png",
       "step": 22,
       "terminated": false,
       "truncated": false
@@ -800,7 +800,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-023.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-023.png",
       "step": 23,
       "terminated": false,
       "truncated": false
@@ -831,7 +831,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-024.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-024.png",
       "step": 24,
       "terminated": false,
       "truncated": false
@@ -862,7 +862,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-025.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-025.png",
       "step": 25,
       "terminated": false,
       "truncated": false
@@ -893,7 +893,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-026.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-026.png",
       "step": 26,
       "terminated": false,
       "truncated": false
@@ -924,7 +924,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-027.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-027.png",
       "step": 27,
       "terminated": false,
       "truncated": false
@@ -955,7 +955,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-028.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-028.png",
       "step": 28,
       "terminated": false,
       "truncated": false
@@ -986,7 +986,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-029.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-029.png",
       "step": 29,
       "terminated": false,
       "truncated": false
@@ -1017,7 +1017,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-030.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-030.png",
       "step": 30,
       "terminated": false,
       "truncated": false
@@ -1048,7 +1048,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-031.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-031.png",
       "step": 31,
       "terminated": false,
       "truncated": false
@@ -1079,7 +1079,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-032.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-032.png",
       "step": 32,
       "terminated": false,
       "truncated": false
@@ -1110,7 +1110,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-033.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-033.png",
       "step": 33,
       "terminated": false,
       "truncated": false
@@ -1141,7 +1141,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-034.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-034.png",
       "step": 34,
       "terminated": false,
       "truncated": false
@@ -1172,7 +1172,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-035.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-035.png",
       "step": 35,
       "terminated": false,
       "truncated": false
@@ -1203,7 +1203,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-036.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-036.png",
       "step": 36,
       "terminated": false,
       "truncated": false
@@ -1234,7 +1234,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-037.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-037.png",
       "step": 37,
       "terminated": false,
       "truncated": false
@@ -1265,7 +1265,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-038.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-038.png",
       "step": 38,
       "terminated": false,
       "truncated": false
@@ -1296,7 +1296,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-039.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-039.png",
       "step": 39,
       "terminated": false,
       "truncated": false
@@ -1327,7 +1327,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-040.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-040.png",
       "step": 40,
       "terminated": false,
       "truncated": false
@@ -1358,7 +1358,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-041.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-041.png",
       "step": 41,
       "terminated": false,
       "truncated": false
@@ -1389,7 +1389,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-042.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-042.png",
       "step": 42,
       "terminated": false,
       "truncated": false
@@ -1420,7 +1420,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-043.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-043.png",
       "step": 43,
       "terminated": false,
       "truncated": false
@@ -1451,7 +1451,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-044.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-044.png",
       "step": 44,
       "terminated": false,
       "truncated": false
@@ -1482,7 +1482,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-045.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-045.png",
       "step": 45,
       "terminated": false,
       "truncated": false
@@ -1513,7 +1513,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-046.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-046.png",
       "step": 46,
       "terminated": false,
       "truncated": false
@@ -1544,7 +1544,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-047.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-047.png",
       "step": 47,
       "terminated": false,
       "truncated": false
@@ -1575,7 +1575,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-048.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-048.png",
       "step": 48,
       "terminated": false,
       "truncated": false
@@ -1606,7 +1606,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-049.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-049.png",
       "step": 49,
       "terminated": false,
       "truncated": false
@@ -1637,7 +1637,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-050.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-050.png",
       "step": 50,
       "terminated": false,
       "truncated": false
@@ -1668,7 +1668,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-051.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-051.png",
       "step": 51,
       "terminated": false,
       "truncated": false
@@ -1699,7 +1699,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-052.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-052.png",
       "step": 52,
       "terminated": false,
       "truncated": false
@@ -1730,7 +1730,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-053.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-053.png",
       "step": 53,
       "terminated": false,
       "truncated": false
@@ -1761,7 +1761,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-054.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-054.png",
       "step": 54,
       "terminated": false,
       "truncated": false
@@ -1792,7 +1792,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-055.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-055.png",
       "step": 55,
       "terminated": false,
       "truncated": false
@@ -1823,7 +1823,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-056.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-056.png",
       "step": 56,
       "terminated": false,
       "truncated": false
@@ -1854,7 +1854,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-057.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-057.png",
       "step": 57,
       "terminated": false,
       "truncated": false
@@ -1885,7 +1885,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-058.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-058.png",
       "step": 58,
       "terminated": false,
       "truncated": false
@@ -1916,7 +1916,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-059.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-059.png",
       "step": 59,
       "terminated": false,
       "truncated": false
@@ -1947,7 +1947,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-060.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-060.png",
       "step": 60,
       "terminated": false,
       "truncated": false
@@ -1978,7 +1978,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-061.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-061.png",
       "step": 61,
       "terminated": false,
       "truncated": false
@@ -2009,7 +2009,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-062.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-062.png",
       "step": 62,
       "terminated": false,
       "truncated": false
@@ -2040,7 +2040,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-063.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-063.png",
       "step": 63,
       "terminated": false,
       "truncated": false
@@ -2071,7 +2071,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-064.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-064.png",
       "step": 64,
       "terminated": false,
       "truncated": false
@@ -2102,7 +2102,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-065.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-065.png",
       "step": 65,
       "terminated": false,
       "truncated": false
@@ -2133,7 +2133,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-066.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-066.png",
       "step": 66,
       "terminated": false,
       "truncated": false
@@ -2164,7 +2164,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-067.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-067.png",
       "step": 67,
       "terminated": false,
       "truncated": false
@@ -2195,7 +2195,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-068.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-068.png",
       "step": 68,
       "terminated": false,
       "truncated": false
@@ -2226,7 +2226,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-069.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-069.png",
       "step": 69,
       "terminated": false,
       "truncated": false
@@ -2257,7 +2257,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-070.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-070.png",
       "step": 70,
       "terminated": false,
       "truncated": false
@@ -2288,7 +2288,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-071.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-071.png",
       "step": 71,
       "terminated": false,
       "truncated": false
@@ -2319,7 +2319,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-072.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-072.png",
       "step": 72,
       "terminated": false,
       "truncated": false
@@ -2350,7 +2350,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-073.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-073.png",
       "step": 73,
       "terminated": false,
       "truncated": false
@@ -2381,7 +2381,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-074.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-074.png",
       "step": 74,
       "terminated": false,
       "truncated": false
@@ -2412,7 +2412,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-075.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-075.png",
       "step": 75,
       "terminated": false,
       "truncated": false
@@ -2443,7 +2443,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-076.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-076.png",
       "step": 76,
       "terminated": false,
       "truncated": false
@@ -2474,7 +2474,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-077.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-077.png",
       "step": 77,
       "terminated": false,
       "truncated": false
@@ -2505,7 +2505,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-078.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-078.png",
       "step": 78,
       "terminated": false,
       "truncated": false
@@ -2536,7 +2536,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-079.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-079.png",
       "step": 79,
       "terminated": false,
       "truncated": false
@@ -2567,7 +2567,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-080.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-080.png",
       "step": 80,
       "terminated": false,
       "truncated": false
@@ -2598,7 +2598,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-081.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-081.png",
       "step": 81,
       "terminated": false,
       "truncated": false
@@ -2629,7 +2629,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-082.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-082.png",
       "step": 82,
       "terminated": false,
       "truncated": false
@@ -2660,7 +2660,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-083.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-083.png",
       "step": 83,
       "terminated": false,
       "truncated": false
@@ -2691,7 +2691,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-084.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-084.png",
       "step": 84,
       "terminated": false,
       "truncated": false
@@ -2722,7 +2722,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-085.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-085.png",
       "step": 85,
       "terminated": false,
       "truncated": false
@@ -2753,7 +2753,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-086.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-086.png",
       "step": 86,
       "terminated": false,
       "truncated": false
@@ -2784,7 +2784,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-087.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-087.png",
       "step": 87,
       "terminated": false,
       "truncated": false
@@ -2815,7 +2815,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-088.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-088.png",
       "step": 88,
       "terminated": false,
       "truncated": false
@@ -2846,7 +2846,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-089.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-089.png",
       "step": 89,
       "terminated": false,
       "truncated": false
@@ -2877,7 +2877,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-090.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-090.png",
       "step": 90,
       "terminated": false,
       "truncated": false
@@ -2908,7 +2908,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-091.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-091.png",
       "step": 91,
       "terminated": false,
       "truncated": false
@@ -2939,7 +2939,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-092.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-092.png",
       "step": 92,
       "terminated": false,
       "truncated": false
@@ -2970,7 +2970,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-093.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-093.png",
       "step": 93,
       "terminated": false,
       "truncated": false
@@ -3001,7 +3001,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-094.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-094.png",
       "step": 94,
       "terminated": false,
       "truncated": false
@@ -3032,7 +3032,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-095.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-095.png",
       "step": 95,
       "terminated": false,
       "truncated": false
@@ -3063,7 +3063,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-096.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-096.png",
       "step": 96,
       "terminated": false,
       "truncated": false
@@ -3094,7 +3094,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-097.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-097.png",
       "step": 97,
       "terminated": false,
       "truncated": false
@@ -3125,7 +3125,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-098.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-098.png",
       "step": 98,
       "terminated": false,
       "truncated": false
@@ -3156,7 +3156,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-099.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-099.png",
       "step": 99,
       "terminated": false,
       "truncated": false
@@ -3187,7 +3187,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-100.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-100.png",
       "step": 100,
       "terminated": false,
       "truncated": false
@@ -3218,7 +3218,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-101.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-101.png",
       "step": 101,
       "terminated": false,
       "truncated": false
@@ -3249,7 +3249,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-102.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-102.png",
       "step": 102,
       "terminated": false,
       "truncated": false
@@ -3280,7 +3280,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-103.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-103.png",
       "step": 103,
       "terminated": false,
       "truncated": false
@@ -3311,7 +3311,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-104.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-104.png",
       "step": 104,
       "terminated": false,
       "truncated": false
@@ -3342,7 +3342,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-105.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-105.png",
       "step": 105,
       "terminated": false,
       "truncated": false
@@ -3373,7 +3373,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-106.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-106.png",
       "step": 106,
       "terminated": false,
       "truncated": false
@@ -3404,7 +3404,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-107.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-107.png",
       "step": 107,
       "terminated": false,
       "truncated": false
@@ -3435,7 +3435,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-108.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-108.png",
       "step": 108,
       "terminated": false,
       "truncated": false
@@ -3466,7 +3466,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-109.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-109.png",
       "step": 109,
       "terminated": false,
       "truncated": false
@@ -3497,7 +3497,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-110.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-110.png",
       "step": 110,
       "terminated": false,
       "truncated": false
@@ -3528,7 +3528,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 0.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-111.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-111.png",
       "step": 111,
       "terminated": false,
       "truncated": false
@@ -3551,7 +3551,7 @@
         "episode_id": "a7a87cd11cf3a82bd75c2a8d2da56255"
       },
       "reward": 1.0,
-      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12/real-golden/frames/step-112.png",
+      "screenshot_path": "artifacts/osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-112.png",
       "step": 112,
       "terminated": true,
       "truncated": false
