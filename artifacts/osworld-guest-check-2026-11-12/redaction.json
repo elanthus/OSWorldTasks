@@ -1,0 +1,49 @@
+{
+  "schema_version": "pixelgym-evidence-redaction-v1",
+  "reason": "local absolute paths contain the operator's home directory",
+  "method": "exact string replacement of the listed absolute path prefixes with the empty string, leaving repository-relative paths; no other byte changed; the original files are not committed, and their SHA-256 digests are recorded here",
+  "rules": [
+    {
+      "original_prefix": "<home>/dev/OSWorldTasks/.claude/worktrees/fix-env-hidden-state/",
+      "replacement_prefix": "",
+      "meaning": "repository root of the worktree the run was started from"
+    },
+    {
+      "original_prefix": "<home>/dev/OSWorldTasks/",
+      "replacement_prefix": "",
+      "meaning": "repository root of the main checkout (where the guest image cache lives)"
+    }
+  ],
+  "files": [
+    {
+      "path": "results.json",
+      "original_sha256": "2c929967e77fad0f007bcab529035d36def13d593a0dd03c7210e48028f69597",
+      "redacted_sha256": "eabe25912541a9c2209ea7e43187bb33c5865eda8c6af70b763c681d38515c7f",
+      "changed_fields": [
+        {
+          "json_pointer": "/golden/backend_metadata/guest_image_path",
+          "redacted_value": ".cache/osworld/osworld-v2-ubuntu-x86.qcow2"
+        },
+        {
+          "json_pointer": "/provenance/guest_image_path",
+          "redacted_value": ".cache/osworld/osworld-v2-ubuntu-x86.qcow2"
+        },
+        {
+          "json_pointer": "/provenance/pixelgym_module_path",
+          "redacted_value": "pixelgym/__init__.py"
+        }
+      ]
+    },
+    {
+      "path": "raw/real-golden-episode.json",
+      "original_sha256": "1591b167c7e41835f4958de5214697732d9aa063cfce3da775fec9d904520673",
+      "redacted_sha256": "1f952948c96a1e1fc6af2123de7250764af4805266ec1ef0a151521863a17518",
+      "changed_fields": [
+        {
+          "json_pointer": "/backend_metadata/guest_image_path",
+          "redacted_value": ".cache/osworld/osworld-v2-ubuntu-x86.qcow2"
+        }
+      ]
+    }
+  ]
+}

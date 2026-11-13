@@ -1,0 +1,2345 @@
+{
+  "cases": {
+    "provider_close": {
+      "attempted": true,
+      "error": null,
+      "returned": true
+    },
+    "records": {
+      "Tab into radios then ArrowDown": {
+        "fake_submissions": [
+          {
+            "company_name": "",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "Net 30",
+            "tax_id": ""
+          }
+        ],
+        "frame_sha256": [
+          "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "476653240e4f10d2c43eb44a53decd34fd3df23115d245d1676e7b2868a024f2",
+          "ae2834508b6ef9958d96a2b43fd5a51b727360eaf189ee6f72b87af4ed9b1bf2",
+          "b4cfeec23d0b6fdfc661dceb2975bca51adf30825b4ea573178b836a56ead288",
+          "f783e50ee311e51d14dc89acb011e42a3a391b4be5d697dbde0b50ae892525ca",
+          "3ea0683cfff9c339dfef11426e33dd6e96ed116c3833867a015b25eeb0c12e4f",
+          "7500a12df6e7d592f3ca92715a0b3a54177a9bdbe052d5161b30048f355fea53",
+          "2654d360ab5fd9fbcf687defdc9e7466e28c569da61caf0b1c6566ccf904acc1",
+          "3e7bb3d241597e15de9ccf72f11732f5c395810e38833deb240e670741c6fd61"
+        ],
+        "guest_submissions": [
+          {
+            "company_name": "",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "Net 30",
+            "tax_id": ""
+          }
+        ],
+        "match": true,
+        "seconds": 237.2,
+        "steps": [
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Tab"
+            ],
+            "reward": 0.0,
+            "seconds": 4.26,
+            "stabilization_seconds": 1.1384888750035316,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Tab"
+            ],
+            "reward": 0.0,
+            "seconds": 3.56,
+            "stabilization_seconds": 0.9702624999918044,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Tab"
+            ],
+            "reward": 0.0,
+            "seconds": 3.23,
+            "stabilization_seconds": 0.9614605000242591,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Tab"
+            ],
+            "reward": 0.0,
+            "seconds": 3.23,
+            "stabilization_seconds": 0.9814903329825029,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Tab"
+            ],
+            "reward": 0.0,
+            "seconds": 3.34,
+            "stabilization_seconds": 0.9722981250379235,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Tab"
+            ],
+            "reward": 0.0,
+            "seconds": 3.3,
+            "stabilization_seconds": 0.9663160000927746,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "ArrowDown"
+            ],
+            "reward": 0.0,
+            "seconds": 3.29,
+            "stabilization_seconds": 0.9676456250017509,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                578,
+                486
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 3.42,
+            "stabilization_seconds": 0.9906459170160815,
+            "terminated": false,
+            "truncated": false
+          }
+        ]
+      },
+      "Tab into radios then Space": {
+        "fake_submissions": [
+          {
+            "company_name": "",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "Net 15",
+            "tax_id": ""
+          }
+        ],
+        "frame_sha256": [
+          "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "476653240e4f10d2c43eb44a53decd34fd3df23115d245d1676e7b2868a024f2",
+          "ae2834508b6ef9958d96a2b43fd5a51b727360eaf189ee6f72b87af4ed9b1bf2",
+          "b4cfeec23d0b6fdfc661dceb2975bca51adf30825b4ea573178b836a56ead288",
+          "f783e50ee311e51d14dc89acb011e42a3a391b4be5d697dbde0b50ae892525ca",
+          "3ea0683cfff9c339dfef11426e33dd6e96ed116c3833867a015b25eeb0c12e4f",
+          "7500a12df6e7d592f3ca92715a0b3a54177a9bdbe052d5161b30048f355fea53",
+          "24348900b999875bd96663cbc17fc6d503c7b4053e058bc3e8c6a10c6ea0428e",
+          "01c528a89c0d22ffecc6066be816afc535406ac300a583f85c31691767e2cf48"
+        ],
+        "guest_submissions": [
+          {
+            "company_name": "",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "Net 15",
+            "tax_id": ""
+          }
+        ],
+        "match": true,
+        "seconds": 224.2,
+        "steps": [
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Tab"
+            ],
+            "reward": 0.0,
+            "seconds": 3.64,
+            "stabilization_seconds": 1.0410413750214502,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Tab"
+            ],
+            "reward": 0.0,
+            "seconds": 2.92,
+            "stabilization_seconds": 0.9312234170502052,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Tab"
+            ],
+            "reward": 0.0,
+            "seconds": 2.89,
+            "stabilization_seconds": 0.9009510409086943,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Tab"
+            ],
+            "reward": 0.0,
+            "seconds": 2.83,
+            "stabilization_seconds": 0.9122707910137251,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Tab"
+            ],
+            "reward": 0.0,
+            "seconds": 2.85,
+            "stabilization_seconds": 0.8863904169993475,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Tab"
+            ],
+            "reward": 0.0,
+            "seconds": 2.89,
+            "stabilization_seconds": 0.9130322919227183,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              " "
+            ],
+            "reward": 0.0,
+            "seconds": 2.81,
+            "stabilization_seconds": 0.8992894579423591,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                578,
+                486
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 2.99,
+            "stabilization_seconds": 0.9331312499707565,
+            "terminated": false,
+            "truncated": false
+          }
+        ]
+      },
+      "caret ArrowLeft": {
+        "fake_submissions": [
+          {
+            "company_name": "abc",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "frame_sha256": [
+          "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "3b6722d0f7673f8470b20e2312d412668aab54cf2b08e97d90d1b3c713b31957",
+          "e8ead5d9d35ec1c8a46a80f5586ff5265c21c68fbe1572bbabb4c91cd8bb1d50",
+          "5b76e198956c111cea03a7687c8659fd1122a507d863a2844461ae4ecd3513bf",
+          "5b76e198956c111cea03a7687c8659fd1122a507d863a2844461ae4ecd3513bf",
+          "ab3db76662de9ceed3622014b5e9f41704b222d34efb4549e03c604735cc7dbb",
+          "ff08d378caea061813ee537d768a4e7f32b6ca9043c83a440f30380298560d68"
+        ],
+        "guest_submissions": [
+          {
+            "company_name": "abc",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "match": true,
+        "seconds": 249.7,
+        "steps": [
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                768,
+                94
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 4.35,
+            "stabilization_seconds": 1.1257006670348346,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "a"
+            ],
+            "reward": 0.0,
+            "seconds": 3.59,
+            "stabilization_seconds": 0.9753905419493094,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "b"
+            ],
+            "reward": 0.0,
+            "seconds": 3.41,
+            "stabilization_seconds": 0.9929616670124233,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "ArrowLeft"
+            ],
+            "reward": 0.0,
+            "seconds": 3.41,
+            "stabilization_seconds": 0.9838736250530928,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "c"
+            ],
+            "reward": 0.0,
+            "seconds": 3.87,
+            "stabilization_seconds": 1.5182517499197274,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                578,
+                486
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 3.47,
+            "stabilization_seconds": 0.9906427090754732,
+            "terminated": false,
+            "truncated": false
+          }
+        ]
+      },
+      "caret ArrowUp": {
+        "fake_submissions": [
+          {
+            "company_name": "abc",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "frame_sha256": [
+          "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "3b6722d0f7673f8470b20e2312d412668aab54cf2b08e97d90d1b3c713b31957",
+          "e8ead5d9d35ec1c8a46a80f5586ff5265c21c68fbe1572bbabb4c91cd8bb1d50",
+          "5b76e198956c111cea03a7687c8659fd1122a507d863a2844461ae4ecd3513bf",
+          "5b76e198956c111cea03a7687c8659fd1122a507d863a2844461ae4ecd3513bf",
+          "ab3db76662de9ceed3622014b5e9f41704b222d34efb4549e03c604735cc7dbb",
+          "ff08d378caea061813ee537d768a4e7f32b6ca9043c83a440f30380298560d68"
+        ],
+        "guest_submissions": [
+          {
+            "company_name": "abc",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "match": true,
+        "seconds": 248.4,
+        "steps": [
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                768,
+                94
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 4.06,
+            "stabilization_seconds": 1.1031013330211863,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "a"
+            ],
+            "reward": 0.0,
+            "seconds": 3.58,
+            "stabilization_seconds": 0.9924469999969006,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "b"
+            ],
+            "reward": 0.0,
+            "seconds": 3.94,
+            "stabilization_seconds": 1.0860699589829892,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "ArrowUp"
+            ],
+            "reward": 0.0,
+            "seconds": 4.09,
+            "stabilization_seconds": 1.1309311669319868,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "c"
+            ],
+            "reward": 0.0,
+            "seconds": 4.2,
+            "stabilization_seconds": 1.2074523749761283,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                578,
+                486
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 3.86,
+            "stabilization_seconds": 1.0924909160239622,
+            "terminated": false,
+            "truncated": false
+          }
+        ]
+      },
+      "caret click near left edge": {
+        "fake_submissions": [
+          {
+            "company_name": "abcX",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "frame_sha256": [
+          "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "3b6722d0f7673f8470b20e2312d412668aab54cf2b08e97d90d1b3c713b31957",
+          "e8ead5d9d35ec1c8a46a80f5586ff5265c21c68fbe1572bbabb4c91cd8bb1d50",
+          "5b76e198956c111cea03a7687c8659fd1122a507d863a2844461ae4ecd3513bf",
+          "ab3db76662de9ceed3622014b5e9f41704b222d34efb4549e03c604735cc7dbb",
+          "ccc23f57cccc491ba258d465bc909a408d00f9a8e6d7e5670dfb9a23d5ebc7c4",
+          "88967b1bb87202fb8ddf90faf01408ab01664cacf1ac59b7f221fba06208f66c",
+          "62a96c92f75c560dad65c66f1fb331e9cea85975a75c35301623611376c43b5e",
+          "9180f6657deef9b9a3ea4efec6cdbaea81a7058ad7797ef1786703d47229f8e4"
+        ],
+        "guest_submissions": [
+          {
+            "company_name": "abcX",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "match": true,
+        "seconds": 230.5,
+        "steps": [
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                768,
+                94
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 3.66,
+            "stabilization_seconds": 1.0478224580874667,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "a"
+            ],
+            "reward": 0.0,
+            "seconds": 3.01,
+            "stabilization_seconds": 0.9249632499413565,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "b"
+            ],
+            "reward": 0.0,
+            "seconds": 2.94,
+            "stabilization_seconds": 0.9174537499202415,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "c"
+            ],
+            "reward": 0.0,
+            "seconds": 3.46,
+            "stabilization_seconds": 1.440389166935347,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                768,
+                280
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 2.92,
+            "stabilization_seconds": 0.9362857079831883,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                540,
+                94
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 3.49,
+            "stabilization_seconds": 1.4501300409901887,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "X"
+            ],
+            "reward": 0.0,
+            "seconds": 3.52,
+            "stabilization_seconds": 1.444121583015658,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                578,
+                486
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 3.04,
+            "stabilization_seconds": 0.9416369999526069,
+            "terminated": false,
+            "truncated": false
+          }
+        ]
+      },
+      "key first without any click": {
+        "fake_submissions": [
+          {
+            "company_name": "Q",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "frame_sha256": [
+          "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "476653240e4f10d2c43eb44a53decd34fd3df23115d245d1676e7b2868a024f2",
+          "9ac3d3864d15c04a50b5f2b52e8f3deb1186da9a3b9736db8558bc9770f42176",
+          "3c727fc2fd1ff914f2463d4bbb532432597a5a8d881e57bcc9de6b0e8bf142a7"
+        ],
+        "guest_submissions": [
+          {
+            "company_name": "Q",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "match": true,
+        "seconds": 195.6,
+        "steps": [
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Tab"
+            ],
+            "reward": 0.0,
+            "seconds": 3.46,
+            "stabilization_seconds": 1.105672457953915,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Q"
+            ],
+            "reward": 0.0,
+            "seconds": 2.91,
+            "stabilization_seconds": 0.9281349160009995,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                578,
+                486
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 3.01,
+            "stabilization_seconds": 0.9089390420122072,
+            "terminated": false,
+            "truncated": false
+          }
+        ]
+      },
+      "label click focuses": {
+        "fake_submissions": [
+          {
+            "company_name": "Z",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "frame_sha256": [
+          "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "aa6ec0e9fe0a497975c2979770b529963ec2a094913b09e78702831ccf238e9e",
+          "b24de667f255aa6d38ccf21cb04fc28ea8fd363e8d0c47a277f16a8df14ee8c5",
+          "5ac4bab5e408b5e3fcfa582ffe08f03656ce9f4e712edcc2c49e06f3137f4756",
+          "8e33a3778a060ffde25052f21d82093535e114e734a41e9efc197e465da0b73c"
+        ],
+        "guest_submissions": [
+          {
+            "company_name": "Z",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "match": true,
+        "seconds": 222.2,
+        "steps": [
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                768,
+                280
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 4.09,
+            "stabilization_seconds": 1.0332612920319661,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                768,
+                67
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 3.36,
+            "stabilization_seconds": 0.9707220420241356,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Z"
+            ],
+            "reward": 0.0,
+            "seconds": 3.39,
+            "stabilization_seconds": 0.9674835830228403,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                578,
+                486
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 3.34,
+            "stabilization_seconds": 0.9778222090099007,
+            "terminated": false,
+            "truncated": false
+          }
+        ]
+      },
+      "select ArrowDown twice": {
+        "fake_submissions": [
+          {
+            "company_name": "",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "Brazil",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "frame_sha256": [
+          "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "20f4409e31afb695bd8e914e94b49363363dc5d715f2cf61ef874939b6564ea7",
+          "1430d8faae6e51419a3d573ac6809ae2b7b4f101a4b178b04c679c4d128c21fa",
+          "d599d57b86f092e1ac3dbf4c2fdb5156bedb2ad2ed8921d3c3d9f16a170989d3",
+          "8d013245f5ddb26f1fabddd0d003476034fc9dc862f4028bf597fcce608569ae"
+        ],
+        "guest_submissions": [
+          {
+            "company_name": "",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "Brazil",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "match": true,
+        "seconds": 198.0,
+        "steps": [
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                768,
+                343
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 3.38,
+            "stabilization_seconds": 0.9807284160051495,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "ArrowDown"
+            ],
+            "reward": 0.0,
+            "seconds": 2.93,
+            "stabilization_seconds": 0.909051459049806,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "ArrowDown"
+            ],
+            "reward": 0.0,
+            "seconds": 2.85,
+            "stabilization_seconds": 0.8833275830838829,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                578,
+                486
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 2.97,
+            "stabilization_seconds": 0.9277695839991793,
+            "terminated": false,
+            "truncated": false
+          }
+        ]
+      },
+      "select Enter and Space inert": {
+        "fake_submissions": [
+          {
+            "company_name": "",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "Australia",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "frame_sha256": [
+          "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "20f4409e31afb695bd8e914e94b49363363dc5d715f2cf61ef874939b6564ea7",
+          "1430d8faae6e51419a3d573ac6809ae2b7b4f101a4b178b04c679c4d128c21fa",
+          "1430d8faae6e51419a3d573ac6809ae2b7b4f101a4b178b04c679c4d128c21fa",
+          "1430d8faae6e51419a3d573ac6809ae2b7b4f101a4b178b04c679c4d128c21fa",
+          "50873389a7bab35062de67d52022debcaa6551a56c8da82c628a08c14921d2d6"
+        ],
+        "guest_submissions": [
+          {
+            "company_name": "",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "Australia",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "match": true,
+        "seconds": 209.7,
+        "steps": [
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                768,
+                343
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 3.53,
+            "stabilization_seconds": 0.9549663750221953,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "a"
+            ],
+            "reward": 0.0,
+            "seconds": 3.03,
+            "stabilization_seconds": 0.9507927080849186,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "Enter"
+            ],
+            "reward": 0.0,
+            "seconds": 3.02,
+            "stabilization_seconds": 0.9168884999817237,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              " "
+            ],
+            "reward": 0.0,
+            "seconds": 3.02,
+            "stabilization_seconds": 0.924938666052185,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                578,
+                486
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 3.01,
+            "stabilization_seconds": 0.9244915409944952,
+            "terminated": false,
+            "truncated": false
+          }
+        ]
+      },
+      "trailing space": {
+        "fake_submissions": [
+          {
+            "company_name": "A",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "frame_sha256": [
+          "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "3b6722d0f7673f8470b20e2312d412668aab54cf2b08e97d90d1b3c713b31957",
+          "59d449126504be057b6f7e3f767cf99e3e0703f0a9e40e7afc08a6274c476b27",
+          "bd17e4ed300f8a0980010b362ff2e70469b966692bea4e1493f1e3b1ec063742",
+          "143c125fd4d4b254441285af504cc1d8670f0ba1e1da0d0282e61a3d0b31d213"
+        ],
+        "guest_submissions": [
+          {
+            "company_name": "A",
+            "contact_email": "",
+            "contact_phone": "",
+            "country": "",
+            "expedited_onboarding": false,
+            "payment_terms": "",
+            "tax_id": ""
+          }
+        ],
+        "match": true,
+        "seconds": 198.3,
+        "steps": [
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                768,
+                94
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 3.32,
+            "stabilization_seconds": 0.9194707080023363,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              "A"
+            ],
+            "reward": 0.0,
+            "seconds": 2.98,
+            "stabilization_seconds": 0.9337782498914748,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "key",
+              " "
+            ],
+            "reward": 0.0,
+            "seconds": 2.94,
+            "stabilization_seconds": 0.9331058750394732,
+            "terminated": false,
+            "truncated": false
+          },
+          {
+            "ack_reads": 1,
+            "action": [
+              "click",
+              [
+                578,
+                486
+              ]
+            ],
+            "reward": 0.0,
+            "seconds": 2.98,
+            "stabilization_seconds": 0.9328451249748468,
+            "terminated": false,
+            "truncated": false
+          }
+        ]
+      }
+    }
+  },
+  "golden": {
+    "backend_metadata": {
+      "browser_launch": {
+        "effective_argv": [
+          "google-chrome",
+          "--disable-font-subpixel-positioning",
+          "--disable-gpu",
+          "--disable-lcd-text",
+          "--disable-skia-runtime-opts",
+          "--force-color-profile=srgb",
+          "--force-device-scale-factor=1",
+          "--user-data-dir=/dev/shm/pixelgym-chrome-profile",
+          "--no-first-run",
+          "--disable-default-apps",
+          "--disable-session-crashed-bubble",
+          "--disable-dev-shm-usage",
+          "--app=http://127.0.0.1:3000/",
+          "--start-fullscreen",
+          "--window-position=0,0",
+          "--window-size=1024,768"
+        ],
+        "presentation_mode": "app",
+        "presentation_mode_fallback_from": "kiosk",
+        "presentation_mode_reason": "kiosk did not preserve the required full-frame 1024x768 task observation in the pinned OSWorld guest",
+        "renderer_contract": {
+          "flags": [
+            "--disable-font-subpixel-positioning",
+            "--disable-gpu",
+            "--disable-lcd-text",
+            "--disable-skia-runtime-opts",
+            "--force-color-profile=srgb",
+            "--force-device-scale-factor=1"
+          ],
+          "identity": "sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5",
+          "version": "pixelgym-chromium-renderer-v1"
+        }
+      },
+      "guest_artifact_name": "osworld-v2-ubuntu-x86.qcow2.zip",
+      "guest_artifact_repository": "xlangai/v2-image",
+      "guest_artifact_sha256": "sha256:eb737ae70b49849e24af407de6a518439a23de05a8497096a948334ce0a909aa",
+      "guest_artifact_tag": "v2026.06.24",
+      "guest_image_path": ".cache/osworld/osworld-v2-ubuntu-x86.qcow2",
+      "guest_volume_size_gb": 50,
+      "host_port_allocator": "socket-bind-plus-docker-port-map",
+      "input_acknowledgement_barrier": true,
+      "input_contract": "pixelgym-vendor-form-input-v3",
+      "provider": "docker-local",
+      "python_version": "3.12.15",
+      "release": "osworld-v2-2026.06.24",
+      "release_manifest_url": "https://github.com/xlang-ai/OSWorld-V2/blob/v2026.06.24/benchmark_releases/osworld-v2-2026.06.24.json",
+      "runtime_image": "docker.io/pixelgym/osworld-qemu-arm64:qemux-6.18",
+      "runtime_image_base": "docker.io/qemux/qemu@sha256:b51ff8a5d69c10e57d3515c7a40dbbd47c410152b1491f849d12ede7607b80be",
+      "runtime_source_commit": "c698406b5a447234379b3fdede03d7f6e4e3fa6c",
+      "screen_size": [
+        1024,
+        768
+      ],
+      "task_bundle_sha256": "300be223ef4a921275850dbd58149428f4d5c7cbd6aaac03f05499f2c71395f4",
+      "upstream_commit": "2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6",
+      "upstream_repository": "https://github.com/xlang-ai/OSWorld-V2",
+      "upstream_tag": "v2026.06.24"
+    },
+    "fixture": "tests/integration/fixtures/osworld_golden_trajectory_seed7.json",
+    "provider_close": {
+      "attempted": true,
+      "error": null,
+      "returned": true
+    },
+    "rewards": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "seconds": 602.1,
+    "summary": {
+      "first_positive_reward_step": 112,
+      "passed": true,
+      "positive_reward_count": 1,
+      "provider_closed": true,
+      "terminal_step": 112
+    }
+  },
+  "oracle": {
+    "action_count": 108,
+    "pairs": [
+      {
+        "action": [
+          1,
+          768,
+          94,
+          0
+        ],
+        "frame_sha256": "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          42
+        ],
+        "frame_sha256": "3b6722d0f7673f8470b20e2312d412668aab54cf2b08e97d90d1b3c713b31957"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          27
+        ],
+        "frame_sha256": "b96d24fc03dfdd8088379182135b62acc1e95f44b6077d24f30e3b638d5c307c"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          10
+        ],
+        "frame_sha256": "9a8d4c6a647d93f72b8d8b68425a82fd3a7b32cecd24072c0c7430a72c668b97"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          23
+        ],
+        "frame_sha256": "86b3da81865150da33bf554486fbdfb781c99b1ad409cac9f9f07b5579ce50cc"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          18
+        ],
+        "frame_sha256": "9474dc1d1f3218f72a07a6b0940a1e3c28262c4ab6ab15ec3b76f3e40eb050be"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          29
+        ],
+        "frame_sha256": "57082ed1be90ed4d95ff27abd9991397ab953923a0b2fbb0134a457cea67e6b4"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          14
+        ],
+        "frame_sha256": "e1e908e1a09affcd76971cf83e10276b706bdc9da5fe4d11d78712424138103c"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          94
+        ],
+        "frame_sha256": "bf63348d3cf65dcdc0ffacbc566ea36a750bf9cf62aa945cead7e239656a2326"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          37
+        ],
+        "frame_sha256": "fc22e4423ebc3fb7304d805fdd8b9afca9fedb169f3d12560be17c4947b18eed"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          10
+        ],
+        "frame_sha256": "5f47e5c7211cd86f4ca43eeecac40f5d5274ce7ab928f4e0b70f28830d34f88e"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          34
+        ],
+        "frame_sha256": "1673242d78838421810bf0c1ba6a1ce5d791a21db3db29140af0d8ea7c710d2d"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          94
+        ],
+        "frame_sha256": "37eff4442a74e1386e903f6fc875f7e345d0493c275244764457e42494e72bef"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          47
+        ],
+        "frame_sha256": "470f339fbfedfcda27b7fcd2583693c1ab4dac6980c88f3acf8d6d5b527020d4"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          24
+        ],
+        "frame_sha256": "34593220dd18f4918900de2066e62f6c73813ec96df9acea4abdf941a14f6bfb"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          16
+        ],
+        "frame_sha256": "ea11a94675905f646be28687bb226f5994d9c67907f11b13d23d4aea73ce7c52"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          18
+        ],
+        "frame_sha256": "e546a247a913b304a975340d268848b03a3fc30eb90535d09f52505a58f9096e"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          28
+        ],
+        "frame_sha256": "5d831dee2f0b0105df2753e0adf3e35547ee1a7cdcac250cee9030d0a7f40433"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          29
+        ],
+        "frame_sha256": "c4779d15e8789ea8f878a7c52e8f3d87fe4a186cdbcef396c112c187fb137d9b"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          18
+        ],
+        "frame_sha256": "adf53e859093db750576227846b46a46c1286417181c42e0676ac236b19d0254"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          12
+        ],
+        "frame_sha256": "23cc28b00874ba7415ee60afa96e2147ec9b248313f9070415b481cc58677118"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          28
+        ],
+        "frame_sha256": "9eacfc500ad5d8abc8ff9487b9e3b737d05e424503af2767bc28ff0bb8248599"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          94
+        ],
+        "frame_sha256": "48464aef0224c0d2e3fc46bea65ca2bdcdb127e681fbfb5d5bac111dbb15d109"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          42
+        ],
+        "frame_sha256": "0c25e6f5eea93f4c412b7c21ec5a431a02540df3d188e94e8387ee2af00eaefb"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          27
+        ],
+        "frame_sha256": "78e3e1942576f6d1f6f4d53e20a09dd3270deaf730fbc93fabec55ad48ad9034"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          24
+        ],
+        "frame_sha256": "c32b840e68bb894a9215799f77fae334231926cd71ee10c4e85dfd73d940b856"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          30
+        ],
+        "frame_sha256": "8cd69511f6c560e0874eda7c4eb9fa2d9f81835135387f021667a6bc8c81b695"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          25
+        ],
+        "frame_sha256": "854e27c71ff7510ddfb040a25146692d7552130469b30fd0415b3bbf8a10edc7"
+      },
+      {
+        "action": [
+          1,
+          768,
+          156,
+          0
+        ],
+        "frame_sha256": "6322d2e1ef3a0dc2d23b2424e327e6c0293e5bcb6930f5574663bbe30a0e2903"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          24
+        ],
+        "frame_sha256": "9e6a57470358e8ecde661191d74951e9e77b9710bffc9de69c8963de00875419"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          23
+        ],
+        "frame_sha256": "ec1933fd784210e3a82a24f432e1516dac036989ff3c72b7ecf537a5aa8465eb"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          11
+        ],
+        "frame_sha256": "4ddc0987c87a1c6f5662abadeb4489d8c8a8827d80085840eb07c26427750dd8"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          24
+        ],
+        "frame_sha256": "0f4e5aa9e16f5eaf266c47ccdb0d9d1b2a41d7fae478e4e92348ed57f98a9649"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          10
+        ],
+        "frame_sha256": "61058783dd635c458d30ff5192fe8dfae5bcb2391c51bc00534c2f4ca2e3ef81"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          27
+        ],
+        "frame_sha256": "8b4045e2320d3ce5fff80d9034354e1420a058c0bddacc4352930f53e09446ed"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          13
+        ],
+        "frame_sha256": "37133a797eae6cc5be1bfc95d7f49cd3be6adf2dea4430a4a3957f344dc1e6df"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          18
+        ],
+        "frame_sha256": "ab1d7694c818b3ab723e7c319537d0c6735c85a4907973a8c0fa42fb5a3f02c9"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          23
+        ],
+        "frame_sha256": "40a4b698afde20e3c2498cf7c19bc98cfa45258490bc32b7b0d06a2146f3a346"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          16
+        ],
+        "frame_sha256": "3fae8f52a8a14de15a61fa93d2ae1f923f1c5d6947d9a711874287a5e8483fbc"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          83
+        ],
+        "frame_sha256": "05022c8f152c75f2076ca3a30f5041880940e335d14e19ada1a29cbb42d9de3e"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          16
+        ],
+        "frame_sha256": "7675b962c93c1f3638c97ba7de49c1bb163193046710ac699f7e029284d2004e"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          27
+        ],
+        "frame_sha256": "146734783f3da8dce9c9ce8a04a6027df6a7316765b5d85d81fcc8b1c4b27954"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          10
+        ],
+        "frame_sha256": "3327d31248da85a40245228208820e3805ff0e36fc78451a807b2f64f399ce34"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          23
+        ],
+        "frame_sha256": "0ea62bf497a362b6d0b3e7e4c7235e3945ff2f70685ede0450c33dfce0b3aa77"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          18
+        ],
+        "frame_sha256": "429007dcc6aaee0458c50aa75fc309a9ce096b8dd9639c85fd4fa163baf3ebe9"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          29
+        ],
+        "frame_sha256": "b4cfe19df816a7a8d898c7b625982080fe3c67f65aca9cf1e8b0ac4f118d43ce"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          14
+        ],
+        "frame_sha256": "bb246c062a2739e3683bbbb7f2065bab19bcde563a01a20f48cb723a9ced73da"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          74
+        ],
+        "frame_sha256": "26ce54ff46fa9873ebccd8f58b456bed492aa81398fde03bb8cc48f3acbf99ad"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          11
+        ],
+        "frame_sha256": "7a225ea843638ba27415c65e317f20250799485b4a0123179ad204b860ec5389"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          10
+        ],
+        "frame_sha256": "95678a76aa1d5d97e8ac84af686675a7426612b7f476f5bd1b84abaf3a0c8371"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          34
+        ],
+        "frame_sha256": "e358520ef7e867266d5cb3056fa48790815b7cdb1712aa299ec024c3160d26f8"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          74
+        ],
+        "frame_sha256": "24100b2f453ecac49b4c2955d9d5d4dfc84bda7373c06278c6e62186e99d41d6"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          21
+        ],
+        "frame_sha256": "a0f5bd84de0e8603d738b29274f648b7577b8f4a2c5b02612ee3eb183f43cfea"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          24
+        ],
+        "frame_sha256": "a4914d5245a6a53cb5e15d2dc32588913164908f5bfd88c5c45739855d9ee818"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          16
+        ],
+        "frame_sha256": "f06097cc28c4f21cc60640e56c912510775d4cd3ec73b2a9a204c4dd0a9db067"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          18
+        ],
+        "frame_sha256": "173c9262ced456ab4489e0866374d4c0bece29c76583bbcc6b58d0b12dabbc6f"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          28
+        ],
+        "frame_sha256": "40fcdedbb7ee5fc5d7efdcade63b205476fbbba02575b8971350396b166e4ff8"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          29
+        ],
+        "frame_sha256": "b9af0cca65994ad2d707bf45538805671bf7b5952ba29aa03258ce80293ac2e1"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          18
+        ],
+        "frame_sha256": "b10580563539030b6e9efdd9d5837da0ece8df4f7e5b79a8189181b218691cf8"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          12
+        ],
+        "frame_sha256": "fde58c58ec4246ed9304b10429631d82274508d062b94325bf8e5b016c93d313"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          28
+        ],
+        "frame_sha256": "656fc002056ea28c49b143678c184971f35b1df9772b30e524d10e8c9ab0a7a1"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          74
+        ],
+        "frame_sha256": "461da4d495275a91ab8374d1f2c55cde2fb1be2f593e015fa2ce0b33328a48d1"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          16
+        ],
+        "frame_sha256": "8fe4aca4afef63d638be3fcd9800c9a4bc206988765f04079c8aed45513da3c6"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          27
+        ],
+        "frame_sha256": "3f059ebbbbb0e59de0498df2ab6fdaf3111dd9465f2a0bc3f56bee0911444a9f"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          24
+        ],
+        "frame_sha256": "e60b3ba8c64f5b80e0ba37498346cf4b666fa88875c8e41372fb75208224ad5e"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          30
+        ],
+        "frame_sha256": "ff53eb2da841301be54b462482ad08abb222e1fbc6e9f56216b41089b4f7ddc3"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          25
+        ],
+        "frame_sha256": "cab9dbe48ce0549b7c1a7677587f88a3d8484df6a8877d1ed7af9f5dca4878d0"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          75
+        ],
+        "frame_sha256": "5f4af1893958d2169f970eaa61fd345e3af87a23ce111cc25129fb25665d7c2c"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          14
+        ],
+        "frame_sha256": "1dfc182385940f4843f0b5c9212b4f9ff0113c757fe3d8ab48ca381f5bac11c0"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          33
+        ],
+        "frame_sha256": "be2f2fd241edc902fffbc021822a1e9b979758693dc3e41c6c193a706488e53c"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          10
+        ],
+        "frame_sha256": "aeba83bebae0160a0b4facaac7870503c94c0faa74db6bf93d0d686ff4f92aa5"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          22
+        ],
+        "frame_sha256": "a73338faf5142f80e470660efebb1f416c692e184b5c0cba08f8e421d73ae20a"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          25
+        ],
+        "frame_sha256": "b254d90713ac4537610ed20cfcffd4813ce6f1c261e7bca032500017de24ab42"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          21
+        ],
+        "frame_sha256": "7e5ace6365f78cec68f9eeeaa96f5a6400f12f1d0cd5dd657bcc559c5d31af8c"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          14
+        ],
+        "frame_sha256": "be60bacb8ebb92ad71c54274e6372d80d54191b6c4b9eca200f5cdb32fe14dfa"
+      },
+      {
+        "action": [
+          1,
+          768,
+          218,
+          0
+        ],
+        "frame_sha256": "ede3d4de899b821394ec7d576ad44e213bc91612e1fcab0f1efde1224066a13f"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          72
+        ],
+        "frame_sha256": "6c60e6a0289ecefecea725ec24b1a483f887dc437181d5b60e4ca3475cde5467"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          1
+        ],
+        "frame_sha256": "8d74892059df06996be8ab31919d6c08504b40fe3c54f7fb994f215e14bc90a0"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          74
+        ],
+        "frame_sha256": "13263225b3f1b7d50edb602fa57edf08e9e76344bd2e860146990686af545591"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          5
+        ],
+        "frame_sha256": "ba3aa5eca4116d71f45932b2a7df72caea2ecde3cea7351302639a9db05ce900"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          5
+        ],
+        "frame_sha256": "97a98173bfc75bdb68d3fdf7b93b979d73ceee2f3b4c27f49612db7139a0558e"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          5
+        ],
+        "frame_sha256": "e86eacfc9dc8d4f0a07c970abb77a84bf0df9f0c018f798a48e62375293383ea"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          74
+        ],
+        "frame_sha256": "2ac69c74e9f21c5924a675606779cd71d496b6de776dc2e0cbcda929389e4e2e"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          4
+        ],
+        "frame_sha256": "bd001786e6528efd5bd9af71d79852d653ba6dce3982c129675a61289bfb398c"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "frame_sha256": "2296f122c5dd60557a2f2840bc5df95c9d1a55dec608471c05aa46c0b15fb9e0"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          4
+        ],
+        "frame_sha256": "f03fc1e00d7942355260e70ddbd8acde7a54be8c24081caf5957b0ad6b77c39a"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          74
+        ],
+        "frame_sha256": "26c08a0d29c75a22215ff123f702dff5f779ec356fc5470606d5dc958a8e9721"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          0
+        ],
+        "frame_sha256": "a475a69c255d7459e1ffb5798b482dbdbac74feac92079b705550bcdde3d34a6"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          7
+        ],
+        "frame_sha256": "faee574d6de7c3f0ca0d9d799186c87c75d6b08d0f5e40adcdc6bd0d281728c0"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          9
+        ],
+        "frame_sha256": "81f3366f4d7bdad29077cd2c5125f3d5e88175c92200b54adaf4e2a972ee35c1"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          1
+        ],
+        "frame_sha256": "4698e6b1476f84c878738f563e73c2183b4f202a192e57adf7c327d23a0ede7c"
+      },
+      {
+        "action": [
+          1,
+          768,
+          280,
+          0
+        ],
+        "frame_sha256": "c69230c1d287be8c07a3e4c52d6b462d65b6f2450c96088bdfeb7cadc918e7ce"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          55
+        ],
+        "frame_sha256": "2418bb6678740547d5731bbc7c27056da0b78a087962a24e950b9a210f2418a3"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          36
+        ],
+        "frame_sha256": "6c7b10f6499116422cea9a83aedec721944e177755058c55084597e5b30a44aa"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          59
+        ],
+        "frame_sha256": "52993eda719ff23a0712e3b264b01c1697daf98b7e18f8e0a205c90b998d09cd"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          74
+        ],
+        "frame_sha256": "d4674869cf55f1e1d75c46fe9f48df53ab3dab5abc874d7f198b71e403df7c46"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          2
+        ],
+        "frame_sha256": "6abd7e69a896d60942657722f463ab64acc720d1b831cafce8fde0b826fbd964"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          45
+        ],
+        "frame_sha256": "208f739a89ecbe11ca3d264f88a47ee027e773f9645c9eba4bab0d1b2693b4f8"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          38
+        ],
+        "frame_sha256": "dca552728a1b1d721649297a23b50b716f1828c411ec5da6e6f50d680a2834e7"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          1
+        ],
+        "frame_sha256": "072aa66de0de9872f324cab5918e6b025937a5dfad4792d099baaab88dc90294"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          43
+        ],
+        "frame_sha256": "5a2b88b21c72b34ee4d1110bbd187e164eec8e5a39922487c7350cfc33dfe176"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          1
+        ],
+        "frame_sha256": "59e814466a41329f7d05f9a91f1a1a5a244e844d68dbadd6c91ddf8afd8fbb2e"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          40
+        ],
+        "frame_sha256": "6ec30605fa0a009f80f7ea370497ee05fdb5989d5f2aef14f6a0a9d56ab1d06c"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          2
+        ],
+        "frame_sha256": "dcfeea4759068c487e77f333d73490725f77b7ff9faae0568da8c1b4ffde6eae"
+      },
+      {
+        "action": [
+          1,
+          768,
+          343,
+          0
+        ],
+        "frame_sha256": "31ec13f16611f328f9383840595f5a557d5481ee40a7609e351dd777daf0f7cb"
+      },
+      {
+        "action": [
+          2,
+          0,
+          0,
+          10
+        ],
+        "frame_sha256": "23d7683896ffea46fb6e1627e787aac1351674ac0e6030772864232a8308279e"
+      },
+      {
+        "action": [
+          1,
+          910,
+          400,
+          0
+        ],
+        "frame_sha256": "7c85362285fcf0d8b53f793684140248aacdf3b89c6da78143bacc72249c49c4"
+      },
+      {
+        "action": [
+          1,
+          578,
+          486,
+          0
+        ],
+        "frame_sha256": "b1d3ce15bc252c8a34464a6490b85963683f3fca38930d7f9c692401c2638494"
+      }
+    ],
+    "provider_close": {
+      "attempted": true,
+      "error": null,
+      "returned": true
+    },
+    "seed": 7,
+    "terminated_reward": 1.0
+  },
+  "provenance": {
+    "fake_renderer": "pixelgym-vendor-form-fake-renderer-v2",
+    "git_revision": "248097d3dd211463d985bb5bf175b4853bd37629",
+    "git_status_porcelain": "",
+    "guest_bundle_sha256_seed7": "300be223ef4a921275850dbd58149428f4d5c7cbd6aaac03f05499f2c71395f4",
+    "guest_image_path": ".cache/osworld/osworld-v2-ubuntu-x86.qcow2",
+    "host": {
+      "machine": "arm64",
+      "python": "3.12.15"
+    },
+    "input_contract": "pixelgym-vendor-form-input-v3",
+    "pixelgym_module_path": "pixelgym/__init__.py",
+    "run_started_utc": "2026-11-12T22:38:30Z",
+    "setup_acknowledged_inputs": 0,
+    "worktree_clean_at_start": true
+  },
+  "provider_closed": true,
+  "resets": {
+    "provider_close": {
+      "attempted": true,
+      "error": null,
+      "returned": true
+    },
+    "records": [
+      {
+        "acknowledged_after_reset": 0,
+        "initial_frame_sha256": "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+        "pointer_park": {
+          "pointer-park-error.txt": null,
+          "pointer-park.json": null
+        },
+        "reset_returned": true,
+        "seconds": 219.6,
+        "seed": 7
+      },
+      {
+        "acknowledged_after_reset": 0,
+        "initial_frame_sha256": "650ac5bae47f35fbf01dea6821f49ae19721d991df88c05b61322cc8013777b2",
+        "pointer_park": {
+          "pointer-park-error.txt": null,
+          "pointer-park.json": null
+        },
+        "reset_returned": true,
+        "seconds": 218.9,
+        "seed": 11
+      },
+      {
+        "acknowledged_after_reset": 0,
+        "initial_frame_sha256": "8682255f97d6aa6c79337439446b004c6a187318d051ace8284d5709e852ca48",
+        "pointer_park": {
+          "pointer-park-error.txt": null,
+          "pointer-park.json": null
+        },
+        "reset_returned": true,
+        "seconds": 222.3,
+        "seed": 23
+      }
+    ]
+  },
+  "schema_version": "pixelgym-osworld-guest-check-v2",
+  "total_seconds": 4013.5
+}
