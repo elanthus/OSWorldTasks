@@ -539,7 +539,7 @@ def test_core_fake_backend_v5_checkpoint_restores_exact_state() -> None:
 
 
 @pytest.mark.parametrize(
-    "checkpoint", [b"[]", b'{"schema_version":"pixelgym-core-fake-checkpoint-v2"}']
+    "checkpoint", [b"[]", b'{"schema_version":"pixelgym-core-fake-checkpoint-v3"}']
 )
 def test_core_fake_backend_v5_checkpoint_rejects_malformed_shape(checkpoint: bytes) -> None:
     with pytest.raises(ValueError):

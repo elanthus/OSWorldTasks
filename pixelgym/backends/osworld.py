@@ -32,7 +32,11 @@ from pixelgym.backends.base import (
 from pixelgym.backends.settle import InputAcknowledgementError, await_input_acknowledgement
 from pixelgym.serialization import canonical_json_bytes
 from pixelgym.task_spec import Submission
-from pixelgym.tasks.vendor_form.osworld_task import APP_URL, create_osworld_task
+from pixelgym.tasks.vendor_form.osworld_task import (
+    APP_URL,
+    SETUP_ACKNOWLEDGED_INPUTS,
+    create_osworld_task,
+)
 from pixelgym.tasks.vendor_form.ui import INPUT_CONTRACT_VERSION
 
 OSWORLD_REPOSITORY = "https://github.com/xlang-ai/OSWorld-V2"
@@ -210,6 +214,9 @@ class OSWorldBackend:
         self._last_input_ack_reads: int | None = None
         self._closed = False
         self._last_stabilization_seconds: float | None = None
+        # Provider-close errors that failure cleanup suppressed to keep the original error. A later
+        # close() finds no provider and returns, so callers that report cleanup read these.
+        self.suppressed_close_errors: list[str] = []
 
     @property
     def width(self) -> int:
@@ -246,10 +253,12 @@ class OSWorldBackend:
             self._task_record = record
             self._last_submissions = ()
             self._structured_action_count = 0
-            self._inputs_dispatched = 0
+            # Setup sends the page a fixed, known number of acknowledged inputs (none). The count
+            # is a constant, never adopted from the page: a page that acknowledged anything else
+            # is rejected here, because later acknowledgements could not be paired with this
+            # backend's own actions.
+            self._inputs_dispatched = SETUP_ACKNOWLEDGED_INPUTS
             task.read_privileged_state(env)
-            # The freshly loaded page must not have acknowledged any input yet; otherwise later
-            # acknowledgements could not be paired with this backend's own actions.
             self._await_input_acknowledgements()
             self._latest_raw_screenshot = self._raw_from_observation(observation)
             # Validate the public observation path during reset, not later on
@@ -637,10 +646,12 @@ class OSWorldBackend:
     def _close_after_failure(self) -> None:
         try:
             self.close()
-        except OSWorldBackendError:
+        except OSWorldBackendError as exc:
             # Preserve the original integration failure while still making a
             # best-effort cleanup attempt.  The provider's own constructor and
-            # reset paths also clean up partial containers.
+            # reset paths also clean up partial containers.  The close error is
+            # kept so the cleanup failure is not lost.
+            self.suppressed_close_errors.append(str(exc))
             return
 
 

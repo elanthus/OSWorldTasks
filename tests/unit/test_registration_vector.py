@@ -15,7 +15,7 @@ from gymnasium.wrappers import TimeLimit
 from pixelgym.env import PixelGuiEnv
 from pixelgym.registration import VENDOR_FORM_ID, make_vendor_form_env, register_envs
 
-_GOLDEN = Path(__file__).parent / "fixtures/golden_trajectory_seed7.json"
+_GOLDEN = Path(__file__).parent / "fixtures/golden_trajectory_seed7_v2.json"
 _NOOP = {"action_type": 0, "x": 0, "y": 0, "key": 0}
 
 
@@ -99,6 +99,44 @@ def test_episode_step_limit_sets_the_environment_limit_without_a_time_limit_wrap
         env.reset(seed=1)
         truncated = [env.step(_NOOP)[3] for _ in range(5)]
         assert truncated == [False, False, False, False, True]
+    finally:
+        env.close()
+
+
+def _unwrapped_limit(env: Any) -> tuple[int | None, int]:
+    wrapper_limit = None
+    layer: Any = env
+    while isinstance(layer, gym.Wrapper):
+        if isinstance(layer, TimeLimit):
+            wrapper_limit = layer._max_episode_steps
+        layer = layer.env
+    return wrapper_limit, layer._max_episode_steps
+
+
+def test_gym_make_max_episode_steps_below_the_limit_adds_a_disagreeing_time_limit() -> None:
+    """Documented difference: gym.make's max_episode_steps does not reach the environment."""
+
+    env = gym.make(VENDOR_FORM_ID, width=64, height=48, max_episode_steps=3)
+    try:
+        assert _unwrapped_limit(env) == (3, 200)
+        env.reset(seed=1)
+        truncated = [env.step(_NOOP)[3] for _ in range(3)]
+        assert truncated == [False, False, True]
+        # The wrapper said truncated, but the environment's episode is still open: a fourth step
+        # does not raise. Use episode_step_limit to get the environment's own end-of-episode rule.
+        env.step(_NOOP)
+    finally:
+        env.close()
+
+
+def test_gym_make_max_episode_steps_above_the_limit_never_fires() -> None:
+    env = gym.make(VENDOR_FORM_ID, width=64, height=48, episode_step_limit=2, max_episode_steps=9)
+    try:
+        assert _unwrapped_limit(env) == (9, 2)
+        env.reset(seed=1)
+        assert [env.step(_NOOP)[3] for _ in range(2)] == [False, True]
+        with pytest.raises(RuntimeError):
+            env.step(_NOOP)
     finally:
         env.close()
 

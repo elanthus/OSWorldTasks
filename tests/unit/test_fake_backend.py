@@ -11,6 +11,7 @@ Nothing here touches the network, a browser, OSWorld, or the clock.
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 
 import numpy as np
 import pytest
@@ -838,7 +839,7 @@ def test_only_the_focused_radio_draws_a_focus_ring(backend):
     assert ring_pixels(1) == ring_pixels(2) == 0
 
 
-def test_checkpoint_v2_round_trips_radio_focus(backend):
+def test_checkpoint_v3_round_trips_radio_focus(backend):
     _tab_into_payment(backend)
     backend.key("ArrowDown")
     checkpoint = backend.checkpoint()
@@ -846,11 +847,28 @@ def test_checkpoint_v2_round_trips_radio_focus(backend):
     restored = FakeBackend()
     restored.restore(checkpoint)
 
-    assert json.loads(checkpoint)["schema_version"] == "pixelgym-core-fake-checkpoint-v2"
+    assert json.loads(checkpoint)["schema_version"] == "pixelgym-core-fake-checkpoint-v3"
     assert restored.form.payment_focus_index == 1
     assert restored.checkpoint() == checkpoint
     assert np.array_equal(restored.screenshot(), backend.screenshot())
-    assert backend.environment_resume_record(step_count=1).backend_identity.endswith("-v2")
+    assert backend.environment_resume_record(step_count=1).backend_identity.endswith("-v3")
+
+
+def test_checkpoint_v2_is_rejected_not_reinterpreted(backend):
+    """v2 checkpoints have the same fields but were sealed under renderer v1 (no caret)."""
+    value = json.loads(backend.checkpoint())
+    value["schema_version"] = "pixelgym-core-fake-checkpoint-v2"
+
+    with pytest.raises(ValueError, match="unsupported core fake-backend checkpoint schema"):
+        FakeBackend().restore(json.dumps(value).encode())
+
+
+def test_resume_record_sealed_under_the_v2_identity_is_rejected(backend):
+    record = backend.environment_resume_record(step_count=0)
+    stale = replace(record, backend_identity=record.backend_identity.replace("-v3", "-v2"))
+
+    with pytest.raises(RuntimeError, match="resume binding mismatch"):
+        backend.verify_resume_record(stale, step_count=0)
 
 
 def test_checkpoint_v1_is_rejected_not_reinterpreted(backend):

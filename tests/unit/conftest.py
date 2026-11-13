@@ -8,7 +8,7 @@ it up as pytest fixtures and loads the committed fixture file.
 values off the backend at runtime, which the checked-in golden trajectory is
 forbidden to do. The golden trajectory is a frozen list of literal
 actions plus its recorded reward timeline in
-`fixtures/golden_trajectory_seed7.json`, replayed by `test_golden_trajectory.py`,
+`fixtures/golden_trajectory_seed7_v2.json`, replayed by `test_golden_trajectory.py`,
 which is the authority on reward timing.
 """
 
@@ -35,7 +35,7 @@ __all__ = [
     "noop_action",
 ]
 
-GOLDEN_FIXTURE_PATH = Path(__file__).parent / "fixtures" / "golden_trajectory_seed7.json"
+GOLDEN_FIXTURE_PATH = Path(__file__).parent / "fixtures" / "golden_trajectory_seed7_v2.json"
 
 # The "ci" Hypothesis profile is registered in the top-level tests/conftest.py
 # (an initial conftest for every invocation path) and loaded by default via

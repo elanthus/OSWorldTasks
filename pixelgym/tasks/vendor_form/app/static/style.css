@@ -150,6 +150,31 @@ select {
   min-height: 16px;
 }
 
+/* Static caret for the focused text input (input contract v3). The native caret stays transparent
+   because it blinks on a timer; this element has no animation or transition, so it is drawn the
+   same in every frame. app.js places it right after the last character of the value, measured
+   with the mirror below. `white-space: pre` keeps trailing spaces in the measurement, so typing a
+   space moves the caret and the frame stays a function of the field value. */
+#pixelgym-caret {
+  position: absolute;
+  display: none;
+  width: 1px;
+  height: 16px;
+  background: #1c1e21;
+  pointer-events: none;
+}
+
+#pixelgym-caret-mirror {
+  position: absolute;
+  left: 0;
+  top: 0;
+  visibility: hidden;
+  white-space: pre;
+  font-family: inherit;
+  font-size: inherit;
+  pointer-events: none;
+}
+
 /* A fast second click is a native double-click, which would paint a word-selection highlight on
    static text that the fake renderer never draws. Text inputs keep one caret pinned at the end of
    the value by app.js, so nothing on the page is selectable. */

@@ -68,7 +68,7 @@
           <div class="field-row">
             <label for="country">Country</label>
             <!-- Keep mouse activation focused and closed; country selection uses
-                 allowlisted type-ahead followed by Enter in both backends. -->
+                 one allowlisted first-letter keystroke in both backends. -->
             <select
               id="country"
               name="country"
@@ -94,6 +94,8 @@
         </form>
       </section>
     </div>
+    <div id="pixelgym-caret" aria-hidden="true"></div>
+    <span id="pixelgym-caret-mirror" aria-hidden="true"></span>
     <script src="/static/app.js"></script>
   </body>
 </html>

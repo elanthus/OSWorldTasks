@@ -21,8 +21,23 @@ from pixelgym.backends.fake import FakeBackend
 from pixelgym.tasks.vendor_form import render
 from tests.support.reference_render import render_reference
 
-_GOLDEN = Path(__file__).parent / "fixtures/golden_trajectory_seed7.json"
-_SIZES = [(1024, 768), (640, 480), (320, 240), (64, 48)]
+_GOLDEN = Path(__file__).parent / "fixtures/golden_trajectory_seed7_v2.json"
+_SIZES = [
+    # 4:3, the design aspect.
+    (1024, 768),
+    (640, 480),
+    (320, 240),
+    (64, 48),
+    # Not 4:3: x and y scale differently, so text insets (scale_x) and fonts (min scale) diverge.
+    (1280, 720),
+    (768, 1024),
+    (512, 128),
+    (333, 197),
+    # Very small: rectangles collide and render() falls back to the single pass.
+    (16, 12),
+    (7, 5),
+    (1, 1),
+]
 
 
 def _assert_identical(backend: FakeBackend) -> None:

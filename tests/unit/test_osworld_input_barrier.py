@@ -25,7 +25,9 @@ from pixelgym.actions import ActionType
 from pixelgym.backends.osworld import OSWorldBackend, OSWorldBackendConfig, OSWorldBackendError
 from pixelgym.env import PixelGuiEnv
 from pixelgym.task_spec import Submission
-from pixelgym.tasks.vendor_form import generator
+from pixelgym.tasks.vendor_form import generator, osworld_task
+from pixelgym.tasks.vendor_form.osworld_task import SETUP_ACKNOWLEDGED_INPUTS, create_osworld_task
+from tests.support.osworld_setup_model import SetupModel, install_fake_osworld
 
 WIDTH, HEIGHT = 4, 3
 PRE_SUBMIT, POST_SUBMIT = 17, 200
@@ -116,12 +118,25 @@ class _Controller:
 
 
 class _Provider:
-    def __init__(self, guest: _SlowGuest) -> None:
+    """DesktopEnv stand-in whose reset runs the real guest setup against `SetupModel`.
+
+    The task page's acknowledgement count after reset is whatever the setup programs made the
+    page acknowledge, so a setup step that clicks the page (as the pre-fix pointer park did) shows
+    up here as an overshoot that reset must reject.
+    """
+
+    def __init__(self, guest: _SlowGuest, setup_task: Any, cache_dir: Path) -> None:
         self.guest = guest
+        self.setup_task = setup_task
+        self.cache_dir = cache_dir
         self.controller = _Controller(guest)
         self.closed = False
 
     def reset(self, task_config: Any, seed: int) -> dict[str, bytes]:
+        model = SetupModel(self.cache_dir, self.guest.record)
+        self.setup_task.setup(model)
+        self.guest.inputs = model.page_acknowledged
+        self.guest.acknowledged = 0
         return {"screenshot": _png(PRE_SUBMIT)}
 
     def step(self, action: dict[str, Any], pause: float) -> tuple[Any, ...]:
@@ -143,6 +158,10 @@ def _env(
 ) -> tuple[PixelGuiEnv, _SlowGuest, _Clock]:
     record = generator.generate_task(7)
     guest = _SlowGuest(record, latency_reads=latency_reads)
+    install_fake_osworld(monkeypatch)
+    setup_dir = tmp_path / "setup"
+    setup_dir.mkdir()
+    setup_task, _record = create_osworld_task(7, cache_dir=setup_dir)
     monkeypatch.setattr(
         "pixelgym.backends.osworld.create_osworld_task",
         lambda seed, cache_dir: (guest, generator.generate_task(seed)),
@@ -162,7 +181,7 @@ def _env(
             input_ack_poll_interval=0.05,
             noop_seconds=0,
         ),
-        desktop_env_factory=lambda **_kwargs: _Provider(guest),
+        desktop_env_factory=lambda **_kwargs: _Provider(guest, setup_task, setup_dir),
     )
     return PixelGuiEnv(backend, max_episode_steps=max_episode_steps), guest, clock
 
@@ -248,6 +267,40 @@ def test_reset_rejects_a_page_that_already_acknowledged_input(
     guest.overshoot = 1
 
     with pytest.raises(OSWorldBackendError, match="was not acknowledged"):
+        env.reset(seed=7)
+
+
+def test_reset_after_the_full_setup_sequence_expects_the_fixed_count(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    env, guest, _clock = _env(tmp_path, monkeypatch, latency_reads=1)
+
+    env.reset(seed=7)
+
+    assert guest.inputs == SETUP_ACKNOWLEDGED_INPUTS == 0
+    assert env.step(_key())[1:3] == (0.0, False)
+
+
+def test_reset_rejects_a_setup_step_that_clicks_the_page(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A setup program that clicks the page (as the pre-fix pointer park did) fails reset.
+
+    The clicking program here also reports a parked pointer, so setup itself accepts it and only
+    the acknowledgement check can catch the click.
+    """
+
+    clicking_park = (
+        "import json,pyautogui; pyautogui.click(100,150); "
+        "pyautogui.moveTo(__PIXELGYM_PARK_X__,__PIXELGYM_PARK_Y__,duration=0); "
+        "x,y=pyautogui.position(); print(json.dumps({'parked':[x,y]}))"
+    )
+    monkeypatch.setitem(osworld_task._GUEST_PROGRAMS, "pointer_park", clicking_park)
+    env, _guest, _clock = _env(tmp_path, monkeypatch, latency_reads=1)
+
+    with pytest.raises(
+        OSWorldBackendError, match="acknowledged 1 inputs but the host dispatched 0"
+    ):
         env.reset(seed=7)
 
 

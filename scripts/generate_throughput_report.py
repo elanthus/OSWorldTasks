@@ -55,20 +55,49 @@ def render(evidence: dict[str, Any]) -> str:
         "",
         f"{parameters['repeats']} repeats of {parameters['steps']} steps each; median (min–max).",
         "",
-        "| Workload | Static-layer renderer | Single-pass reference | Speed-up (medians) |",
-        "| --- | ---: | ---: | ---: |",
     ]
-    descriptions = {
-        "random": "Random policy (a third are NOOPs, which reuse the cached frame)",
-        "golden": "Golden trajectory replay (renders almost every step)",
-    }
+    # Evidence written after the caret change also stores the dispatched action types, so the
+    # NOOP share is read from the evidence; older files only carry the sampling-design label.
+    with_types = all("action_types" in evidence["workloads"][w] for w in ("random", "golden"))
+    if with_types:
+        lines.extend(
+            [
+                (
+                    "| Workload | NOOP share | Static-layer renderer | Single-pass reference "
+                    "| Speed-up (medians) |"
+                ),
+                "| --- | ---: | ---: | ---: | ---: |",
+            ]
+        )
+        descriptions = {
+            "random": "Random policy (NOOPs reuse the cached frame)",
+            "golden": "Golden trajectory replay",
+        }
+    else:
+        lines.extend(
+            [
+                "| Workload | Static-layer renderer | Single-pass reference | Speed-up (medians) |",
+                "| --- | ---: | ---: | ---: |",
+            ]
+        )
+        descriptions = {
+            "random": "Random policy (a third are NOOPs, which reuse the cached frame)",
+            "golden": "Golden trajectory replay (renders almost every step)",
+        }
     for workload, label in descriptions.items():
         row = evidence["workloads"][workload]
         cells = []
         for renderer in ("static_layer", "reference_single_pass"):
             summary = row[renderer]["steps_per_second"]
             cells.append(f"{summary['median']:.0f} ({summary['min']:.0f}–{summary['max']:.0f})")
-        lines.append(f"| {label} | {cells[0]} | {cells[1]} | {row['speedup_median']:.2f}x |")
+        if with_types:
+            types = row["action_types"]
+            share = f"{types['noop_share']:.1%} ({types['counts']['NOOP']}/{types['steps']})"
+            lines.append(
+                f"| {label} | {share} | {cells[0]} | {cells[1]} | {row['speedup_median']:.2f}x |"
+            )
+        else:
+            lines.append(f"| {label} | {cells[0]} | {cells[1]} | {row['speedup_median']:.2f}x |")
 
     lines.extend(
         [

@@ -56,7 +56,7 @@ from tests.support.reference_render import render_reference
 
 SCHEMA_VERSION = "pixelgym-fake-throughput-v1"
 DEFAULT_OUTPUT = Path("artifacts/throughput/fake-throughput.json")
-GOLDEN_FIXTURE = Path("tests/unit/fixtures/golden_trajectory_seed7.json")
+GOLDEN_FIXTURE = Path("tests/unit/fixtures/golden_trajectory_seed7_v2.json")
 RENDERERS = ("static_layer", "reference_single_pass")
 
 
@@ -127,6 +127,28 @@ def _drive(env: PixelGuiEnv, workload: str, steps: int, *, seed: int) -> Iterato
 def _seed_for(workload: str) -> int:
     # The golden fixture was recorded for seed 7; other seeds would make it an incorrect form.
     return 7 if workload == "golden" else 0
+
+
+def action_type_counts(workload: str, steps: int) -> dict[str, Any]:
+    """Count the action types a timed run of `steps` steps dispatches (untimed, same stream).
+
+    Stored so a report can state the NOOP share of the random workload from evidence rather than
+    from the sampling design: NOOPs reuse the cached frame, so they raise steps per second.
+    """
+
+    env = PixelGuiEnv(_backend("static_layer"))
+    seed = _seed_for(workload)
+    if workload == "random":
+        stream = _random_stream(env, seed)
+        actions = [next(stream) for _ in range(steps)]
+    else:
+        golden = _golden_actions()
+        actions = [golden[index % len(golden)] for index in range(steps)]
+    env.close()
+    counts = {name: 0 for name in ("NOOP", "CLICK", "KEY")}
+    for action in actions:
+        counts[("NOOP", "CLICK", "KEY")[int(action["action_type"])]] += 1
+    return {"steps": steps, "counts": counts, "noop_share": counts["NOOP"] / steps}
 
 
 def time_steps(workload: str, renderer: str, steps: int) -> dict[str, Any]:
@@ -250,6 +272,7 @@ def measure(
                 "runs": runs,
                 "steps_per_second": _summary([run["steps_per_second"] for run in runs]),
             }
+        workloads[workload]["action_types"] = action_type_counts(workload, steps)
         workloads[workload]["speedup_median"] = (
             workloads[workload]["static_layer"]["steps_per_second"]["median"]
             / workloads[workload]["reference_single_pass"]["steps_per_second"]["median"]

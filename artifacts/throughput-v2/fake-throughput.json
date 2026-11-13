@@ -1,0 +1,271 @@
+{
+  "byte_identity": [
+    {
+      "first_mismatch_index": null,
+      "frame_sequence_sha256": "02e6dd462ccb960b5c4b531066d203f1fc13f7128885e363ed8cd3c11f1e0dc2",
+      "frames_compared": 3016,
+      "mismatched_frames": 0,
+      "workload": "random"
+    },
+    {
+      "first_mismatch_index": null,
+      "frame_sequence_sha256": "3278a68ae57170d70abc322c98e03f1e7dfda45a7a0ab085871271703b19a02b",
+      "frames_compared": 3028,
+      "mismatched_frames": 0,
+      "workload": "golden"
+    }
+  ],
+  "command": "scripts/measure_fake_throughput.py --output artifacts/throughput-v2/fake-throughput.json",
+  "environment": {
+    "backend": "fake",
+    "id": "PixelGym/VendorForm-v0",
+    "observation_dtype": "uint8",
+    "observation_shape": [
+      768,
+      1024,
+      3
+    ]
+  },
+  "generated_at": "2026-11-13T06:19:59.356052+00:00",
+  "git_revision": "ce0b022a37af8bc63cd02ccd9baa171e68c5cef1",
+  "host": {
+    "cpu": "Apple M4 Pro",
+    "gymnasium": "0.28.1",
+    "machine": "arm64",
+    "numpy": "1.26.4",
+    "pillow": "11.0.0",
+    "python": "3.12.15",
+    "release": "27.0.0",
+    "system": "Darwin"
+  },
+  "parameters": {
+    "identity_steps": 3000,
+    "repeats": 3,
+    "resets": 300,
+    "steps": 3000,
+    "vector_envs": 8,
+    "vector_steps": 300
+  },
+  "reset_latency": {
+    "reference_single_pass": [
+      {
+        "max_ms": 8.215416921302676,
+        "mean_ms": 7.011830696913724,
+        "median_ms": 6.974833435378969,
+        "p95_ms": 7.710250094532967,
+        "resets": 300
+      },
+      {
+        "max_ms": 7.920457981526852,
+        "mean_ms": 6.923221117273594,
+        "median_ms": 6.876228959299624,
+        "p95_ms": 7.505249930545688,
+        "resets": 300
+      },
+      {
+        "max_ms": 12.09750003181398,
+        "mean_ms": 6.976668027540048,
+        "median_ms": 6.886979041155428,
+        "p95_ms": 7.553083007223904,
+        "resets": 300
+      }
+    ],
+    "static_layer": [
+      {
+        "max_ms": 8.177167037501931,
+        "mean_ms": 7.089118508932491,
+        "median_ms": 7.080207986291498,
+        "p95_ms": 7.647958002053201,
+        "resets": 300
+      },
+      {
+        "max_ms": 10.097166988998652,
+        "mean_ms": 7.136640918906778,
+        "median_ms": 7.093770545907319,
+        "p95_ms": 7.7766249887645245,
+        "resets": 300
+      },
+      {
+        "max_ms": 8.2650410477072,
+        "mean_ms": 7.187148695423578,
+        "median_ms": 7.162062451243401,
+        "p95_ms": 7.790875039063394,
+        "resets": 300
+      }
+    ]
+  },
+  "schema_version": "pixelgym-fake-throughput-v1",
+  "scope_note": "Wall-clock measurements on one host, single process unless stated. They describe the in-process fake backend only, not the OSWorld or browser path.",
+  "validator": "fake-backend-throughput",
+  "vector": {
+    "async": [
+      {
+        "env_steps": 2400,
+        "env_steps_per_second": 2418.727500689169,
+        "num_envs": 8,
+        "seconds": 0.9922572920331731,
+        "vector_steps": 300
+      },
+      {
+        "env_steps": 2400,
+        "env_steps_per_second": 2521.339684152699,
+        "num_envs": 8,
+        "seconds": 0.9518749159760773,
+        "vector_steps": 300
+      },
+      {
+        "env_steps": 2400,
+        "env_steps_per_second": 2543.3297715070903,
+        "num_envs": 8,
+        "seconds": 0.9436448339838535,
+        "vector_steps": 300
+      }
+    ],
+    "sync": [
+      {
+        "env_steps": 2400,
+        "env_steps_per_second": 1026.6244353243058,
+        "num_envs": 8,
+        "seconds": 2.337758500012569,
+        "vector_steps": 300
+      },
+      {
+        "env_steps": 2400,
+        "env_steps_per_second": 1022.2744190973017,
+        "num_envs": 8,
+        "seconds": 2.3477062080055475,
+        "vector_steps": 300
+      },
+      {
+        "env_steps": 2400,
+        "env_steps_per_second": 1015.1428829608514,
+        "num_envs": 8,
+        "seconds": 2.3641992080956697,
+        "vector_steps": 300
+      }
+    ]
+  },
+  "workloads": {
+    "golden": {
+      "action_types": {
+        "counts": {
+          "CLICK": 191,
+          "KEY": 2781,
+          "NOOP": 28
+        },
+        "noop_share": 0.009333333333333334,
+        "steps": 3000
+      },
+      "reference_single_pass": {
+        "runs": [
+          {
+            "seconds": 23.32372458302416,
+            "steps": 3000,
+            "steps_per_second": 128.62439655900874
+          },
+          {
+            "seconds": 23.282733125030063,
+            "steps": 3000,
+            "steps_per_second": 128.85085199790635
+          },
+          {
+            "seconds": 23.129331290954724,
+            "steps": 3000,
+            "steps_per_second": 129.70543602240767
+          }
+        ],
+        "steps_per_second": {
+          "max": 129.70543602240767,
+          "median": 128.85085199790635,
+          "min": 128.62439655900874
+        }
+      },
+      "speedup_median": 4.100245899562486,
+      "static_layer": {
+        "runs": [
+          {
+            "seconds": 5.678374832961708,
+            "steps": 3000,
+            "steps_per_second": 528.3201775595483
+          },
+          {
+            "seconds": 5.674130957922898,
+            "steps": 3000,
+            "steps_per_second": 528.7153261436524
+          },
+          {
+            "seconds": 5.698267625062726,
+            "steps": 3000,
+            "steps_per_second": 526.4757988559683
+          }
+        ],
+        "steps_per_second": {
+          "max": 528.7153261436524,
+          "median": 528.3201775595483,
+          "min": 526.4757988559683
+        }
+      }
+    },
+    "random": {
+      "action_types": {
+        "counts": {
+          "CLICK": 1005,
+          "KEY": 970,
+          "NOOP": 1025
+        },
+        "noop_share": 0.3416666666666667,
+        "steps": 3000
+      },
+      "reference_single_pass": {
+        "runs": [
+          {
+            "seconds": 14.289461959036998,
+            "steps": 3000,
+            "steps_per_second": 209.94492365072767
+          },
+          {
+            "seconds": 14.166815542033873,
+            "steps": 3000,
+            "steps_per_second": 211.7624805023262
+          },
+          {
+            "seconds": 14.181940792012028,
+            "steps": 3000,
+            "steps_per_second": 211.53663267934024
+          }
+        ],
+        "steps_per_second": {
+          "max": 211.7624805023262,
+          "median": 211.53663267934024,
+          "min": 209.94492365072767
+        }
+      },
+      "speedup_median": 5.5065297776452615,
+      "static_layer": {
+        "runs": [
+          {
+            "seconds": 2.6673448749352247,
+            "steps": 3000,
+            "steps_per_second": 1124.7139536363304
+          },
+          {
+            "seconds": 2.5754769999766722,
+            "steps": 3000,
+            "steps_per_second": 1164.8327669115947
+          },
+          {
+            "seconds": 2.572192915948108,
+            "steps": 3000,
+            "steps_per_second": 1166.3199837770344
+          }
+        ],
+        "steps_per_second": {
+          "max": 1166.3199837770344,
+          "median": 1164.8327669115947,
+          "min": 1124.7139536363304
+        }
+      }
+    }
+  },
+  "worktree_clean": true
+}

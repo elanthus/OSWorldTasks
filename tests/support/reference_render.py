@@ -6,6 +6,14 @@ single-pass renderer verbatim (from `render.render` at commit b614164) so tests 
 throughput evidence script can assert that the fast path is byte-identical to it. Do not edit
 it to follow later renderer changes: a deliberate visual change must update this reference in
 the same commit and say why.
+
+Deliberate visual changes so far:
+
+- Renderer v2 (`render.RENDERER_VERSION`, input contract v3): the focused text field draws a
+  static caret after the last character of its value, because a trailing space was otherwise
+  invisible and the frame did not determine the form state. `_render_value_and_caret` was written
+  from the specification in its docstring, not copied from `render.py`, so the byte-identity tests
+  still compare two implementations.
 """
 
 from __future__ import annotations
@@ -53,6 +61,8 @@ _BASE_FONT_SIZE = 14
 _HEADING_FONT_SIZE = 16
 _TEXT_INSET = 8  # design px; matches the 6px/8px control padding in style.css
 _MAX_RENDERED_CHARS = 200  # cap measurement work on absurdly long typed strings
+_CARET_WIDTH = 1  # renderer v2
+_CARET_HEIGHT = 16  # renderer v2
 
 
 @lru_cache(maxsize=32)
@@ -166,7 +176,10 @@ def _render_form(painter: _Painter, state: FormState, layout: Layout) -> None:
         painter.label(layout.labels[widget], _LABELS[widget.value])
         rect = layout.controls[widget]
         painter.box(rect, fill=FORM_PANEL_BG, outline=CONTROL_BORDER, focused=state.focus is widget)
-        painter.text_in(rect, state.text[widget], font=painter.body, keep_tail=True)
+        if state.focus is widget:
+            _render_value_and_caret(painter, rect, state.text[widget])
+        else:
+            painter.text_in(rect, state.text[widget], font=painter.body, keep_tail=True)
 
     _render_country(painter, state, layout)
     _render_payment_terms(painter, state, layout)
@@ -183,6 +196,30 @@ def _render_form(painter: _Painter, state: FormState, layout: Layout) -> None:
 
     if state.status:
         painter.text_in(layout.status, state.status, font=painter.body)
+
+
+def _render_value_and_caret(painter: _Painter, rect: Rect, value: str) -> None:
+    """Renderer v2: the focused text field's value, then a static caret right after it.
+
+    Written separately from `render._Painter.text_with_caret` from the same specification: the
+    caret is `_CARET_WIDTH` design px wide (at least 1) and `_CARET_HEIGHT` tall, vertically
+    centred on the field and clamped inside it; it starts at the advance width of the visible
+    text (trailing spaces included), never past the field's last pixel minus its own width; room
+    for it is reserved before the value is trimmed from the left.
+    """
+    caret_w = _scaled(_CARET_WIDTH, painter.scale)
+    room = max(1, rect.width - 2 * painter.inset - caret_w)
+    visible = _fit(value, painter.body, room, keep_tail=True)
+    text_x = rect.x + painter.inset
+    mid_y = rect.y + rect.height // 2
+    if visible:
+        painter.draw.text((text_x, mid_y), visible, font=painter.body, fill=TEXT_COLOR, anchor="lm")
+    x0 = text_x + round(painter.body.getlength(visible))
+    x0 = max(rect.x, min(x0, rect.right - 1 - caret_w))
+    caret_h = _scaled(_CARET_HEIGHT, painter.scale)
+    y0 = max(rect.y, mid_y - caret_h // 2)
+    y1 = max(y0, min(rect.bottom - 1, y0 + caret_h - 1))
+    painter.draw.rectangle((x0, y0, x0 + caret_w - 1, y1), fill=TEXT_COLOR)
 
 
 def _render_country(painter: _Painter, state: FormState, layout: Layout) -> None:

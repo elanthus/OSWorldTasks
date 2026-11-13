@@ -15,7 +15,7 @@ Two things live here:
   `getBoundingClientRect()` test. Geometry is scaled linearly for other fake
   backend sizes. Native country-popup geometry is not modeled: clicking the
   select leaves it focused and closed, and selection transfers through
-  one allowlisted initial-letter keystroke followed by Enter. Each distinct
+  one allowlisted initial-letter keystroke, which selects at once. Each distinct
   initial letter is interpreted independently; Chromium's timed multi-key
   type-ahead buffer is outside the equivalence contract.
 - `FormState` -- focus, typed text, selection, and checkbox state, advanced by
@@ -36,6 +36,8 @@ submissions after every action.
   clicked, after which Tab from an unfocused page focuses the first control.
 - Text inputs have a single caret pinned to the end of the value. Printable
   keys append, Backspace deletes the last character, and arrow keys are inert.
+  The focused text input draws a static, non-blinking caret right after the
+  last character (v3), so a trailing space changes the frame.
   The app enforces this because the caret is hidden (`caret-color:
   transparent`, invariant 10): a movable caret would be state the pixel agent
   cannot see, and click-to-caret placement depends on browser glyph shaping.
@@ -46,7 +48,8 @@ submissions after every action.
   inert, and a printable key selects the first option whose label starts with
   it. Native arrows open the popup on macOS and change the value on Linux,
   and native type-ahead buffers keys on a timer, so neither can be the
-  contract. The native popup never opens.
+  contract. Enter and Space are inert on the select (v3); natively they can
+  open the popup. The native popup never opens.
 - The payment radios follow standard radio-group semantics: one radio holds
   focus (`payment_focus_index`), Tab enters on the checked radio or the first
   one, arrows move focus and selection together and wrap, and Space checks the
@@ -69,12 +72,14 @@ from typing import Any
 DESIGN_WIDTH = 1024
 DESIGN_HEIGHT = 768
 
-INPUT_CONTRACT_VERSION = "pixelgym-vendor-form-input-v2"
+INPUT_CONTRACT_VERSION = "pixelgym-vendor-form-input-v3"
 """Version of the interaction contract shared by `FormState` and `app/static/app.js`.
 
 v1 left carets, Tab navigation, select arrows, and type-ahead to native Chromium and did not model
-label clicks or radio focus. v2 is the contract described in this module's docstring. The app
-publishes the same string as ``document.body.dataset.pixelgymInputContract``.
+label clicks or radio focus. v2 pinned those. v3 adds a static, non-blinking caret drawn after the
+last character of the focused text input (so a trailing space is visible in the frame) and makes
+Enter and Space inert on the country select. The app publishes the same string as
+``document.body.dataset.pixelgymInputContract``.
 """
 
 
@@ -212,7 +217,8 @@ class Layout:
 
     The native country popup is deliberately absent. A click focuses the same
     closed select in both models; one allowlisted initial-letter keystroke
-    followed by Enter is the transferable selection contract. Timed multi-key
+    is the transferable selection contract (no Enter is needed, and from input
+    contract v3 Enter and Space are inert on the select). Timed multi-key
     type-ahead sequences are not modeled.
 
     Rectangles are scaled linearly for the small screens unit tests use.
