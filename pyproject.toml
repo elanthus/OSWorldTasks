@@ -32,10 +32,11 @@ platform = [
     "httpx2==2.9.1",  # deployment smoke uses Starlette's TestClient at runtime
     "jinja2==3.1.6",  # control-plane web templates (pixelgym.platform.web)
 ]
-# Behaviour-cloning experiment (scripts/run_bc_experiment.py). Not needed by the core package,
-# the fast unit suite, or lint; tests that need torch skip without it.
+# Behaviour-cloning experiments (scripts/run_bc_experiment.py and run_bc_experiment_v2.py). Not
+# needed by the core package, the fast unit suite, or lint; tests that need torch skip without it.
+# Pinned to the version the stored bc-experiment-v2 results were produced with.
 train = [
-    "torch>=2.4",
+    "torch==2.15.0",
 ]
 dev = [
     "coverage==7.16.0",
