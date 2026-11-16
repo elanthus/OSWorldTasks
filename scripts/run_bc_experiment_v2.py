@@ -40,6 +40,7 @@ import argparse
 import hashlib
 import json
 import multiprocessing
+import os
 import platform
 import subprocess
 import sys
@@ -901,11 +902,20 @@ def run_gates(
 # -- Driver ------------------------------------------------------------------------------------
 
 
+def _git_env() -> dict[str, str]:
+    """The environment without Git's repository-local variables (GIT_DIR, GIT_WORK_TREE, ...),
+    which override ``cwd`` and are set inside Git hooks."""
+    local = subprocess.run(
+        ["git", "rev-parse", "--local-env-vars"], capture_output=True, text=True, check=True
+    ).stdout.split()
+    return {name: value for name, value in os.environ.items() if name not in local}
+
+
 def _git(*args: str) -> str:
-    # Run in REPO_ROOT so the recorded revision is the source this script imports, wherever it
-    # is launched from.
+    # Run in REPO_ROOT, with repository overrides removed, so the recorded revision is the source
+    # this script imports wherever it is launched from.
     return subprocess.run(
-        ["git", *args], capture_output=True, text=True, check=True, cwd=REPO_ROOT
+        ["git", *args], capture_output=True, text=True, check=True, cwd=REPO_ROOT, env=_git_env()
     ).stdout.strip()
 
 

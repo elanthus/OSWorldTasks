@@ -143,9 +143,18 @@ def test_git_metadata_comes_from_the_repository_wherever_the_script_is_launched(
 ) -> None:
     # tmp_path is outside any checkout; without cwd=REPO_ROOT, git would fail or read another repo.
     expected = subprocess.run(
-        ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True, cwd=ROOT
+        ["git", "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+        cwd=ROOT,
+        env=bc._git_env(),
     ).stdout.strip()
     monkeypatch.chdir(tmp_path)
+    assert bc._git("rev-parse", "HEAD") == expected
+    # GIT_DIR and GIT_WORK_TREE override cwd (Git hooks set GIT_DIR); they must not redirect it.
+    monkeypatch.setenv("GIT_DIR", str(tmp_path / "not-a-repository"))
+    monkeypatch.setenv("GIT_WORK_TREE", str(tmp_path))
     assert bc._git("rev-parse", "HEAD") == expected
 
 
