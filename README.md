@@ -76,6 +76,15 @@ The unit suite runs this snippet ([test](tests/unit/test_readme_snippet.py)). Se
   ([chance supplement](artifacts/grounding-v5-stateless-chance-ceiling-v1.md)). No v5 model run
   used a browser or the OSWorld backend; all ran on the in-process PIL backend
   ([pixelgym/grounding/v5/backend.py](pixelgym/grounding/v5/backend.py)).
+- **Learning.** A pixel-only behaviour-cloning policy trained on a scripted oracle's demonstrations
+  (4 to 256 episodes, two training seeds each, 6000 steps) completed 0 of 800 test episodes. Given
+  the oracle's state at each step, it chose the right action 35.8–57.7% of the time on the standard
+  split and 34.5–50.3% on a split whose 12 test company names never appear in training. Clicks were
+  82.4–86.7% correct and keystrokes 32.4–56.0%. A baseline that sees the form state but not the
+  request card scored 75.7% and 45.0% on the same splits. Three sanity gates passed first: the
+  model fits 30 click frames, it completes the episode it was trained on, and a frame-to-action
+  lookup table completes all 100 test episodes because no test frame precedes two different oracle
+  actions ([BC v2 report](artifacts/bc-experiment-v2/REPORT.md)).
 
 What these results do not show is under [Limitations](#limitations).
 
@@ -304,8 +313,12 @@ without being promoted to a headline result
   `627e09b`, before the guest page changed, is retained with a dated erratum
   ([earlier check](artifacts/osworld-guest-check-2026-11-11/README.md)).
 - Throughput and the behaviour-cloning result describe the in-process fake backend on one host.
-  The cloning experiment had no recovery data and no hyperparameter search, and validation accuracy
-  was still rising when training stopped ([BC report](artifacts/bc-experiment/REPORT.md)).
+  The cloning policy sees one frame with no memory and was trained only on the oracle's own states,
+  with no hyperparameter search; in 15 of 16 runs the selected checkpoint was the last validation
+  evaluation. The card-blind baseline uses privileged form state. Each held-out company name shares
+  its prefix and its suffix with a training name, so the name holdout tests unseen combinations,
+  not unseen words ([BC v2 report](artifacts/bc-experiment-v2/REPORT.md)). The v1 experiment is
+  retained with a [dated note](artifacts/bc-experiment/NOTE-2026-11-13.md).
 
 ## Related work and demonstrated contribution
 
