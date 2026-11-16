@@ -1,0 +1,470 @@
+{
+  "campaigns": {
+    "historical": {
+      "execution_plan_digest": "sha256:3f50d15f72244cfc8fd422cd16ab8dc6ab8edd873f6c9a92375472671fdcd092",
+      "journal_not_retained_disclosure": "docs/evidence-index.md (2026-09-30, D5.9 private journals)",
+      "primary_difference_history_minus_stateless": {
+        "as_recorded": {
+          "episodes": 91,
+          "points": 47.4
+        },
+        "with_retried_episodes_as_failures": {
+          "episodes": 81,
+          "points": 42.2
+        }
+      },
+      "results_by_phase_and_arm": {
+        "primary": {
+          "history": {
+            "episodes": 192,
+            "retried_episodes": 15,
+            "retried_episodes_that_succeeded": 10,
+            "successes_as_recorded": 106,
+            "successes_with_retried_episodes_as_failures": 96
+          },
+          "stateless": {
+            "episodes": 192,
+            "retried_episodes": 0,
+            "retried_episodes_that_succeeded": 0,
+            "successes_as_recorded": 15,
+            "successes_with_retried_episodes_as_failures": 15
+          }
+        },
+        "reliability": {
+          "history": {
+            "episodes": 24,
+            "retried_episodes": 0,
+            "retried_episodes_that_succeeded": 0,
+            "successes_as_recorded": 16,
+            "successes_with_retried_episodes_as_failures": 16
+          },
+          "stateless": {
+            "episodes": 24,
+            "retried_episodes": 0,
+            "retried_episodes_that_succeeded": 0,
+            "successes_as_recorded": 3,
+            "successes_with_retried_episodes_as_failures": 3
+          }
+        }
+      },
+      "retried_attempts_by_phase_arm_and_class": {
+        "primary": {
+          "history": {
+            "not recorded (journal not retained)": 19
+          }
+        }
+      },
+      "retried_episodes": [
+        {
+          "classification": "success_termination",
+          "failure_classes": [
+            "not recorded (journal not retained)",
+            "not recorded (journal not retained)",
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 3,
+          "seed": 6007,
+          "success": true,
+          "trial_id": "d59-haiku-r3-primary-6007-history-r0"
+        },
+        {
+          "classification": "invalid_output",
+          "failure_classes": [
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6011,
+          "success": false,
+          "trial_id": "d59-haiku-r3-primary-6011-history-r0"
+        },
+        {
+          "classification": "success_termination",
+          "failure_classes": [
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6013,
+          "success": true,
+          "trial_id": "d59-haiku-r3-primary-6013-history-r0"
+        },
+        {
+          "classification": "success_termination",
+          "failure_classes": [
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6014,
+          "success": true,
+          "trial_id": "d59-haiku-r3-primary-6014-history-r0"
+        },
+        {
+          "classification": "success_termination",
+          "failure_classes": [
+            "not recorded (journal not retained)",
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 2,
+          "seed": 6021,
+          "success": true,
+          "trial_id": "d59-haiku-r3-primary-6021-history-r0"
+        },
+        {
+          "classification": "step_limit_truncation",
+          "failure_classes": [
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6026,
+          "success": false,
+          "trial_id": "d59-haiku-r3-primary-6026-history-r0"
+        },
+        {
+          "classification": "success_termination",
+          "failure_classes": [
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6037,
+          "success": true,
+          "trial_id": "d59-haiku-r3-primary-6037-history-r0"
+        },
+        {
+          "classification": "success_termination",
+          "failure_classes": [
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6040,
+          "success": true,
+          "trial_id": "d59-haiku-r3-primary-6040-history-r0"
+        },
+        {
+          "classification": "success_termination",
+          "failure_classes": [
+            "not recorded (journal not retained)",
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 2,
+          "seed": 6044,
+          "success": true,
+          "trial_id": "d59-haiku-r3-primary-6044-history-r0"
+        },
+        {
+          "classification": "infrastructure_failure",
+          "failure_classes": [
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6045,
+          "success": false,
+          "trial_id": "d59-haiku-r3-primary-6045-history-r0"
+        },
+        {
+          "classification": "success_termination",
+          "failure_classes": [
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6049,
+          "success": true,
+          "trial_id": "d59-haiku-r3-primary-6049-history-r0"
+        },
+        {
+          "classification": "invalid_output",
+          "failure_classes": [
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6055,
+          "success": false,
+          "trial_id": "d59-haiku-r3-primary-6055-history-r0"
+        },
+        {
+          "classification": "success_termination",
+          "failure_classes": [
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6063,
+          "success": true,
+          "trial_id": "d59-haiku-r3-primary-6063-history-r0"
+        },
+        {
+          "classification": "success_termination",
+          "failure_classes": [
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6146,
+          "success": true,
+          "trial_id": "d59-haiku-r3-primary-6146-history-r0"
+        },
+        {
+          "classification": "invalid_output",
+          "failure_classes": [
+            "not recorded (journal not retained)"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6153,
+          "success": false,
+          "trial_id": "d59-haiku-r3-primary-6153-history-r0"
+        }
+      ],
+      "retry_rule_in_force": {
+        "max_model_attempts_per_action": 2,
+        "transport_retry_rule": "claude-one-stopped-timeout-or-connection-retry-v1"
+      },
+      "retry_source": "inferred",
+      "total_retried_attempts": 19,
+      "unresolved_invocations_as_recorded": 3
+    },
+    "parser_sensitivity": {
+      "execution_plan_digest": "sha256:c24d121809409217f11009308956eef4d0b41f2d4666f468066893409386f4d6",
+      "journal_not_retained_disclosure": null,
+      "primary_difference_history_minus_stateless": {
+        "as_recorded": {
+          "episodes": 112,
+          "points": 58.3
+        },
+        "with_retried_episodes_as_failures": {
+          "episodes": 110,
+          "points": 57.3
+        }
+      },
+      "results_by_phase_and_arm": {
+        "primary": {
+          "history": {
+            "episodes": 192,
+            "retried_episodes": 4,
+            "retried_episodes_that_succeeded": 2,
+            "successes_as_recorded": 132,
+            "successes_with_retried_episodes_as_failures": 130
+          },
+          "stateless": {
+            "episodes": 192,
+            "retried_episodes": 0,
+            "retried_episodes_that_succeeded": 0,
+            "successes_as_recorded": 20,
+            "successes_with_retried_episodes_as_failures": 20
+          }
+        },
+        "reliability": {
+          "history": {
+            "episodes": 24,
+            "retried_episodes": 1,
+            "retried_episodes_that_succeeded": 0,
+            "successes_as_recorded": 18,
+            "successes_with_retried_episodes_as_failures": 18
+          },
+          "stateless": {
+            "episodes": 24,
+            "retried_episodes": 0,
+            "retried_episodes_that_succeeded": 0,
+            "successes_as_recorded": 2,
+            "successes_with_retried_episodes_as_failures": 2
+          }
+        }
+      },
+      "retried_attempts_by_phase_arm_and_class": {
+        "primary": {
+          "history": {
+            "timeout": 4
+          }
+        },
+        "reliability": {
+          "history": {
+            "timeout": 1
+          }
+        }
+      },
+      "retried_episodes": [
+        {
+          "classification": "step_limit_truncation",
+          "failure_classes": [
+            "timeout"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6058,
+          "success": false,
+          "trial_id": "d59-extract-primary-6058-history-r0"
+        },
+        {
+          "classification": "success_termination",
+          "failure_classes": [
+            "timeout"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6111,
+          "success": true,
+          "trial_id": "d59-extract-primary-6111-history-r0"
+        },
+        {
+          "classification": "success_termination",
+          "failure_classes": [
+            "timeout"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6130,
+          "success": true,
+          "trial_id": "d59-extract-primary-6130-history-r0"
+        },
+        {
+          "classification": "step_limit_truncation",
+          "failure_classes": [
+            "timeout"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6145,
+          "success": false,
+          "trial_id": "d59-extract-primary-6145-history-r0"
+        },
+        {
+          "classification": "step_limit_truncation",
+          "failure_classes": [
+            "timeout"
+          ],
+          "mode": "history",
+          "phase": "reliability",
+          "retried_attempts": 1,
+          "seed": 6034,
+          "success": false,
+          "trial_id": "d59-extract-reliability-6034-history-r2"
+        }
+      ],
+      "retry_rule_in_force": {
+        "max_model_attempts_per_action": 2,
+        "transport_retry_rule": "claude-one-stopped-timeout-connection-or-auth-retry-v1"
+      },
+      "retry_source": "recorded",
+      "total_retried_attempts": 5,
+      "unresolved_invocations_as_recorded": 5
+    },
+    "replication": {
+      "execution_plan_digest": "sha256:ce6776def9066d2c3b4a1b2701b25567dc182364dfa3cf694b4044d865d59159",
+      "journal_not_retained_disclosure": null,
+      "primary_difference_history_minus_stateless": {
+        "as_recorded": {
+          "episodes": 42,
+          "points": 21.9
+        },
+        "with_retried_episodes_as_failures": {
+          "episodes": 41,
+          "points": 21.4
+        }
+      },
+      "results_by_phase_and_arm": {
+        "primary": {
+          "history": {
+            "episodes": 192,
+            "retried_episodes": 1,
+            "retried_episodes_that_succeeded": 1,
+            "successes_as_recorded": 62,
+            "successes_with_retried_episodes_as_failures": 61
+          },
+          "stateless": {
+            "episodes": 192,
+            "retried_episodes": 0,
+            "retried_episodes_that_succeeded": 0,
+            "successes_as_recorded": 20,
+            "successes_with_retried_episodes_as_failures": 20
+          }
+        },
+        "reliability": {
+          "history": {
+            "episodes": 24,
+            "retried_episodes": 0,
+            "retried_episodes_that_succeeded": 0,
+            "successes_as_recorded": 3,
+            "successes_with_retried_episodes_as_failures": 3
+          },
+          "stateless": {
+            "episodes": 24,
+            "retried_episodes": 0,
+            "retried_episodes_that_succeeded": 0,
+            "successes_as_recorded": 3,
+            "successes_with_retried_episodes_as_failures": 3
+          }
+        }
+      },
+      "retried_attempts_by_phase_arm_and_class": {
+        "primary": {
+          "history": {
+            "timeout": 1
+          }
+        }
+      },
+      "retried_episodes": [
+        {
+          "classification": "success_termination",
+          "failure_classes": [
+            "timeout"
+          ],
+          "mode": "history",
+          "phase": "primary",
+          "retried_attempts": 1,
+          "seed": 6180,
+          "success": true,
+          "trial_id": "d59-rep-primary-6180-history-r0"
+        }
+      ],
+      "retry_rule_in_force": {
+        "max_model_attempts_per_action": 2,
+        "transport_retry_rule": "claude-one-stopped-timeout-connection-or-auth-retry-v1"
+      },
+      "retry_source": "recorded",
+      "total_retried_attempts": 1,
+      "unresolved_invocations_as_recorded": 1
+    }
+  },
+  "inference_rule": "retries = model_attempts - environment_actions - (1 if the episode ended on invalid_output or infrastructure_failure else 0); checked against recorded retries trial by trial wherever they are recorded",
+  "inputs": [
+    "artifacts/grounding-v5-d59-haiku-results/report.json",
+    "artifacts/grounding-v5-d59-haiku-network-retry/execution-plan.json",
+    "artifacts/grounding-v5-d59-replication-results/report.json",
+    "artifacts/grounding-v5-d59-replication/execution-plan.json",
+    "artifacts/grounding-v5-d59-action-extraction-results/report.json",
+    "artifacts/grounding-v5-d59-action-extraction-successor/execution-plan.json"
+  ],
+  "post_hoc": true,
+  "schema_version": "pixelgym-v5-retry-sensitivity-v1",
+  "scope_note": "Post hoc, written after all outcomes were known. Both columns are reported; neither replaces the frozen campaign results. Counting a retried episode as a failure is a pessimistic sensitivity, not a claim that the retry changed the outcome. No test is recomputed. The historical failure class is not recorded because its journal was not retained.",
+  "written_on": "2026-11-15"
+}
