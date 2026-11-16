@@ -10,13 +10,16 @@ from __future__ import annotations
 
 import json
 import re
+import tempfile
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+from pixelgym.tasks.vendor_form import generator, osworld_task
+
 ROOT = Path(__file__).resolve().parents[2]
 README = ROOT / "README.md"
-WORDS = {5: "Five", 7: "seven"}
+WORDS = {2: "two", 3: "three", 5: "Five", 10: "ten"}
 # A number in prose; digits glued to a letter, such as the version name "v5", are names.
 NUMBER = r"(?<![A-Za-z])\d+(?:[./]\d+)?"
 
@@ -59,35 +62,64 @@ def _claims() -> Iterator[str]:
     )
     yield f"guest bundle `{reset['backend_metadata']['task_bundle_sha256'][:8]}…`"
 
-    guest = _json("artifacts/osworld-guest-check-2026-11-12/provenance.json")
-    merged = guest["guest_bundle_sha256_recorded"][:8]
-    assert guest["guest_bundle_sha256_rebuilt_at_git_revision"].startswith(merged)
-    yield f"the merged guest bundle is `{merged}…`"
-    yield f"running merged `main` at `{guest['git_revision'][:7]}` with guest bundle `{merged}…`"
-    golden = _json("artifacts/osworld-guest-check-2026-11-12/attempt-3/results.json")["golden"]
-    summary = golden["summary"]
+    current = _json("artifacts/osworld-guest-check-2026-11-12-248097d/results.json")
+    provenance = current["provenance"]
+    bundle = provenance["guest_bundle_sha256_seed7"]
+    with tempfile.TemporaryDirectory() as tmp:
+        rebuilt = osworld_task.build_guest_bundle(generator.generate_task(7), Path(tmp) / "b.zip")
+    assert rebuilt == bundle, "the README calls this bundle current; the code no longer builds it"
+    yield f"the current guest bundle is `{bundle[:8]}…`"
+    yield (
+        f"with the current guest bundle `{bundle[:8]}…` (recorded at "
+        f"`{provenance['git_revision'][:7]}`)"
+    )
+    resets = current["resets"]["records"]
+    assert all(r["reset_returned"] and r["acknowledged_after_reset"] == 0 for r in resets)
+    yield f"{WORDS[len(resets)]} resets each reported 0 setup acknowledgements"
+    summary = current["golden"]["summary"]
     assert summary["positive_reward_count"] == 1
     assert summary["first_positive_reward_step"] == summary["terminal_step"]
     yield "the golden trajectory paid its only reward at its last step"
-    matched = {
-        name
-        for attempt in ("attempt-1", "attempt-3")
-        for name, case in _json(f"artifacts/osworld-guest-check-2026-11-12/{attempt}/results.json")[
-            "cases"
-        ].items()
-        if case.get("match") is True
-    }
-    yield f"{WORDS[len(matched)]} input sequences flagged in review submitted the same values"
+    cases = current["cases"]["records"].values()
+    assert all(case["match"] is True for case in cases)
+    yield f"{WORDS[len(cases)]} input sequences submitted the same values as the fake"
+    earlier = _json("artifacts/osworld-guest-check-2026-11-12/provenance.json")
+    yield f"An earlier run on bundle `{earlier['guest_bundle_sha256_recorded'][:8]}…` is retained"
 
-    throughput = _json("artifacts/throughput/fake-throughput.json")
-    random = throughput["workloads"]["random"]
+    throughput = _json("artifacts/throughput-v2/fake-throughput.json")
+    workloads = throughput["workloads"]
+
+    def median(workload: str, renderer: str) -> int:
+        return round(workloads[workload][renderer]["steps_per_second"]["median"])
+
     frames = throughput["byte_identity"]
     assert all(row["mismatched_frames"] == 0 for row in frames)
+    noop_share = workloads["random"]["action_types"]["noop_share"]
     yield (
-        f"runs {round(random['static_layer']['steps_per_second']['median'])} random-policy "
-        f"steps/s, up from {round(random['reference_single_pass']['steps_per_second']['median'])}"
+        f"replays the golden trajectory at {median('golden', 'static_layer')} steps/s, up from "
+        f"{median('golden', 'reference_single_pass')} with the earlier single-pass renderer, and "
+        f"runs a random policy at {median('random', 'static_layer')} steps/s (up from "
+        f"{median('random', 'reference_single_pass')}), of whose steps {noop_share:.1%} are NOOPs"
     )
-    yield f"all {sum(row['frames_compared'] for row in frames)} compared frames byte-identical"
+    yield (
+        f"all {sum(row['frames_compared'] for row in frames)} compared frames were "
+        f"byte-identical (recorded at `{throughput['git_revision'][:7]}`"
+    )
+
+    parity = _json("artifacts/browser-differential-v1/evidence.json")
+    runs = parity["runs"]
+    barrier = parity["barrier"]
+    (off,) = barrier["negative_control_barrier_off"]["in_step_reads"]
+    (on,) = barrier["positive_control_barrier_on"]["in_step_reads"]
+    yield (
+        f"replays {sum(r['sequence_count'] for r in runs)} seeded action sequences "
+        f"({sum(r['action_count'] for r in runs)} actions) on the fake and on the real page in "
+        f"Chromium, with {sum(r['divergence_count'] for r in runs)} divergent sequences"
+    )
+    yield (
+        f"read {off} submissions in the step without the input-acknowledgement barrier and {on} "
+        f"with it (recorded at `{parity['git_revision'][:7]}`"
+    )
 
     clustered = _json("artifacts/grounding-clustered-analysis-v2.json")
     allocation, counts = clustered["allocation"], clustered["counts"]
@@ -154,6 +186,64 @@ def _claims() -> Iterator[str]:
         f"{round(uniform['expected_successes'])} of {episodes}"
     )
 
+    yield from _learning_claims(_json(BC_RESULTS))
+
+
+BC_RESULTS = "artifacts/bc-experiment-v2/results.json"
+
+
+def _span(values: list[float]) -> str:
+    return f"{min(values) * 100:.1f}–{max(values) * 100:.1f}%"
+
+
+def _learning_claims(bc: dict[str, Any]) -> Iterator[str]:
+    assert bc["phase"] == "grid" and bc["worktree_clean"] is True
+    runs = bc["runs"]
+    demo_counts = sorted({run["demo_episodes"] for run in runs})
+    (steps,) = {run["steps"] for run in runs}
+    seeds = {run["training_seed"] for run in runs}
+    assert len(runs) == len(demo_counts) * len(seeds) * 2  # two splits
+    episodes = sum(run["closed_loop"]["episodes"] for run in runs)
+    successes = sum(e["success"] for run in runs for e in run["closed_loop"]["per_episode"])
+    yield (
+        f"({demo_counts[0]} to {demo_counts[-1]} episodes, {WORDS[len(seeds)]} training seeds "
+        f"each, {steps} steps) completed {successes} of {episodes} test episodes"
+    )
+
+    def tf(split: str | None, metric: str) -> list[float]:
+        return [run["teacher_forced"][metric] for run in runs if split in (None, run["split"])]
+
+    holdout = bc["data"]["name_holdout"]["name_overlap"]
+    assert holdout["test_distinct_names_in_train"] == 0
+    yield (
+        f"it chose the right action {_span(tf('standard', 'step_accuracy'))} of the time on the "
+        f"standard split and {_span(tf('name_holdout', 'step_accuracy'))} on a split whose "
+        f"{holdout['test_distinct_names']} test company names never appear in training"
+    )
+    yield (
+        f"Clicks were {_span(tf(None, 'click_target_accuracy'))} correct and keystrokes "
+        f"{_span(tf(None, 'key_accuracy'))}"
+    )
+    blind = [
+        bc["baselines"][split]["card_blind"]["teacher_forced"]["step_accuracy"] * 100
+        for split in ("standard", "name_holdout")
+    ]
+    yield f"scored {blind[0]:.1f}% and {blind[1]:.1f}% on the same splits"
+
+    gates = bc["gates"]
+    assert gates["all_passed"] is True
+    overfit = gates["overfit_30_click_frames"]
+    assert overfit["click_targets_correct"] == overfit["frames"]
+    yield f"the model fits {overfit['frames']} click frames"
+    assert gates["single_demo_closed_loop"]["closed_loop"]["success"] is True
+    yield "it completes the episode it was trained on"
+    lookup = gates["lookup_table_test_seeds"].values()
+    assert all(g["conflicting_frames"] == 0 and g["successes"] == g["episodes"] for g in lookup)
+    yield (
+        f"lookup table completes all {sum(g['episodes'] for g in lookup)} test episodes because "
+        "no test frame precedes two different oracle actions"
+    )
+
 
 def test_every_headline_claim_matches_its_artifact() -> None:
     section = _results_section()
@@ -169,6 +259,24 @@ def test_every_number_in_the_section_is_covered_by_a_checked_claim() -> None:
         covered = covered.replace(_prose(phrase), " ")
     leftover = re.findall(NUMBER, covered)
     assert not leftover, leftover
+
+
+def test_behaviour_cloning_limitation_matches_its_artifact() -> None:
+    from scripts.generate_bc_report_v2 import _component_overlap
+
+    text = " ".join(README.read_text(encoding="utf-8").split())
+    limitations = text[text.index("## Limitations") :]
+    bc = _json(BC_RESULTS)
+    runs = bc["runs"]
+    last = sum(run["best_validation_step"] == run["validation_curve"][-1]["step"] for run in runs)
+    assert (
+        f"in {last} of {len(runs)} runs the selected checkpoint was the last validation evaluation"
+    ) in limitations
+    held, prefix_seen, suffix_seen = _component_overlap(bc)
+    assert prefix_seen == suffix_seen == held
+    assert "Each held-out company name shares its prefix and its suffix with a training name" in (
+        limitations
+    )
 
 
 def test_uncovered_number_is_reported() -> None:

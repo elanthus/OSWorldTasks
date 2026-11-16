@@ -42,17 +42,22 @@ The unit suite runs this snippet ([test](tests/unit/test_readme_snippet.py)). Se
 
 - **Environment.** Five real OSWorld resets of seed 7 were bitwise identical at 1024×768 on one
   host. That evidence records guest bundle `6a3fd2bd…` but no git revision or date, and it was
-  checked in with `01572d5` on 2026-09-06; the merged guest bundle is `505a15bf…`
+  checked in with `01572d5` on 2026-09-06; the current guest bundle is `300be223…`
   ([reset evidence](artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json)). The
-  fake backend runs 1181 random-policy steps/s, up from 207 before a renderer change that kept
-  all 6044 compared frames byte-identical ([throughput report](artifacts/throughput/REPORT.md)).
-  Two opt-in Chromium tests, not part of the default unit suite, check the fake against the real
-  page after every action ([test](tests/integration/test_vendor_form_differential.py)) and check
-  that an input-acknowledgement barrier pays reward on the step whose action caused the
-  submission ([test](tests/integration/test_vendor_form_input_barrier.py)). On the OSWorld guest,
-  running merged `main` at `d4e711e` with guest bundle `505a15bf…`, the golden trajectory paid its
-  only reward at its last step, and seven input sequences flagged in review submitted the same
-  values as the fake ([guest check](artifacts/osworld-guest-check-2026-11-12/README.md)).
+  fake backend replays the golden trajectory at 528 steps/s, up from 129 with the earlier
+  single-pass renderer, and runs a random policy at 1165 steps/s (up from 212), of whose steps
+  34.2% are NOOPs that reuse the cached frame; all 6044 compared frames were byte-identical
+  (recorded at `ce0b022`, [throughput report](artifacts/throughput-v2/REPORT.md)). Stored
+  differential evidence replays 480 seeded action sequences (2865 actions) on the fake and on the
+  real page in Chromium, with 0 divergent sequences. Its barrier controls read 0 submissions in
+  the step without the input-acknowledgement barrier and 1 with it (recorded at `82adfd6`,
+  [parity report](artifacts/browser-differential-v1/REPORT.md)). Those Chromium tests run in CI
+  and are opt-in locally, outside the default unit suite. On the OSWorld guest, with the current
+  guest bundle `300be223…` (recorded at `248097d`), three resets each reported 0 setup
+  acknowledgements, the golden trajectory paid its only reward at its last step, and ten input
+  sequences submitted the same values as the fake
+  ([guest check](artifacts/osworld-guest-check-2026-11-12-248097d/README.md)). An earlier run on
+  bundle `505a15bf…` is retained ([earlier check](artifacts/osworld-guest-check-2026-11-12/README.md)).
 - **Grounding.** On 100 paired screenshots (20 task seeds × 5 screen states; each of 10 target
   controls appears 10 times), `gpt-5.4-mini` scored 56/100 with raw coordinates and 100/100 when
   choosing among 10 labelled marks: +44 points, target-clustered 95% CI [+21, +67]
@@ -71,6 +76,15 @@ The unit suite runs this snippet ([test](tests/unit/test_readme_snippet.py)). Se
   ([chance supplement](artifacts/grounding-v5-stateless-chance-ceiling-v1.md)). No v5 model run
   used a browser or the OSWorld backend; all ran on the in-process PIL backend
   ([pixelgym/grounding/v5/backend.py](pixelgym/grounding/v5/backend.py)).
+- **Learning.** A pixel-only behaviour-cloning policy trained on a scripted oracle's demonstrations
+  (4 to 256 episodes, two training seeds each, 6000 steps) completed 0 of 800 test episodes. Given
+  the oracle's state at each step, it chose the right action 35.8–57.7% of the time on the standard
+  split and 34.5–50.3% on a split whose 12 test company names never appear in training. Clicks were
+  82.4–86.7% correct and keystrokes 32.4–56.0%. A baseline that sees the form state but not the
+  request card scored 75.7% and 45.0% on the same splits. Three sanity gates passed first: the
+  model fits 30 click frames, it completes the episode it was trained on, and a frame-to-action
+  lookup table completes all 100 test episodes because no test frame precedes two different oracle
+  actions ([BC v2 report](artifacts/bc-experiment-v2/REPORT.md)).
 
 What these results do not show is under [Limitations](#limitations).
 
@@ -289,16 +303,22 @@ without being promoted to a headline result
   task. The 1/9 chance level assumes an otherwise-perfect policy guessing uniformly; correct answers
   are not exactly balanced across screen positions, and the best fixed-position guess would match
   26 of 192 ([chance supplement](artifacts/grounding-v5-stateless-chance-ceiling-v1.md)).
-- The OSWorld guest check covers seven hand-picked sequences, not a randomized differential test.
-  On the merged code it took three attempts: two VM boots missed OSWorld's fixed 300 s readiness
-  wait, and Docker Desktop was quit once. All attempts are kept, and the complete result combines
-  two of them at the same revision
-  ([provenance](artifacts/osworld-guest-check-2026-11-12/provenance.json)). An earlier run at
-  commit `627e09b`, before the guest page changed, is retained
+- The current OSWorld guest check is one run on one host. It covers ten hand-picked input
+  sequences and one seed's oracle episode, not a randomized differential test. Its driver recorded
+  the pointer-park output as null because of a path defect; the park files left on the host are in
+  a supplement, and local paths were redacted with a record
+  ([guest check](artifacts/osworld-guest-check-2026-11-12-248097d/README.md)). The run on bundle
+  `505a15bf…` took three attempts, two of which are combined for its result
+  ([provenance](artifacts/osworld-guest-check-2026-11-12/provenance.json)). A run at commit
+  `627e09b`, before the guest page changed, is retained with a dated erratum
   ([earlier check](artifacts/osworld-guest-check-2026-11-11/README.md)).
 - Throughput and the behaviour-cloning result describe the in-process fake backend on one host.
-  The cloning experiment had no recovery data and no hyperparameter search, and validation accuracy
-  was still rising when training stopped ([BC report](artifacts/bc-experiment/REPORT.md)).
+  The cloning policy sees one frame with no memory and was trained only on the oracle's own states,
+  with no hyperparameter search; in 15 of 16 runs the selected checkpoint was the last validation
+  evaluation. The card-blind baseline uses privileged form state. Each held-out company name shares
+  its prefix and its suffix with a training name, so the name holdout tests unseen combinations,
+  not unseen words ([BC v2 report](artifacts/bc-experiment-v2/REPORT.md)). The v1 experiment is
+  retained with a [dated note](artifacts/bc-experiment/NOTE-2026-11-13.md).
 
 ## Related work and demonstrated contribution
 
