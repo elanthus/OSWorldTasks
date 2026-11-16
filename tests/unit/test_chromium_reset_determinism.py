@@ -156,3 +156,18 @@ def test_report_rejects_other_schemas(tmp_path: Path) -> None:
     (tmp_path / "bad.json").write_text(json.dumps({"schema_version": "x"}), encoding="utf-8")
     with pytest.raises(ValueError, match="unexpected schema"):
         report.load(tmp_path / "bad.json")
+
+
+def test_report_finds_frames_recorded_under_another_workspace(tmp_path: Path) -> None:
+    other = _frame()
+    other[2, 3] = (10, 12, 10)
+    _evidence(tmp_path, "mac", "Darwin", {7: _frame()})
+    linux = _evidence(tmp_path, "linux", "Linux", {7: other})
+    record = json.loads(linux.read_text(encoding="utf-8"))
+    record["frames_dir"] = "ci-workspace/frames-linux"
+    linux.write_text(json.dumps(record), encoding="utf-8")
+    out = tmp_path / "REPORT.md"
+    report.main(
+        ["mac.json", "linux.json", "--output", str(out), "--repository-root", str(tmp_path)]
+    )
+    assert "| 7 | no | yes | yes | 1 | 2 | [3, 2, 4, 3] |" in out.read_text(encoding="utf-8")

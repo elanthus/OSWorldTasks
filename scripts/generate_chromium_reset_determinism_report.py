@@ -51,11 +51,17 @@ def load(path: Path) -> dict[str, Any]:
 
 
 def _frame(root: Path, evidence: dict[str, Any], seed: int) -> np.ndarray | None:
+    """Reset-0 PNG of ``seed``, from the frames directory beside the evidence file.
+
+    The directory is found by its recorded name next to the evidence file, so a file recorded
+    elsewhere (for example a CI workspace) still resolves after it is checked in unchanged.
+    """
     from PIL import Image
 
     if not evidence.get("frames_dir"):
         return None
-    path = root / evidence["frames_dir"] / f"seed-{seed}-reset-0.png"
+    folder = (root / evidence["_path"]).parent / Path(evidence["frames_dir"]).name
+    path = folder / f"seed-{seed}-reset-0.png"
     if not path.is_file():
         return None
     with Image.open(path) as image:
@@ -205,7 +211,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     root = args.repository_root
     paths = [p if not p.is_absolute() else p.relative_to(root) for p in args.evidence]
-    evidences = [load(root / p) for p in paths]
+    evidences = [{**load(root / p), "_path": p} for p in paths]
     args.output.write_text(render(root, paths, evidences), encoding="utf-8")
     return 0
 
