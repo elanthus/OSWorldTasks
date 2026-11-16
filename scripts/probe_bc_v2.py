@@ -61,6 +61,7 @@ def _provenance(torch: Any, dev: Any) -> dict[str, Any]:
     return {
         "git_revision": bc._git("rev-parse", "HEAD").strip(),
         "worktree_clean": bc._git("status", "--porcelain") == "",
+        "git_status_porcelain": bc._git("status", "--porcelain"),
         "recorded_at_unix": int(time.time()),
         "host": f"{platform.system()} {platform.release()} ({platform.machine()})",
         "python": platform.python_version(),
@@ -410,11 +411,12 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     torch = bc._torch()
     dev = bc.device(torch)
+    provenance = _provenance(torch, dev)
     started = time.perf_counter()
     probe = {"legibility": probe_legibility, "convergence": probe_convergence, "copy": probe_copy}
     result = probe[args.probe](torch, dev, args)
     result["schema_version"] = SCHEMA_VERSION
-    result["provenance"] = _provenance(torch, dev)
+    result["provenance"] = provenance
     result["command"] = " ".join(["scripts/probe_bc_v2.py", *(argv or sys.argv[1:])])
     result["total_seconds"] = round(time.perf_counter() - started, 1)
     out = REPO_ROOT / OUTPUT_DIR / f"{args.probe}.json"
