@@ -46,7 +46,7 @@ Per-frame test predictions are stored under `predictions/`, with the test frames
 ## Limits
 
 - Design: the policy sees one grayscale 384x512 frame per step, with no memory, and is trained only on the oracle's own states (no recovery data).
-- Design: checkpoints are selected on validation seeds every 500 steps; there was no hyperparameter search, and test seeds were used only for the reported numbers.
+- Design: checkpoints are selected on validation seeds every 500 steps, and there was no hyperparameter search. Test seeds are used for the reported numbers and for the lookup-table sanity gate, which builds its table from the test demonstrations and must pass before the grid starts.
 - Design: clicks are predicted on a 64x48 grid of 16-pixel cells and executed at the cell centre.
 - The generator has 48 company names. In the standard split, 50 of 50 test episodes use a name that also occurs in the training pool.
 - This phase did not run the name-holdout split.

@@ -902,7 +902,11 @@ def run_gates(
 
 
 def _git(*args: str) -> str:
-    return subprocess.run(["git", *args], capture_output=True, text=True, check=True).stdout.strip()
+    # Run in REPO_ROOT so the recorded revision is the source this script imports, wherever it
+    # is launched from.
+    return subprocess.run(
+        ["git", *args], capture_output=True, text=True, check=True, cwd=REPO_ROOT
+    ).stdout.strip()
 
 
 def train_and_evaluate(
@@ -1039,11 +1043,7 @@ def run(phase: str, output_dir: Path, processes: int) -> dict[str, Any]:
                 output_dir=output_dir,
             )
         )
-    elif phase == "grid":
-        if not gates["all_passed"]:
-            raise SystemExit(
-                "a sanity gate failed; the grid does not start (see gates in the output)"
-            )
+    elif phase == "grid" and gates["all_passed"]:
         for split, d in data.items():
             for demo_count in CONFIG.demo_counts:
                 for training_seed in CONFIG.training_seeds:
@@ -1096,6 +1096,9 @@ def run(phase: str, output_dir: Path, processes: int) -> dict[str, Any]:
         "held_out_names": sorted(held_out_names()),
         "generation_seconds": generation_seconds,
         "gates": gates,
+        # A grid whose gates fail trains nothing; main stores these results apart from
+        # results.json and exits non-zero.
+        "grid_refused": phase == "grid" and not gates["all_passed"],
         "baselines": split_baselines,
         "runs": runs,
         "total_seconds": time.perf_counter() - started,
@@ -1110,6 +1113,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     output_dir = args.output_dir or (OUTPUT_DIR / ("" if args.phase == "grid" else args.phase))
     results = run(args.phase, output_dir, args.processes)
+    if results["grid_refused"]:
+        # Never results.json: the grid's output folder may already hold a stored grid run.
+        path = output_dir / "gates-refused.json"
+        path.write_text(json.dumps(results, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        raise SystemExit(f"a sanity gate failed; the grid does not start (gate results in {path})")
     path = output_dir / "results.json"
     path.write_text(json.dumps(results, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(path)

@@ -4,6 +4,7 @@ training and rollout run (torch-dependent tests skip without the ``train`` extra
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -128,6 +129,47 @@ def test_limits_section_states_only_computed_values_or_design(folder: Path) -> N
             or any(ch.isdigit() for ch in line)
             or ("card-blind baseline" in line or "did not run" in line)
         ), line
+
+
+def test_limits_disclose_that_the_lookup_gate_uses_test_seeds() -> None:
+    text = report.render(json.loads((SMALL / "results.json").read_text(encoding="utf-8")))
+    limits = text.split("## Limits", 1)[1]
+    assert "only for the reported numbers" not in limits
+    assert "lookup-table sanity gate, which builds its table from the test demonstrations" in limits
+
+
+def test_git_metadata_comes_from_the_repository_wherever_the_script_is_launched(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    # tmp_path is outside any checkout; without cwd=REPO_ROOT, git would fail or read another repo.
+    expected = subprocess.run(
+        ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True, cwd=ROOT
+    ).stdout.strip()
+    monkeypatch.chdir(tmp_path)
+    assert bc._git("rev-parse", "HEAD") == expected
+
+
+def test_refused_grid_stores_gate_results_apart_and_keeps_results_json(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    stored = tmp_path / "results.json"
+    stored.write_text('{"stored": "grid run"}\n', encoding="utf-8")
+    refused = {"grid_refused": True, "gates": {"all_passed": False}, "runs": []}
+    monkeypatch.setattr(bc, "run", lambda phase, output_dir, processes: refused)
+    with pytest.raises(SystemExit, match=r"gate results in .*gates-refused\.json"):
+        bc.main(["grid", "--output-dir", str(tmp_path)])
+    assert json.loads((tmp_path / "gates-refused.json").read_text(encoding="utf-8")) == refused
+    assert stored.read_text(encoding="utf-8") == '{"stored": "grid run"}\n'
+
+
+def test_a_phase_whose_gates_pass_writes_results_json(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    done = {"grid_refused": False, "gates": {"all_passed": True}, "runs": []}
+    monkeypatch.setattr(bc, "run", lambda phase, output_dir, processes: done)
+    assert bc.main(["gates", "--output-dir", str(tmp_path)]) == 0
+    assert json.loads((tmp_path / "results.json").read_text(encoding="utf-8")) == done
+    assert not (tmp_path / "gates-refused.json").exists()
 
 
 # -- torch ---------------------------------------------------------------------------------------

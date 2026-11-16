@@ -189,8 +189,9 @@ def render(results: dict[str, Any]) -> str:
     )
     lines.append(
         f"- Design: checkpoints are selected on validation seeds every {config['eval_every']} "
-        "steps; there was no hyperparameter search, and test seeds were used only for the "
-        "reported numbers."
+        "steps, and there was no hyperparameter search. Test seeds are used for the reported "
+        "numbers and for the lookup-table sanity gate, which builds its table from the test "
+        "demonstrations and must pass before the grid starts."
     )
     lines.append(
         f"- Design: clicks are predicted on a {1024 // config['cell_pixels']}x"
