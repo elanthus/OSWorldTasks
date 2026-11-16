@@ -271,18 +271,42 @@ def render(diagnosis: dict[str, Any], probes: dict[str, dict[str, Any]]) -> str:
     lines += [
         "## Probe provenance",
         "",
-        "| Probe | Revision | Worktree clean | Device | Seconds | Command |",
-        "|---|---|---|---|---:|---|",
+        (
+            "| Probe | Revision | Worktree clean | Uncommitted paths at start | Device | Seconds "
+            "| Command |"
+        ),
+        "|---|---|---|---|---|---:|---|",
     ]
     for name in PROBES:
         if name in probes:
             p = probes[name]["provenance"]
+            dirty = p.get("git_status_porcelain", "").splitlines()
+            paths = ", ".join(f"`{x}`" for x in dirty) or "—"
             lines.append(
                 f"| {name} | `{p['git_revision'][:12]}` | "
                 f"{'yes' if p['worktree_clean'] else 'no'} | "
+                f"{paths} | "
                 f"`{p['device']}` | {probes[name]['total_seconds']} | `{probes[name]['command']}` |"
             )
-    lines.append("")
+    lines += [
+        "",
+        "## Limits",
+        "",
+        "- The legibility classifier is given each character's position; the policy is not.",
+        (
+            "- The copy probe's key frames are all distinct, so fitting them can be done by "
+            "frame identity; it shows capacity, not reading."
+        ),
+        (
+            "- The convergence probe restarts AdamW with zero moments, and its wall-clock cap is "
+            "checked once per 500-step block, so training can run up to one block past the cap."
+        ),
+        (
+            "- First wrong actions come from closed-loop replays with the stored weights, compared "
+            "with the oracle plan under the v2 step rule."
+        ),
+        "",
+    ]
     return "\n".join(lines)
 
 
