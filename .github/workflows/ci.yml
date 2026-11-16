@@ -109,6 +109,22 @@ jobs:
           tests/integration/test_vendor_form_input_barrier.py
           tests/integration/test_vendor_form_frame_determines_action.py
 
+      # Raw evidence, not a test: every reset frame's SHA-256 for 8 seeds x 5 resets on this
+      # Linux runner, for comparison with hashes recorded on other hosts. Differences are results.
+      - name: Record Chromium reset determinism evidence
+        run: >-
+          python scripts/run_chromium_reset_determinism.py
+          --output chromium-reset-determinism/linux-ci.json
+          --frames-dir chromium-reset-determinism/frames-linux-ci
+
+      - name: Upload Chromium reset determinism evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: chromium-reset-determinism-linux
+          path: chromium-reset-determinism/
+          if-no-files-found: warn
+
   bc-train:
     name: Behaviour cloning (train extra)
     runs-on: ubuntu-latest
