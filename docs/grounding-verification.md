@@ -32,16 +32,17 @@ verification means comparing the checked-in bytes with their recorded SHA-256 di
 ## Choosing an output for a new evaluation
 
 Pass a fresh path with `--output` to `scripts/run_grounding_evaluation.py` when collecting
-predictions. The runner checks that the output filesystem supports hard links before making any
-provider calls. It publishes the complete prediction file after all records are ready. To verify
-an existing file, use the same output path and a complete response cache. A missing response or
-a mismatch stops the replay.
+predictions. If that path already exists and any provider call would be needed, the runner stops
+before making one. To verify an existing file, use the same output path and a complete response
+cache. A missing response or a mismatch stops the replay.
 
-During collection, the runner reserves a sibling file named `.<filename>.in-progress`. For names
-too long for that suffix, it uses a shorter name starting with `.pg-`. If a writer was killed
-before publication, retry with the same output path to see the reservation path in the file-exists error.
-Confirm that the writer has stopped before removing that reservation and resuming with the same
-response cache.
+During collection, records go to a temporary file named `.pg-predictions-*.tmp` beside the
+output. The runner publishes the complete file at the end and refuses to replace an output that
+another run published in the meantime. Each response is cached as it arrives, so if a run is
+interrupted, rerun with the same output path and response cache to resume from the cached
+responses. A writer killed before cleanup can leave a temporary file behind; it blocks nothing and
+can be deleted. On a filesystem without hard links, publication falls back to an exclusive create,
+which still refuses to replace an existing file but is not atomic if the process dies mid-write.
 
 ## Intentional report generation
 

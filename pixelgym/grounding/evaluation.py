@@ -7,12 +7,11 @@ import hashlib
 import json
 import math
 import os
-import unicodedata
+import tempfile
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from typing import Any, Literal, TextIO
 
 from pixelgym.grounding.protocols import (
@@ -461,9 +460,17 @@ def planned_new_calls(
     return {"total_condition_records": total, "cached_calls": cached, "new_calls": total - cached}
 
 
+# errno values meaning the filesystem cannot create hard links at all.
+_NO_HARD_LINKS = frozenset({errno.EPERM, errno.ENOTSUP, errno.EOPNOTSUPP})
+
+
 @contextmanager
 def _prediction_output(path: Path, new_calls: int) -> Iterator[TextIO | None]:
-    """Reserve a fresh output before any calls, or verify an existing file from cache."""
+    """Refuse an existing output before any calls, or verify an existing file from cache.
+
+    A fresh output is written to a uniquely named temporary file beside it and published only
+    once complete, without replacing a file that appeared in the meantime.
+    """
     if path.is_file():
         if new_calls:
             raise ValueError(f"predictions already exist at {path}; choose a fresh --output")
@@ -473,32 +480,34 @@ def _prediction_output(path: Path, new_calls: int) -> Iterator[TextIO | None]:
         raise ValueError(f"expected a prediction file at {path}; choose a fresh --output")
 
     path.parent.mkdir(parents=True, exist_ok=True)
-    pending = path.with_name(f".{path.name}.in-progress")
+    descriptor, name = tempfile.mkstemp(prefix=".pg-predictions-", suffix=".tmp", dir=path.parent)
+    pending = Path(name)
     try:
-        writer = pending.open("x", encoding="utf-8", newline="\n")
-    except OSError as exc:
-        if exc.errno != errno.ENAMETOOLONG:
-            raise
-        # Keep equivalent long names under one reservation on case-insensitive filesystems.
-        normalized = unicodedata.normalize("NFC", path.name.casefold())
-        digest = hashlib.sha256(os.fsencode(normalized)).hexdigest()
-        name_max = os.pathconf(path.parent, "PC_NAME_MAX") if hasattr(os, "pathconf") else 255
-        pending = path.with_name(f".pg-{digest}"[:name_max])
-        writer = pending.open("x", encoding="utf-8", newline="\n")
-    try:
-        with writer:
-            # Another writer may have finished between our first check and our reservation.
-            if path.exists() or path.is_symlink():
-                raise FileExistsError(
-                    f"predictions already exist at {path}; choose a fresh --output"
-                )
-            # Exercise no-overwrite publication on this filesystem before a provider can be billed.
-            with TemporaryDirectory(dir=path.parent) as probe_dir:
-                os.link(pending, Path(probe_dir) / "link")
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as writer:
             yield writer
-        os.link(pending, path)  # Publish complete bytes without replacing an existing file.
+        _publish_without_overwrite(pending, path)
     finally:
-        pending.unlink()
+        pending.unlink(missing_ok=True)
+
+
+def _publish_without_overwrite(pending: Path, path: Path) -> None:
+    try:
+        os.link(pending, path)
+    except FileExistsError:
+        raise FileExistsError(
+            f"predictions already exist at {path}; choose a fresh --output"
+        ) from None
+    except OSError as exc:
+        if exc.errno not in _NO_HARD_LINKS:
+            raise
+        # Without hard links, an exclusive create still refuses to replace another file.
+        try:
+            with path.open("xb") as target:
+                target.write(pending.read_bytes())
+        except FileExistsError:
+            raise FileExistsError(
+                f"predictions already exist at {path}; choose a fresh --output"
+            ) from None
 
 
 def run_evaluation(

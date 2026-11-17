@@ -368,21 +368,37 @@ def run_one_example(tmp_path):
     )
 
 
-def test_unsupported_hard_links_fail_before_provider_dispatch(
+def test_filesystem_without_hard_links_still_publishes_without_overwrite(
     tmp_path, monkeypatch, run_one_example
 ):
     directory = tmp_path / "outputs"
     directory.mkdir()
-    provider = MockProvider()
+    output = directory / "predictions.jsonl"
 
     def unsupported(*args):
         raise OSError(errno.ENOTSUP, "hard links unavailable")
 
     monkeypatch.setattr(os, "link", unsupported)
-    with pytest.raises(OSError, match="hard links unavailable"):
-        run_one_example(provider=provider, output_path=directory / "predictions.jsonl")
-    assert provider.call_count == 0
-    assert list(directory.iterdir()) == []
+    run_one_example(provider=MockProvider(), output_path=output)
+    assert list(directory.iterdir()) == [output]
+    assert len(output.read_text().splitlines()) == 2
+
+
+def test_filesystem_without_hard_links_keeps_a_competing_publication(
+    tmp_path, monkeypatch, run_one_example
+):
+    output = tmp_path / "predictions.jsonl"
+    winner = b"competing predictions\n"
+
+    def unsupported(*args):
+        output.write_bytes(winner)
+        raise OSError(errno.ENOTSUP, "hard links unavailable")
+
+    monkeypatch.setattr(os, "link", unsupported)
+    with pytest.raises(FileExistsError, match="--output"):
+        run_one_example(provider=MockProvider(), output_path=output)
+    assert output.read_bytes() == winner
+    assert not list(tmp_path.glob(".pg-predictions-*"))
 
 
 def test_maximum_length_output_name_can_publish_cached_predictions(tmp_path, run_one_example):
@@ -406,24 +422,20 @@ def test_existing_directory_is_rejected_before_provider_dispatch(tmp_path, run_o
     assert list(output.iterdir()) == []
 
 
-def test_publication_racing_reservation_keeps_winner_and_makes_no_calls(
-    tmp_path, monkeypatch, run_one_example
-):
+def test_publication_racing_another_writer_keeps_winner(tmp_path, run_one_example):
     output = tmp_path / "predictions.jsonl"
     winner = b"competing predictions\n"
-    original_open = Path.open
 
-    def publish_before_open(path, mode="r", *args, **kwargs):
-        if mode == "x" and path.parent == tmp_path:
-            output.write_bytes(winner)
-        return original_open(path, mode, *args, **kwargs)
+    class PublishDuringCollection(MockProvider):
+        def invoke(self, **kwargs):
+            if self.call_count == 0:
+                output.write_bytes(winner)
+            return super().invoke(**kwargs)
 
-    monkeypatch.setattr(Path, "open", publish_before_open)
-    provider = MockProvider()
-    with pytest.raises(FileExistsError):
-        run_one_example(provider=provider, output_path=output)
-    assert provider.call_count == 0
+    with pytest.raises(FileExistsError, match="--output"):
+        run_one_example(provider=PublishDuringCollection(), output_path=output)
     assert output.read_bytes() == winner
+    assert not list(tmp_path.glob(".pg-predictions-*"))
 
 
 def test_cache_entry_lost_after_planning_never_dispatches_on_replay(
@@ -460,32 +472,22 @@ def test_warm_cache_replay_preserves_mismatched_output(tmp_path, run_one_example
     assert output.read_bytes() == different
 
 
-def test_interrupted_prediction_write_stays_hidden_and_retries_from_cache(
+def test_interrupted_publication_stays_hidden_and_retries_from_cache(
     tmp_path, monkeypatch, run_one_example
 ):
     directory = tmp_path / "outputs"
     directory.mkdir()
     output = directory / "predictions.jsonl"
-    original_open = Path.open
 
-    def open_with_failing_write(path, mode="r", *args, **kwargs):
-        stream = original_open(path, mode, *args, **kwargs)
-        if path.parent == directory and mode in ("w", "x"):
-            write = stream.write
-
-            def write_prefix(text):
-                write(text[:16])
-                stream.flush()
-                assert not output.exists()
-                raise OSError("interrupted prediction write")
-
-            stream.write = write_prefix
-        return stream
+    def interrupted(source, target):
+        assert len(Path(source).read_text().splitlines()) == 2
+        assert not output.exists()
+        raise OSError(errno.EIO, "interrupted prediction publication")
 
     provider = MockProvider()
     with monkeypatch.context() as patch:
-        patch.setattr(Path, "open", open_with_failing_write)
-        with pytest.raises(OSError, match="interrupted prediction write"):
+        patch.setattr(os, "link", interrupted)
+        with pytest.raises(OSError, match="interrupted prediction publication"):
             run_one_example(provider=provider, output_path=output)
     assert provider.call_count == 2
     assert list(directory.iterdir()) == []
@@ -496,31 +498,6 @@ def test_interrupted_prediction_write_stays_hidden_and_retries_from_cache(
         "raw",
         "marks",
     ]
-
-
-def test_concurrent_run_for_same_predictions_stops_before_dispatch(tmp_path):
-    _write_mock_inputs(tmp_path)
-    output = tmp_path / "pilot.jsonl"
-    contender = MockProvider()
-
-    def run(provider):
-        return run_evaluation(
-            repository_root=tmp_path,
-            provider=provider,
-            output_path=output,
-            pilot=True,
-            max_new_calls=20,
-        )
-
-    class StartSecondRun(MockProvider):
-        def invoke(self, **kwargs):
-            if self.call_count == 0:
-                with pytest.raises(FileExistsError):
-                    run(contender)
-            return super().invoke(**kwargs)
-
-    assert run(StartSecondRun())["new_calls"] == 20
-    assert contender.call_count == 0
 
 
 def test_interrupted_collection_can_resume_from_partial_cache(tmp_path):
