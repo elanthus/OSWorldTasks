@@ -1,0 +1,577 @@
+{
+  "budget_minutes": 85.0,
+  "elapsed_seconds": 5038.8,
+  "integration_metadata": {
+    "browser_launch": {
+      "effective_argv": [
+        "google-chrome",
+        "--disable-font-subpixel-positioning",
+        "--disable-gpu",
+        "--disable-lcd-text",
+        "--disable-skia-runtime-opts",
+        "--force-color-profile=srgb",
+        "--force-device-scale-factor=1",
+        "--user-data-dir=/dev/shm/pixelgym-chrome-profile",
+        "--no-first-run",
+        "--disable-default-apps",
+        "--disable-session-crashed-bubble",
+        "--disable-dev-shm-usage",
+        "--app=http://127.0.0.1:3000/",
+        "--start-fullscreen",
+        "--window-position=0,0",
+        "--window-size=1024,768"
+      ],
+      "presentation_mode": "app",
+      "presentation_mode_fallback_from": "kiosk",
+      "presentation_mode_reason": "kiosk did not preserve the required full-frame 1024x768 task observation in the pinned OSWorld guest",
+      "renderer_contract": {
+        "flags": [
+          "--disable-font-subpixel-positioning",
+          "--disable-gpu",
+          "--disable-lcd-text",
+          "--disable-skia-runtime-opts",
+          "--force-color-profile=srgb",
+          "--force-device-scale-factor=1"
+        ],
+        "identity": "sha256:70b4931f4af8ce4aae562c34d70992c34e51f4aa9e9f05ff084a65717b82eba5",
+        "version": "pixelgym-chromium-renderer-v1"
+      }
+    },
+    "guest_artifact_name": "osworld-v2-ubuntu-x86.qcow2.zip",
+    "guest_artifact_repository": "xlangai/v2-image",
+    "guest_artifact_sha256": "sha256:eb737ae70b49849e24af407de6a518439a23de05a8497096a948334ce0a909aa",
+    "guest_artifact_tag": "v2026.06.24",
+    "guest_image_path": "<repo>/.cache/osworld/osworld-v2-ubuntu-x86.qcow2",
+    "guest_volume_size_gb": 50,
+    "host_port_allocator": "socket-bind-plus-docker-port-map",
+    "input_acknowledgement_barrier": true,
+    "input_contract": "pixelgym-vendor-form-input-v3",
+    "provider": "docker-local",
+    "python_version": "3.12.15",
+    "release": "osworld-v2-2026.06.24",
+    "release_manifest_url": "https://github.com/xlang-ai/OSWorld-V2/blob/v2026.06.24/benchmark_releases/osworld-v2-2026.06.24.json",
+    "runtime_image": "docker.io/pixelgym/osworld-qemu-arm64:qemux-6.18",
+    "runtime_image_base": "docker.io/qemux/qemu@sha256:b51ff8a5d69c10e57d3515c7a40dbbd47c410152b1491f849d12ede7607b80be",
+    "runtime_source_commit": "c698406b5a447234379b3fdede03d7f6e4e3fa6c",
+    "screen_size": [
+      1024,
+      768
+    ],
+    "task_bundle_sha256": "93a8360a240602976c32e19369e092f9a873e36e7fdb79423f32ce82fd95a918",
+    "upstream_commit": "2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6",
+    "upstream_repository": "https://github.com/xlang-ai/OSWorld-V2",
+    "upstream_tag": "v2026.06.24"
+  },
+  "metric_definition": {
+    "bitwise": "SHA-256 of the RGB uint8 frame bytes after reset",
+    "perceptual": "not computed",
+    "raw": "RGB differing-pixel count and maximum absolute per-channel delta, no tolerance",
+    "semantic": "SHA-256 of the reset task record and of the privileged application state"
+  },
+  "per_seed": [
+    {
+      "differing_frame_pairs": [
+        {
+          "comparable": true,
+          "differing_pixel_bbox_xyxy": [
+            253,
+            0,
+            770,
+            147
+          ],
+          "differing_pixel_count": 75895,
+          "max_per_channel_delta": 223,
+          "resets": [
+            0,
+            3
+          ]
+        },
+        {
+          "comparable": true,
+          "differing_pixel_bbox_xyxy": [
+            253,
+            0,
+            770,
+            147
+          ],
+          "differing_pixel_count": 75895,
+          "max_per_channel_delta": 223,
+          "resets": [
+            1,
+            3
+          ]
+        },
+        {
+          "comparable": true,
+          "differing_pixel_bbox_xyxy": [
+            253,
+            0,
+            770,
+            147
+          ],
+          "differing_pixel_count": 75895,
+          "max_per_channel_delta": 223,
+          "resets": [
+            2,
+            3
+          ]
+        },
+        {
+          "comparable": true,
+          "differing_pixel_bbox_xyxy": [
+            253,
+            0,
+            770,
+            147
+          ],
+          "differing_pixel_count": 75895,
+          "max_per_channel_delta": 223,
+          "resets": [
+            3,
+            4
+          ]
+        }
+      ],
+      "distinct_form_state_sha256": [
+        "4136c39b149181dbe3591e0b18a09ac9daf876b8aa236fb163b5a61e3e34d4ac"
+      ],
+      "distinct_frame_sha256": [
+        "5f11d23742c8dd2fb991c7790bb4a908571378de7f83eead849ee0b5415b1017",
+        "de6df4d0dd650d172ca8b053f49ada4cb91dbcdcce0b4c213b764ca058eeebe9"
+      ],
+      "distinct_task_sha256": [
+        "1b7b720df47986ea4097112887a1b55eaa63c3706aecaac2f9d04a3a40586b78"
+      ],
+      "pair_count": 10,
+      "reset_errors": [],
+      "resets": [
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "4136c39b149181dbe3591e0b18a09ac9daf876b8aa236fb163b5a61e3e34d4ac",
+          "frame_dtype": "uint8",
+          "frame_sha256": "de6df4d0dd650d172ca8b053f49ada4cb91dbcdcce0b4c213b764ca058eeebe9",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 0,
+          "seconds": 301.4,
+          "task_sha256": "1b7b720df47986ea4097112887a1b55eaa63c3706aecaac2f9d04a3a40586b78"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "4136c39b149181dbe3591e0b18a09ac9daf876b8aa236fb163b5a61e3e34d4ac",
+          "frame_dtype": "uint8",
+          "frame_sha256": "de6df4d0dd650d172ca8b053f49ada4cb91dbcdcce0b4c213b764ca058eeebe9",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 1,
+          "seconds": 274.2,
+          "task_sha256": "1b7b720df47986ea4097112887a1b55eaa63c3706aecaac2f9d04a3a40586b78"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "4136c39b149181dbe3591e0b18a09ac9daf876b8aa236fb163b5a61e3e34d4ac",
+          "frame_dtype": "uint8",
+          "frame_sha256": "de6df4d0dd650d172ca8b053f49ada4cb91dbcdcce0b4c213b764ca058eeebe9",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 2,
+          "seconds": 315.9,
+          "task_sha256": "1b7b720df47986ea4097112887a1b55eaa63c3706aecaac2f9d04a3a40586b78"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "4136c39b149181dbe3591e0b18a09ac9daf876b8aa236fb163b5a61e3e34d4ac",
+          "frame_dtype": "uint8",
+          "frame_sha256": "5f11d23742c8dd2fb991c7790bb4a908571378de7f83eead849ee0b5415b1017",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 3,
+          "seconds": 335.4,
+          "task_sha256": "1b7b720df47986ea4097112887a1b55eaa63c3706aecaac2f9d04a3a40586b78"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "4136c39b149181dbe3591e0b18a09ac9daf876b8aa236fb163b5a61e3e34d4ac",
+          "frame_dtype": "uint8",
+          "frame_sha256": "de6df4d0dd650d172ca8b053f49ada4cb91dbcdcce0b4c213b764ca058eeebe9",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 4,
+          "seconds": 313.1,
+          "task_sha256": "1b7b720df47986ea4097112887a1b55eaa63c3706aecaac2f9d04a3a40586b78"
+        }
+      ],
+      "seed": 0
+    },
+    {
+      "differing_frame_pairs": [
+        {
+          "comparable": true,
+          "differing_pixel_bbox_xyxy": [
+            24,
+            87,
+            907,
+            481
+          ],
+          "differing_pixel_count": 111455,
+          "max_per_channel_delta": 227,
+          "resets": [
+            0,
+            1
+          ]
+        },
+        {
+          "comparable": true,
+          "differing_pixel_bbox_xyxy": [
+            24,
+            87,
+            907,
+            481
+          ],
+          "differing_pixel_count": 111455,
+          "max_per_channel_delta": 227,
+          "resets": [
+            0,
+            2
+          ]
+        },
+        {
+          "comparable": true,
+          "differing_pixel_bbox_xyxy": [
+            24,
+            87,
+            907,
+            481
+          ],
+          "differing_pixel_count": 111455,
+          "max_per_channel_delta": 227,
+          "resets": [
+            0,
+            3
+          ]
+        },
+        {
+          "comparable": true,
+          "differing_pixel_bbox_xyxy": [
+            24,
+            87,
+            907,
+            481
+          ],
+          "differing_pixel_count": 111455,
+          "max_per_channel_delta": 227,
+          "resets": [
+            0,
+            4
+          ]
+        }
+      ],
+      "distinct_form_state_sha256": [
+        "51446f5a54dc22ef2e6241ad616c02730497ce016de11dd2f3ade6555bc28b9d"
+      ],
+      "distinct_frame_sha256": [
+        "73438e9b13487c6b5cfd6f8aec28fff8ea841c78d4929fdc5c0c92940701eb7b",
+        "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99"
+      ],
+      "distinct_task_sha256": [
+        "504a4073a6587ff85345e7745e76b39151ac4854e83f67cdaf9f4d4b6302b9eb"
+      ],
+      "pair_count": 10,
+      "reset_errors": [],
+      "resets": [
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "51446f5a54dc22ef2e6241ad616c02730497ce016de11dd2f3ade6555bc28b9d",
+          "frame_dtype": "uint8",
+          "frame_sha256": "73438e9b13487c6b5cfd6f8aec28fff8ea841c78d4929fdc5c0c92940701eb7b",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 0,
+          "seconds": 307.1,
+          "task_sha256": "504a4073a6587ff85345e7745e76b39151ac4854e83f67cdaf9f4d4b6302b9eb"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "51446f5a54dc22ef2e6241ad616c02730497ce016de11dd2f3ade6555bc28b9d",
+          "frame_dtype": "uint8",
+          "frame_sha256": "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 1,
+          "seconds": 251.6,
+          "task_sha256": "504a4073a6587ff85345e7745e76b39151ac4854e83f67cdaf9f4d4b6302b9eb"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "51446f5a54dc22ef2e6241ad616c02730497ce016de11dd2f3ade6555bc28b9d",
+          "frame_dtype": "uint8",
+          "frame_sha256": "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 2,
+          "seconds": 323.6,
+          "task_sha256": "504a4073a6587ff85345e7745e76b39151ac4854e83f67cdaf9f4d4b6302b9eb"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "51446f5a54dc22ef2e6241ad616c02730497ce016de11dd2f3ade6555bc28b9d",
+          "frame_dtype": "uint8",
+          "frame_sha256": "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 3,
+          "seconds": 196.5,
+          "task_sha256": "504a4073a6587ff85345e7745e76b39151ac4854e83f67cdaf9f4d4b6302b9eb"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "51446f5a54dc22ef2e6241ad616c02730497ce016de11dd2f3ade6555bc28b9d",
+          "frame_dtype": "uint8",
+          "frame_sha256": "d33fcab72337a7b69cd7ed2f8ff46ed628895b8db099cc9e4656c3df8319df99",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 4,
+          "seconds": 198.0,
+          "task_sha256": "504a4073a6587ff85345e7745e76b39151ac4854e83f67cdaf9f4d4b6302b9eb"
+        }
+      ],
+      "seed": 7
+    },
+    {
+      "differing_frame_pairs": [],
+      "distinct_form_state_sha256": [
+        "eccc0d82889c24bc8e75f433268f101eb33b48457a313dfa959a8e31e21b2ecf"
+      ],
+      "distinct_frame_sha256": [
+        "650ac5bae47f35fbf01dea6821f49ae19721d991df88c05b61322cc8013777b2"
+      ],
+      "distinct_task_sha256": [
+        "ed3d8c18ec9027b16b543fdf8fe30dd68e4018a1075b98ef2943f4765abbd19b"
+      ],
+      "pair_count": 10,
+      "reset_errors": [],
+      "resets": [
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "eccc0d82889c24bc8e75f433268f101eb33b48457a313dfa959a8e31e21b2ecf",
+          "frame_dtype": "uint8",
+          "frame_sha256": "650ac5bae47f35fbf01dea6821f49ae19721d991df88c05b61322cc8013777b2",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 0,
+          "seconds": 195.7,
+          "task_sha256": "ed3d8c18ec9027b16b543fdf8fe30dd68e4018a1075b98ef2943f4765abbd19b"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "eccc0d82889c24bc8e75f433268f101eb33b48457a313dfa959a8e31e21b2ecf",
+          "frame_dtype": "uint8",
+          "frame_sha256": "650ac5bae47f35fbf01dea6821f49ae19721d991df88c05b61322cc8013777b2",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 1,
+          "seconds": 192.1,
+          "task_sha256": "ed3d8c18ec9027b16b543fdf8fe30dd68e4018a1075b98ef2943f4765abbd19b"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "eccc0d82889c24bc8e75f433268f101eb33b48457a313dfa959a8e31e21b2ecf",
+          "frame_dtype": "uint8",
+          "frame_sha256": "650ac5bae47f35fbf01dea6821f49ae19721d991df88c05b61322cc8013777b2",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 2,
+          "seconds": 208.9,
+          "task_sha256": "ed3d8c18ec9027b16b543fdf8fe30dd68e4018a1075b98ef2943f4765abbd19b"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "eccc0d82889c24bc8e75f433268f101eb33b48457a313dfa959a8e31e21b2ecf",
+          "frame_dtype": "uint8",
+          "frame_sha256": "650ac5bae47f35fbf01dea6821f49ae19721d991df88c05b61322cc8013777b2",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 3,
+          "seconds": 211.8,
+          "task_sha256": "ed3d8c18ec9027b16b543fdf8fe30dd68e4018a1075b98ef2943f4765abbd19b"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "eccc0d82889c24bc8e75f433268f101eb33b48457a313dfa959a8e31e21b2ecf",
+          "frame_dtype": "uint8",
+          "frame_sha256": "650ac5bae47f35fbf01dea6821f49ae19721d991df88c05b61322cc8013777b2",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 4,
+          "seconds": 209.1,
+          "task_sha256": "ed3d8c18ec9027b16b543fdf8fe30dd68e4018a1075b98ef2943f4765abbd19b"
+        }
+      ],
+      "seed": 11
+    },
+    {
+      "differing_frame_pairs": [],
+      "distinct_form_state_sha256": [
+        "51f6eb802c029486e0796ce33d7f35b5c3ff840157a1c7fd9a3494aa29795de7"
+      ],
+      "distinct_frame_sha256": [
+        "8682255f97d6aa6c79337439446b004c6a187318d051ace8284d5709e852ca48"
+      ],
+      "distinct_task_sha256": [
+        "d4732abc81dd421dfbd2c911ce533577c7109efd4e7fba067045556070d05223"
+      ],
+      "pair_count": 10,
+      "reset_errors": [],
+      "resets": [
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "51f6eb802c029486e0796ce33d7f35b5c3ff840157a1c7fd9a3494aa29795de7",
+          "frame_dtype": "uint8",
+          "frame_sha256": "8682255f97d6aa6c79337439446b004c6a187318d051ace8284d5709e852ca48",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 0,
+          "seconds": 227.4,
+          "task_sha256": "d4732abc81dd421dfbd2c911ce533577c7109efd4e7fba067045556070d05223"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "51f6eb802c029486e0796ce33d7f35b5c3ff840157a1c7fd9a3494aa29795de7",
+          "frame_dtype": "uint8",
+          "frame_sha256": "8682255f97d6aa6c79337439446b004c6a187318d051ace8284d5709e852ca48",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 1,
+          "seconds": 219.6,
+          "task_sha256": "d4732abc81dd421dfbd2c911ce533577c7109efd4e7fba067045556070d05223"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "51f6eb802c029486e0796ce33d7f35b5c3ff840157a1c7fd9a3494aa29795de7",
+          "frame_dtype": "uint8",
+          "frame_sha256": "8682255f97d6aa6c79337439446b004c6a187318d051ace8284d5709e852ca48",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 2,
+          "seconds": 212.1,
+          "task_sha256": "d4732abc81dd421dfbd2c911ce533577c7109efd4e7fba067045556070d05223"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "51f6eb802c029486e0796ce33d7f35b5c3ff840157a1c7fd9a3494aa29795de7",
+          "frame_dtype": "uint8",
+          "frame_sha256": "8682255f97d6aa6c79337439446b004c6a187318d051ace8284d5709e852ca48",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 3,
+          "seconds": 239.7,
+          "task_sha256": "d4732abc81dd421dfbd2c911ce533577c7109efd4e7fba067045556070d05223"
+        },
+        {
+          "acknowledged_after_reset": 0,
+          "form_state_sha256": "51f6eb802c029486e0796ce33d7f35b5c3ff840157a1c7fd9a3494aa29795de7",
+          "frame_dtype": "uint8",
+          "frame_sha256": "8682255f97d6aa6c79337439446b004c6a187318d051ace8284d5709e852ca48",
+          "frame_shape": [
+            768,
+            1024,
+            3
+          ],
+          "reset_index": 4,
+          "seconds": 301.0,
+          "task_sha256": "d4732abc81dd421dfbd2c911ce533577c7109efd4e7fba067045556070d05223"
+        }
+      ],
+      "seed": 23
+    }
+  ],
+  "provenance": {
+    "fake_renderer": "pixelgym-vendor-form-fake-renderer-v2",
+    "git_revision": "93d7c24f114f6ca7f462bff4189de6fdeaabd40d",
+    "git_status_porcelain": "",
+    "guest_bundle_sha256_by_seed": {
+      "0": "93a8360a240602976c32e19369e092f9a873e36e7fdb79423f32ce82fd95a918",
+      "11": "7d7d4f1b48c88d364b7d9bc6779a26411a2c1b200d2fc65ae8b475c46ba791ee",
+      "23": "e20ca4eb07ed8faff883d2e55a7949c7595999f3eae138aebb75e19e74623fb2",
+      "7": "300be223ef4a921275850dbd58149428f4d5c7cbd6aaac03f05499f2c71395f4"
+    },
+    "guest_image_path": "<repo>/.cache/osworld/osworld-v2-ubuntu-x86.qcow2",
+    "input_contract": "pixelgym-vendor-form-input-v3",
+    "run_started_utc": "2026-11-16T06:34:03Z",
+    "setup_acknowledged_inputs": 0,
+    "worktree_clean_at_start": true
+  },
+  "provider_close": {
+    "attempted": true,
+    "error": null,
+    "returned": true,
+    "suppressed_close_errors": []
+  },
+  "provider_closed": true,
+  "resets_per_seed": 5,
+  "schema_version": "pixelgym-osworld-reset-determinism-v1",
+  "seeds": [
+    0,
+    7,
+    11,
+    23
+  ],
+  "skipped": []
+}
