@@ -246,8 +246,8 @@ A post hoc supplement counts the retries and shows each arm both ways
 in the history arm. The historical counts are inferred from per-episode counters because its
 journal was not retained. The same inference reproduces the recorded retries exactly in the other
 two campaigns, but those campaigns contain only timeout retries and no infrastructure failures, so
-the check does not exercise the inference's infrastructure-failure branch or a retry after a
-connection reset, both of which the historical rule allowed.
+the check does not exercise the inference's infrastructure-failure branch, nor a retry after a
+connection reset, which the historical rule allowed.
 
 | Campaign | Retried attempts (episodes) | History successes as recorded | With retried episodes as failures | Stateless successes |
 | --- | ---: | ---: | ---: | ---: |
