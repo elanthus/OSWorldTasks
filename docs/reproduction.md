@@ -5,7 +5,8 @@ Commands and historical timing moved from the README; start with the default set
 ## Quick reproduction without OSWorld
 
 Python 3.12 is required. The default development setup does not install OSWorld. The unit suite
-does not need a VM, browser, socket, network, external service, or provider credential.
+uses local loopback sockets for proxy tests. It runs without a VM, browser, external service,
+network access beyond loopback, or provider credential.
 
 ```bash
 python3.12 -m venv .venv
@@ -102,9 +103,9 @@ and requires no browser, Docker service, OSWorld image, or optional dependency b
   tests/integration/test_vendor_form_server_contract.py
 ```
 
-This group is separate so a socket-restricted sandbox can run every unit test without weakening or
-skipping the real-loopback assertions. Pull-request CI exercises it through the explicitly named
-loopback step in the `Release integration` job; the required `Fast suite` result depends on that job
+The vendor-form HTTP contract checks run separately from the unit suite. The full unit suite also
+requires loopback for the proxy tests. Pull-request CI runs the HTTP checks in the loopback step of
+the `Release integration` job. The required `Fast suite` result depends on that job
 in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 
 Re-capturing the frozen browser dataset additionally requires Playwright's Chromium binary,

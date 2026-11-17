@@ -1,288 +1,219 @@
-"""Every number in the README's Results section is read from the artifact that bullet cites.
-
-Each claim below is rebuilt from stored evidence and must appear verbatim in the section. A second
-test extracts every numeric token from the section's prose and requires each to be covered by one
-of those claims, or by the short allowlist of non-measured numbers (model names, the confidence
-level, and git provenance), so a new or edited number cannot appear without a check.
-"""
+"""Recompute README measurements from stored evidence and reject unchecked numeric claims."""
 
 from __future__ import annotations
 
 import json
 import re
-import tempfile
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from pixelgym.tasks.vendor_form import generator, osworld_task
 
 ROOT = Path(__file__).resolve().parents[2]
-README = ROOT / "README.md"
-WORDS = {2: "two", 3: "three", 5: "Five", 10: "ten"}
-# A number in prose; digits glued to a letter, such as the version name "v5", are names.
-NUMBER = r"(?<![A-Za-z])\d+(?:[./]\d+)?"
-
-# Numbers in the section that are not measurements: model names, the confidence level (checked
-# against the analysis method below), and the git commit date of the reset evidence.
-NON_MEASURED = (
-    "Claude Haiku 4.5",
-    "95% CI",
-    "on 2026-09-06",
-)
 
 
 def _json(relative: str) -> Any:
-    return json.loads((ROOT / relative).read_text(encoding="utf-8"))
+    return json.loads((ROOT / "artifacts" / relative).read_text(encoding="utf-8"))
 
 
-def _results_section() -> str:
-    text = README.read_text(encoding="utf-8")
-    start = text.index("## Results")
-    end = text.index("What these results do not show", start)
-    return " ".join(text[start:end].split())
+def _rows(relative: str) -> list[dict[str, Any]]:
+    path = ROOT / "artifacts" / relative
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
 
 
-def _prose(section: str) -> str:
-    """The section without link targets and inline code, where numbers are paths or hashes."""
+def _results() -> str:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    section = readme.split("## Results\n", 1)[1].split("\n## ", 1)[0]
+    return " ".join(re.sub(r"\]\([^)]+\)", "]", section).split())
 
-    section = re.sub(r"\]\([^)]*\)", "]", section)
-    return re.sub(r"`[^`]*`", "", section)
+
+def _raw_predictions(filename: str) -> dict[str, dict[str, Any]]:
+    raw = [r for r in _rows(filename) if r["condition"] == "raw"]
+    by_id = {r["example_id"]: r for r in raw}
+    assert raw and len(by_id) == len(raw), filename
+    return by_id
 
 
 def _claims() -> Iterator[str]:
-    reset = _json("artifacts/day-2-rev-2026-09-06-issues-95-101/raw/real-reset.json")
-    records = reset["records"]
-    assert all(r["differing_pixel_count"] == 0 and r["max_per_channel_delta"] == 0 for r in records)
-    assert all("seed-7-" in r["screenshot_path"] for r in records)
-    width, height = reset["backend_metadata"]["screen_size"]
-    yield (
-        f"{WORDS[len(records)]} real OSWorld resets of seed 7 were bitwise identical at "
-        f"{width}×{height} on one host"
-    )
-    yield f"guest bundle `{reset['backend_metadata']['task_bundle_sha256'][:8]}…`"
-
-    current = _json("artifacts/osworld-guest-check-2026-11-12-248097d/results.json")
-    provenance = current["provenance"]
-    bundle = provenance["guest_bundle_sha256_seed7"]
-    with tempfile.TemporaryDirectory() as tmp:
-        rebuilt = osworld_task.build_guest_bundle(generator.generate_task(7), Path(tmp) / "b.zip")
-    assert rebuilt == bundle, "the README calls this bundle current; the code no longer builds it"
-    yield f"the current guest bundle is `{bundle[:8]}…`"
-    yield (
-        f"with the current guest bundle `{bundle[:8]}…` (recorded at "
-        f"`{provenance['git_revision'][:7]}`)"
-    )
-    resets = current["resets"]["records"]
-    assert all(r["reset_returned"] and r["acknowledged_after_reset"] == 0 for r in resets)
-    yield f"{WORDS[len(resets)]} resets each reported 0 setup acknowledgements"
-    summary = current["golden"]["summary"]
-    assert summary["positive_reward_count"] == 1
-    assert summary["first_positive_reward_step"] == summary["terminal_step"]
-    yield "the golden trajectory paid its only reward at its last step"
-    cases = current["cases"]["records"].values()
-    assert all(case["match"] is True for case in cases)
-    yield f"{WORDS[len(cases)]} input sequences submitted the same values as the fake"
-    earlier = _json("artifacts/osworld-guest-check-2026-11-12/provenance.json")
-    yield f"An earlier run on bundle `{earlier['guest_bundle_sha256_recorded'][:8]}…` is retained"
-
-    throughput = _json("artifacts/throughput-v2/fake-throughput.json")
-    workloads = throughput["workloads"]
-
-    def median(workload: str, renderer: str) -> int:
-        return round(workloads[workload][renderer]["steps_per_second"]["median"])
-
-    frames = throughput["byte_identity"]
-    assert all(row["mismatched_frames"] == 0 for row in frames)
-    noop_share = workloads["random"]["action_types"]["noop_share"]
-    yield (
-        f"replays the golden trajectory at {median('golden', 'static_layer')} steps/s, up from "
-        f"{median('golden', 'reference_single_pass')} with the earlier single-pass renderer, and "
-        f"runs a random policy at {median('random', 'static_layer')} steps/s (up from "
-        f"{median('random', 'reference_single_pass')}), of whose steps {noop_share:.1%} are NOOPs"
-    )
-    yield (
-        f"all {sum(row['frames_compared'] for row in frames)} compared frames were "
-        f"byte-identical (recorded at `{throughput['git_revision'][:7]}`"
-    )
-
-    parity = _json("artifacts/browser-differential-v1/evidence.json")
-    runs = parity["runs"]
-    barrier = parity["barrier"]
+    differential = _json("browser-differential-v1/evidence.json")
+    barrier = differential["barrier"]
     (off,) = barrier["negative_control_barrier_off"]["in_step_reads"]
     (on,) = barrier["positive_control_barrier_on"]["in_step_reads"]
+    yield f"saw {off} submissions on the action step without the barrier and {on} with it"
+    golden = barrier["golden_under_submit_latency"]
+    (step,) = {row["steps"] for row in golden}
+    assert all(row["positive_reward_steps"] == [step] for row in golden)
+    yield f"only reward on step {step}"
+    runs = differential["runs"]
+    assert all(row["divergence_count"] == 0 for row in runs)
+    sequences = sum(row["sequence_count"] for row in runs)
+    actions = sum(row["action_count"] for row in runs)
     yield (
-        f"replays {sum(r['sequence_count'] for r in runs)} seeded action sequences "
-        f"({sum(r['action_count'] for r in runs)} actions) on the fake and on the real page in "
-        f"Chromium, with {sum(r['divergence_count'] for r in runs)} divergent sequences"
-    )
-    yield (
-        f"read {off} submissions in the step without the input-acknowledgement barrier and {on} "
-        f"with it (recorded at `{parity['git_revision'][:7]}`"
-    )
-
-    clustered = _json("artifacts/grounding-clustered-analysis-v2.json")
-    allocation, counts = clustered["allocation"], clustered["counts"]
-    (per_seed,) = set(allocation["examples_per_task_seed"])
-    (per_target,) = set(allocation["examples_per_target"])
-    total = counts["example_count"]
-    yield (
-        f"On {total} paired screenshots ({allocation['task_seed_count']} task seeds × {per_seed} "
-        f"screen states; each of {allocation['target_count']} target controls appears "
-        f"{per_target} times)"
-    )
-    report = (ROOT / "artifacts/grounding-report-v2.md").read_text(encoding="utf-8")
-    marks = re.search(r"selection among (\d+) labelled candidates", report)
-    assert marks is not None
-    yield (
-        f"scored {counts['raw_correct']}/{total} with raw coordinates and "
-        f"{counts['marks_correct']}/{total} when choosing among {marks.group(1)} labelled marks"
-    )
-    low, high = clustered["target_clustered_bootstrap_95_ci_percentage_points"]
-    assert clustered["method"]["confidence_level"] == 0.95
-    yield (
-        f"+{clustered['delta_percentage_points']:.0f} points, target-clustered 95% CI "
-        f"[+{low:.0f}, +{high:.0f}]"
-    )
-    marks_summary = _json("artifacts/grounding-results.json")["set_of_marks"]
-    yield (
-        f"Proposal coverage, reported separately from that selection accuracy, was "
-        f"{marks_summary['proposal_covered_count']}/{marks_summary['proposal_total_count']}"
+        f"Across {sequences} seeded sequences and {actions:,} actions, the in-process form and "
+        "Chromium agreed on form state and submissions after every action."
     )
 
-    split = _json("artifacts/grounding-ambiguity-split-v1.json")
-    split_counts, by_target = split["counts"], split["request_card_same_row_by_target"]
-    yield (
-        f"{split_counts['request_card_same_row']} of {split_counts['raw_misses']}, land on the "
-        "read-only request card"
-    )
-    yield (
-        f"(company name {by_target['company_name']}, contact phone {by_target['contact_phone']}, "
-        f"contact email {by_target['contact_email']})"
-    )
-    forgiving = split["forgiving"]
-    f_low, f_high = forgiving["target_clustered_bootstrap_95_ci_percentage_points"]
-    yield (
-        f"raw {split_counts['forgiving_raw_correct']}/{split_counts['example_count']} and "
-        f"+{forgiving['delta_percentage_points']:.0f} points, target-clustered 95% CI "
-        f"[+{f_low:.0f}, +{f_high:.0f}]"
-    )
-
-    chance = _json("artifacts/grounding-v5-stateless-chance-ceiling-v1.json")
-    order = ("historical", "replication", "parser_sensitivity")
-    campaigns = [chance["campaigns"][name] for name in order]
-    episodes = chance["episodes_per_arm"]
-    assert all(c["episodes_per_arm"] == episodes for c in campaigns)
-    history = [c["history_successes"] for c in campaigns]
-    stateless = [c["stateless_successes"] for c in campaigns]
-    yield (
-        f"on {episodes} multi-screen episodes succeeded {history[0]}, {history[1]}, and "
-        f"{history[2]} times with its screenshot history and {stateless[0]}, {stateless[1]}, and "
-        f"{stateless[2]} times without it"
-    )
-    uniform = chance["uniform_guess"]
-    yield (
-        f"an otherwise-perfect guesser {uniform['success_probability']}, about "
-        f"{round(uniform['expected_successes'])} of {episodes}"
-    )
-
-    yield from _learning_claims(_json(BC_RESULTS))
-
-
-BC_RESULTS = "artifacts/bc-experiment-v2/results.json"
-
-
-def _span(values: list[float]) -> str:
-    return f"{min(values) * 100:.1f}–{max(values) * 100:.1f}%"
-
-
-def _learning_claims(bc: dict[str, Any]) -> Iterator[str]:
-    assert bc["phase"] == "grid" and bc["worktree_clean"] is True
-    runs = bc["runs"]
-    demo_counts = sorted({run["demo_episodes"] for run in runs})
-    (steps,) = {run["steps"] for run in runs}
-    seeds = {run["training_seed"] for run in runs}
-    assert len(runs) == len(demo_counts) * len(seeds) * 2  # two splits
-    episodes = sum(run["closed_loop"]["episodes"] for run in runs)
-    successes = sum(e["success"] for run in runs for e in run["closed_loop"]["per_episode"])
-    yield (
-        f"({demo_counts[0]} to {demo_counts[-1]} episodes, {WORDS[len(seeds)]} training seeds "
-        f"each, {steps} steps) completed {successes} of {episodes} test episodes"
-    )
-
-    def tf(split: str | None, metric: str) -> list[float]:
-        return [run["teacher_forced"][metric] for run in runs if split in (None, run["split"])]
-
-    holdout = bc["data"]["name_holdout"]["name_overlap"]
-    assert holdout["test_distinct_names_in_train"] == 0
-    yield (
-        f"it chose the right action {_span(tf('standard', 'step_accuracy'))} of the time on the "
-        f"standard split and {_span(tf('name_holdout', 'step_accuracy'))} on a split whose "
-        f"{holdout['test_distinct_names']} test company names never appear in training"
-    )
-    yield (
-        f"Clicks were {_span(tf(None, 'click_target_accuracy'))} correct and keystrokes "
-        f"{_span(tf(None, 'key_accuracy'))}"
-    )
-    blind = [
-        bc["baselines"][split]["card_blind"]["teacher_forced"]["step_accuracy"] * 100
-        for split in ("standard", "name_holdout")
+    guest = [
+        row
+        for batch in ("a", "b")
+        for row in _json(f"osworld-reset-determinism-2026-11-15-{batch}/results.json")["per_seed"]
     ]
-    yield f"scored {blind[0]:.1f}% and {blind[1]:.1f}% on the same splits"
+    assert len({row["seed"] for row in guest}) == len(guest), "guest reset batches repeat a seed"
+    assert all(len(row["resets"]) == 5 and not row["reset_errors"] for row in guest)
+    semantic = sum(
+        len(row["distinct_task_sha256"]) == len(row["distinct_form_state_sha256"]) == 1
+        for row in guest
+    )
+    visual = sum(len(row["distinct_frame_sha256"]) == 1 for row in guest)
+    yield f"task and form-state hashes repeated on {semantic}/{len(guest)} seeds across five resets"
+    yield f"Screenshots were byte-identical on {visual}/{len(guest)} seeds"
 
-    gates = bc["gates"]
-    assert gates["all_passed"] is True
-    overfit = gates["overfit_30_click_frames"]
-    assert overfit["click_targets_correct"] == overfit["frames"]
-    yield f"the model fits {overfit['frames']} click frames"
-    assert gates["single_demo_closed_loop"]["closed_loop"]["success"] is True
-    yield "it completes the episode it was trained on"
-    lookup = gates["lookup_table_test_seeds"].values()
-    assert all(g["conflicting_frames"] == 0 and g["successes"] == g["episodes"] for g in lookup)
+    def chromium_frames(host: str) -> dict[int, str]:
+        frames = {}
+        for row in _json(f"chromium-reset-determinism-v1/{host}.json")["per_seed"]:
+            (digest,) = row["distinct_frame_sha256"]
+            frames[row["seed"]] = digest
+        return frames
+
+    mac, linux = chromium_frames("macos-arm64"), chromium_frames("linux-ci")
+    assert mac.keys() == linux.keys()
+    differences = sum(mac[seed] != linux[seed] for seed in mac)
+    yield f"differed between macOS and Linux on {differences}/{len(mac)} seeds"
+
+    clustered = _json("grounding-clustered-analysis-v2.json")
+    counts = clustered["counts"]
+    total = counts["example_count"]
+    results = _json("grounding-results.json")
     yield (
-        f"lookup table completes all {sum(g['episodes'] for g in lookup)} test episodes because "
-        "no test frame precedes two different oracle actions"
+        f"`{results['model']}` placed raw coordinates inside the target on "
+        f"{counts['raw_correct']}/{total} screenshots"
+    )
+    yield f"correct numbered mark on {counts['marks_correct']}/{total}"
+    low, high = clustered["target_clustered_bootstrap_95_ci_percentage_points"]
+    confidence = clustered["method"]["confidence_level"]
+    yield (
+        f"+{clustered['delta_percentage_points']:.0f} points, with a target-clustered "
+        f"{confidence:.0%} interval of [+{low:.0f}, +{high:.0f}]"
+    )
+    allocation = clustered["allocation"]
+    assert allocation["screen_states_per_target"] == [1]
+    yield (
+        f"The interval resamples {allocation['target_count']} controls. "
+        "Each appeared in only one screen state."
+    )
+    marks = results["set_of_marks"]
+    yield f"Proposal coverage was {marks['proposal_covered_count']}/{marks['proposal_total_count']}"
+    split = _json("grounding-ambiguity-split-v1.json")["counts"]
+    yield (
+        f"Of the {split['raw_misses']} raw misses, {split['request_card_same_row']} landed on the "
+        "matching row of the read-only request card."
     )
 
-
-def test_every_headline_claim_matches_its_artifact() -> None:
-    section = _results_section()
-    missing = [claim for claim in _claims() if claim not in section]
-    assert not missing, missing
-
-
-def test_every_number_in_the_section_is_covered_by_a_checked_claim() -> None:
-    section = _results_section()
-    covered = _prose(section)
-    for phrase in (*_claims(), *NON_MEASURED):
-        assert phrase in section, phrase
-        covered = covered.replace(_prose(phrase), " ")
-    leftover = re.findall(NUMBER, covered)
-    assert not leftover, leftover
-
-
-def test_behaviour_cloning_limitation_matches_its_artifact() -> None:
-    from scripts.generate_bc_report_v2 import _component_overlap
-
-    text = " ".join(README.read_text(encoding="utf-8").split())
-    limitations = text[text.index("## Limitations") :]
-    bc = _json(BC_RESULTS)
-    runs = bc["runs"]
-    last = sum(run["best_validation_step"] == run["validation_curve"][-1]["step"] for run in runs)
-    assert (
-        f"in {last} of {len(runs)} runs the selected checkpoint was the last validation evaluation"
-    ) in limitations
-    held, prefix_seen, suffix_seen = _component_overlap(bc)
-    assert prefix_seen == suffix_seen == held
-    assert "Each held-out company name shares its prefix and its suffix with a training name" in (
-        limitations
+    original = _raw_predictions("grounding-predictions.jsonl")
+    haiku = _raw_predictions("grounding-v3a-scored-predictions-claude-haiku-4.5.jsonl")
+    assert original.keys() == haiku.keys() and len(original) == total
+    assert {r["model"] for r in haiku.values()} == {"claude-haiku-4-5-20251001"}
+    for example_id, row in original.items():
+        for field in ("image_sha256", "prompt_sha256"):
+            assert row[field] and row[field] == haiku[example_id][field], (example_id, field)
+    correct = sum(r["correct"] for r in haiku.values())
+    yield (
+        f"Claude Haiku 4.5 scored {correct}/{len(haiku)} with raw coordinates on the same "
+        "screenshots. The recorded raw prompts matched across runs."
     )
+
+    training = _json("bc-experiment-v2/results.json")["runs"]
+    episode_records = [run["closed_loop"]["per_episode"] for run in training]
+    successes = sum(episode["success"] for records in episode_records for episode in records)
+    episodes = sum(len(records) for records in episode_records)
+    n_runs = len(training)
+    yield f"{successes}/{episodes} held-out episode evaluations across {n_runs} training runs"
+    diagnoses = _json("bc-diagnosis-v1/diagnosis.json")["runs"]
+    largest = max(run["demo_episodes"] for run in training)
+    for run, records in zip(training, episode_records, strict=True):
+        if run["demo_episodes"] != largest:
+            continue
+        name = run["name"]
+        assert name in diagnoses, f"missing BC diagnosis for {name}"
+        diagnosed = diagnoses[name]["first_wrong_action_per_episode"]
+        assert sorted(row["seed"] for row in diagnosed) == sorted(row["seed"] for row in records), (
+            f"BC diagnosis episode seeds differ for {name}"
+        )
+        for row in diagnosed:
+            first = row["first_wrong"]
+            assert first and first["kind"] == "key" and first["field"] == "company_name", (
+                f"unexpected first error for {name}, seed {row['seed']}"
+            )
+    yield (
+        "In every largest-training-set run, the first wrong action in every test episode "
+        "was a company-name keystroke."
+    )
+
+    resume = _json("platform/seed-policy-fanout-evidence-v1.json")["resume_run"]
+    assert resume["failed_command_exit_code"] != 0 and resume["resume_command_exit_code"] == 0
+    ledger = resume["provider_ledger"]
+    yield f"{ledger['attempts']} attempts and {ledger['unique_request_ids']} unique request IDs"
+
+
+def _unchecked_numbers(section: str) -> list[str]:
+    for claim in _claims():
+        assert claim in section, claim
+        section = section.replace(claim, " ", 1)
+    return re.findall(r"\d+", section)
+
+
+def test_results_match_stored_evidence() -> None:
+    assert _unchecked_numbers(_results()) == []
 
 
 def test_uncovered_number_is_reported() -> None:
-    # Negative control: a number added to the section without a claim is caught.
-    section = _results_section() + " The fake backend also runs 4242 steps."
-    covered = _prose(section)
-    for phrase in (*_claims(), *NON_MEASURED):
-        covered = covered.replace(_prose(phrase), " ")
-    assert re.findall(NUMBER, covered) == ["4242"]
+    assert _unchecked_numbers(_results() + " another 4242 actions") == ["4242"]
+
+
+def test_repeated_numeric_claim_is_reported() -> None:
+    claim = next(claim for claim in _claims() if claim.startswith("Across "))
+    assert _unchecked_numbers(f"{_results()} {claim}") == re.findall(r"\d+", claim)
+
+
+def test_results_reject_a_different_request_card_row() -> None:
+    changed = _results().replace("matching row", "unrelated row", 1)
+    with pytest.raises(AssertionError, match="matching row"):
+        _unchecked_numbers(changed)
+
+
+def test_frozen_instructions_have_fixed_boxes_and_marks_across_seeds() -> None:
+    overlays = {row["example_id"]: row for row in _rows("grounding-overlays.jsonl")}
+    labels: dict[str, set[tuple[tuple[int, ...], int]]] = {}
+    seeds: dict[str, set[int]] = {}
+    for example in _rows("grounding-dataset.jsonl"):
+        instruction = example["target"]
+        (mark,) = (
+            m
+            for m in overlays[example["example_id"]]["marks"]
+            if m["semantic_id"] == example["target_id"]
+        )
+        labels.setdefault(instruction, set()).add((tuple(example["bbox"]), mark["mark_id"]))
+        seeds.setdefault(instruction, set()).add(example["task_seed"])
+    assert labels and all(len(values) == 1 for values in labels.values())
+    assert all(len(values) > 1 for values in seeds.values())
+
+
+def test_evidence_index_current_guest_bundle_matches_build(tmp_path: Path) -> None:
+    evidence_path = "osworld-guest-check-2026-11-12-248097d/results.json"
+    index = (ROOT / "docs/evidence-index.md").read_text(encoding="utf-8")
+    (current_row,) = (
+        line
+        for line in index.splitlines()
+        if line.startswith("| Does the current guest bundle run on the pinned OSWorld guest? |")
+    )
+    results_links = re.findall(r"\]\(([^)]+/results\.json)\)", current_row)
+    assert results_links == [f"../artifacts/{evidence_path}"]
+
+    current = _json(evidence_path)
+    assert (
+        osworld_task.build_guest_bundle(generator.generate_task(7), tmp_path / "b.zip")
+        == (current["provenance"]["guest_bundle_sha256_seed7"])
+    )
