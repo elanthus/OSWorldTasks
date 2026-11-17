@@ -1,0 +1,150 @@
+{
+  "best_validation_step": 9000,
+  "best_validation_step_accuracy": 0.6931949250288351,
+  "command": "scripts/probe_bc_v2.py convergence --weights-dir .claude/worktrees/fix-env-hidden-state/.cache/bc-experiment-v2/weights",
+  "config": {
+    "batch_size": 64,
+    "eval_every": 500,
+    "learning_rate": 0.0003,
+    "max_minutes": 25.0,
+    "max_total_steps": 30000,
+    "optimizer_state": "AdamW restarted with zero moments (v2 stored no optimizer state)",
+    "patience_evaluations": 3,
+    "rng_seed": 0,
+    "run": "standard-n256-seed0-steps6000",
+    "selection": "best validation step accuracy; test scored once afterwards",
+    "start_step": 6000,
+    "start_weights_sha256": "db8ea1488ecb38e512e38d9d2d8db94ef82c762e09fcfaef1b975b227399a640",
+    "weight_decay": 0.0001
+  },
+  "probe": "convergence",
+  "provenance": {
+    "device": "mps",
+    "git_revision": "76092f1c657c48f7146e8f4230b527ad3c65b4be",
+    "git_status_porcelain": "?? artifacts/bc-diagnosis-v1/",
+    "host": "Darwin 27.0.0 (arm64)",
+    "python": "3.12.15",
+    "recorded_at_unix": 1794797983,
+    "torch": "2.15.0",
+    "worktree_clean": false
+  },
+  "schema_version": "pixelgym-bc-probe-v1",
+  "stop_reason": "wall-clock cap 25.0 min",
+  "test_closed_loop_at_best": {
+    "episodes": 50,
+    "episodes_with_any_submission": 42,
+    "fields_total": 7,
+    "mean_fields_correct": 1.12,
+    "mean_steps": 200.0,
+    "successes": 0
+  },
+  "test_teacher_forced_at_best": {
+    "action_type_accuracy": 0.9966978536048432,
+    "click_frames": 376,
+    "click_target_accuracy": 0.8351063829787234,
+    "frames": 5451,
+    "key_accuracy": 0.6731034482758621,
+    "key_frames": 5075,
+    "step_accuracy": 0.6811594202898551
+  },
+  "total_seconds": 1917.5,
+  "train_seconds": 1799.5,
+  "validation_at_start": {
+    "action_type_accuracy": 0.995674740484429,
+    "click_frames": 240,
+    "click_target_accuracy": 0.8291666666666667,
+    "frames": 3468,
+    "key_accuracy": 0.5780669144981413,
+    "key_frames": 3228,
+    "step_accuracy": 0.592560553633218
+  },
+  "validation_curve": [
+    {
+      "action_type_accuracy": 0.995674740484429,
+      "click_frames": 240,
+      "click_target_accuracy": 0.8291666666666667,
+      "frames": 3468,
+      "key_accuracy": 0.5780669144981413,
+      "key_frames": 3228,
+      "step": 6000,
+      "step_accuracy": 0.592560553633218
+    },
+    {
+      "action_type_accuracy": 0.9959630911188004,
+      "click_frames": 240,
+      "click_target_accuracy": 0.8375,
+      "frames": 3468,
+      "key_accuracy": 0.6096654275092936,
+      "key_frames": 3228,
+      "loss": 5.2059125900268555,
+      "step": 6500,
+      "step_accuracy": 0.6219723183391004
+    },
+    {
+      "action_type_accuracy": 0.9971164936562861,
+      "click_frames": 240,
+      "click_target_accuracy": 0.85,
+      "frames": 3468,
+      "key_accuracy": 0.6074969021065675,
+      "key_frames": 3228,
+      "loss": 5.360279083251953,
+      "step": 7000,
+      "step_accuracy": 0.6219723183391004
+    },
+    {
+      "action_type_accuracy": 0.9965397923875432,
+      "click_frames": 240,
+      "click_target_accuracy": 0.8166666666666667,
+      "frames": 3468,
+      "key_accuracy": 0.6294919454770755,
+      "key_frames": 3228,
+      "loss": 5.009605884552002,
+      "step": 7500,
+      "step_accuracy": 0.6398500576701269
+    },
+    {
+      "action_type_accuracy": 0.9976931949250288,
+      "click_frames": 240,
+      "click_target_accuracy": 0.8375,
+      "frames": 3468,
+      "key_accuracy": 0.6456009913258984,
+      "key_frames": 3228,
+      "loss": 5.2205939292907715,
+      "step": 8000,
+      "step_accuracy": 0.6571510957324106
+    },
+    {
+      "action_type_accuracy": 0.9950980392156863,
+      "click_frames": 240,
+      "click_target_accuracy": 0.825,
+      "frames": 3468,
+      "key_accuracy": 0.669454770755886,
+      "key_frames": 3228,
+      "loss": 4.861729621887207,
+      "step": 8500,
+      "step_accuracy": 0.6756055363321799
+    },
+    {
+      "action_type_accuracy": 0.9979815455594002,
+      "click_frames": 240,
+      "click_target_accuracy": 0.8416666666666667,
+      "frames": 3468,
+      "key_accuracy": 0.6843246592317225,
+      "key_frames": 3228,
+      "loss": 4.266383171081543,
+      "step": 9000,
+      "step_accuracy": 0.6931949250288351
+    },
+    {
+      "action_type_accuracy": 0.9979815455594002,
+      "click_frames": 240,
+      "click_target_accuracy": 0.8416666666666667,
+      "frames": 3468,
+      "key_accuracy": 0.6827757125154895,
+      "key_frames": 3228,
+      "loss": 4.874747276306152,
+      "step": 9500,
+      "step_accuracy": 0.6920415224913494
+    }
+  ]
+}
