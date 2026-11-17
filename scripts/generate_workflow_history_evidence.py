@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_OUTPUT = Path("artifacts/agent-assisted-workflow-history.json")
-DEFAULT_REPOSITORY = "elanthus/OSWorldTasks"
+DEFAULT_REPOSITORY = "elanthus/PixelGym-OSWorld"
 DEFAULT_END_REF = "origin/main"
 PR_QUERY_LIMIT = 1000
 PR_FIELDS = (
