@@ -527,7 +527,7 @@ def run_evaluation(
         selected = set(pilot_example_ids(examples, protocol=protocol))
         examples = [row for row in examples if row["example_id"] in selected]
     with _prediction_output(output_path, plan["new_calls"]) as writer:
-        records = []
+        records: list[dict[str, Any]] = []
         cache_hits = 0
         for example in examples:
             overlay = overlays[example["example_id"]]
@@ -549,7 +549,7 @@ def run_evaluation(
                 cache_hits += cache_hit
         encoded = "".join(canonical_json_text(row) + "\n" for row in records)
         if writer is None:
-            if output_path.read_bytes() != encoded.encode("utf-8"):
+            if output_path.read_text(encoding="utf-8") != encoded:
                 raise ValueError("refusing to overwrite a different immutable prediction file")
         else:
             writer.write(encoded)
