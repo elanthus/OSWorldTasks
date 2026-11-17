@@ -150,3 +150,26 @@ def test_committed_report_matches_regeneration(tmp_path: Path) -> None:
     args = [*(f"artifacts/{r}" for r in runs), "--output", str(out)]
     assert report.main(args) == 0
     assert out.read_text(encoding="utf-8") == committed.read_text(encoding="utf-8")
+
+
+def test_a_seed_whose_every_reset_failed_still_renders(tmp_path: Path) -> None:
+    _run(tmp_path / "run")
+    path = tmp_path / "run" / "results.json"
+    evidence = json.loads(path.read_text(encoding="utf-8"))
+    evidence["seeds"] = [5, 9]
+    evidence["provenance"]["guest_bundle_sha256_by_seed"]["9"] = "c" * 64
+    errors = [{"reset_index": i, "error": "Traceback ...", "seconds": 1.0} for i in range(3)]
+    evidence["per_seed"].append({"seed": 9, "reset_errors": errors})
+    path.write_text(json.dumps(evidence), encoding="utf-8")
+    text = _render(tmp_path, tmp_path / "run")
+    assert "2 completed, 3 failed, 0 skipped" in text
+    assert "| 9 | `cccccccccccc` | 0 | 0 | 0 | 0 | 0/0 | 0 | 0 | — | 3 |" in text
+
+
+def test_skips_for_a_cleanup_failure_are_not_attributed_to_the_budget(tmp_path: Path) -> None:
+    reason = "provider cleanup failed after a reset failure"
+    skipped = [{"seed": 5, "reset_index": 2, "reason": reason}]
+    _run(tmp_path / "run", skipped=skipped)
+    text = _render(tmp_path, tmp_path / "run")
+    assert "0 skipped by the 85-minute budget, 1 skipped for another reason (listed below)" in text
+    assert f"- seed 5 reset 2: {reason}" in text

@@ -71,3 +71,13 @@ and application-state hashes were identical on every reset of all 8 seeds.
   touches the reset path and the environment contract, so it was not changed.
 - Whether to free space in the guest image or suppress desktop notifications. That would change the
   guest artifact, so it was not done.
+
+## 2026-11-16 amendment: path redaction in the two `results.json` files
+
+Both runs' `results.json` recorded `guest_image_path` (in `provenance` and in
+`integration_metadata`) as the recording host's absolute path, which the checked-in-evidence guard
+(`tests/unit/test_day3_release_evidence.py`) rejects. Those four strings were replaced with
+`<repo>/.cache/osworld/osworld-v2-ubuntu-x86.qcow2`, using `pixelgym.evidence_redaction` with the
+repository root mapped to `<repo>`. No other byte of either file changed, no measured value is
+affected, and the guest report regenerates unchanged. The driver now applies the same redaction
+(repository root, home directory, system temporary directory) whenever it writes `results.json`.

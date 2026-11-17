@@ -68,7 +68,7 @@ def load(folder: Path) -> dict[str, Any]:
 def hash_groups(seed_summary: dict[str, Any]) -> list[tuple[str, list[int]]]:
     """Each distinct frame hash with the reset indices that produced it, in first-seen order."""
     groups: dict[str, list[int]] = {}
-    for reset in seed_summary["resets"]:
+    for reset in seed_summary.get("resets", []):
         groups.setdefault(reset["frame_sha256"], []).append(reset["reset_index"])
     return list(groups.items())
 
@@ -80,7 +80,7 @@ def saved_frames(folder: Path, evidence: dict[str, Any]) -> list[dict[str, Any]]
     recorded = {
         (s["seed"], r["reset_index"]): r["frame_sha256"]
         for s in evidence["per_seed"]
-        for r in s["resets"]
+        for r in s.get("resets", [])
     }
     rows = []
     for path in sorted(folder.glob("seed-*-reset-*.png")):
@@ -114,6 +114,11 @@ def render_run(root: Path, folder: Path, ev: dict[str, Any]) -> list[str]:
     errors = sum(len(s.get("reset_errors", [])) for s in ev["per_seed"])
     completed = sum(len(s.get("resets", [])) for s in ev["per_seed"])
     close_error = "none" if close.get("error") is None else "recorded"
+    budget_skips = sum(1 for k in ev["skipped"] if k.get("reason") == "time budget")
+    other_skips = len(ev["skipped"]) - budget_skips
+    other_skip_text = (
+        f", {other_skips} skipped for another reason (listed below)" if other_skips else ""
+    )
     lines = [
         f"## Run `{folder.name}`",
         "",
@@ -123,8 +128,9 @@ def render_run(root: Path, folder: Path, ev: dict[str, Any]) -> list[str]:
         ),
         (
             f"- {len(ev['seeds'])} seeds × {ev['resets_per_seed']} resets requested; {completed} "
-            f"completed, {errors} failed, {len(ev['skipped'])} skipped by the "
-            f"{ev['budget_minutes']:g}-minute budget; {ev.get('elapsed_seconds')} s elapsed."
+            f"completed, {errors} failed, {budget_skips} skipped by the "
+            f"{ev['budget_minutes']:g}-minute budget{other_skip_text}; "
+            f"{ev.get('elapsed_seconds')} s elapsed."
         ),
         (
             f"- Provider close: attempted {_yn(close.get('attempted') is True)}, returned "

@@ -51,18 +51,25 @@ def load(path: Path) -> dict[str, Any]:
 
 
 def _frame(root: Path, evidence: dict[str, Any], seed: int) -> np.ndarray | None:
-    """Reset-0 PNG of ``seed``, from the frames directory beside the evidence file.
+    """Reset-0 PNG of ``seed``.
 
-    The directory is found by its recorded name next to the evidence file, so a file recorded
-    elsewhere (for example a CI workspace) still resolves after it is checked in unchanged.
+    The recorded frames directory is tried first (absolute, or relative to the repository root).
+    If it holds no such PNG, a directory of the same name beside the evidence file is tried, so a
+    file recorded elsewhere (for example a CI workspace) still resolves after it is checked in
+    unchanged.
     """
     from PIL import Image
 
     if not evidence.get("frames_dir"):
         return None
-    folder = (root / evidence["_path"]).parent / Path(evidence["frames_dir"]).name
-    path = folder / f"seed-{seed}-reset-0.png"
-    if not path.is_file():
+    recorded = Path(evidence["frames_dir"])
+    name = f"seed-{seed}-reset-0.png"
+    candidates = [
+        (recorded if recorded.is_absolute() else root / recorded) / name,
+        (root / evidence["_path"]).parent / recorded.name / name,
+    ]
+    path = next((c for c in candidates if c.is_file()), None)
+    if path is None:
         return None
     with Image.open(path) as image:
         return np.asarray(image.convert("RGB"), dtype=np.uint8)
@@ -77,6 +84,7 @@ def cross_host(root: Path, a: dict[str, Any], b: dict[str, Any]) -> list[dict[st
         row: dict[str, Any] = {
             "seed": seed,
             "frame_hashes_equal": ha == hb,
+            "single_frame_identical": len(ha) == 1 and ha == hb,
             "task_equal": seeds_a[seed]["distinct_task_sha256"]
             == seeds_b[seed]["distinct_task_sha256"],
             "form_state_equal": seeds_a[seed]["distinct_form_state_sha256"]
@@ -158,6 +166,7 @@ def render(root: Path, paths: list[Path], evidences: list[dict[str, Any]]) -> st
     for (pa, a), (pb, b) in itertools.combinations(zip(paths, evidences, strict=True), 2):
         rows = cross_host(root, a, b)
         equal = sum(1 for r in rows if r["frame_hashes_equal"])
+        identical = sum(1 for r in rows if r["single_frame_identical"])
         same_contract = a["provenance"]["renderer_contract"] == b["provenance"]["renderer_contract"]
         lines += [
             f"## Across hosts: {host_label(a)} vs {host_label(b)}",
@@ -165,7 +174,8 @@ def render(root: Path, paths: list[Path], evidences: list[dict[str, Any]]) -> st
             (
                 f"Frame hash sets equal on {equal} of {len(rows)} common seeds. Chromium "
                 f"{a['provenance']['chromium_version']} vs {b['provenance']['chromium_version']}; "
-                f"renderer contract identical: {_yn(same_contract)}."
+                f"renderer contract identical: {_yn(same_contract)}. Seeds where each host "
+                f"produced one frame hash and the two match: {identical} of {len(rows)}."
             ),
             "",
             (
@@ -196,7 +206,8 @@ def render(root: Path, paths: list[Path], evidences: list[dict[str, Any]]) -> st
         (
             "Local Playwright Chromium, not the OSWorld guest's Chrome, not the guest bundle and "
             "not the guest's display stack. Cross-host bitwise identity is reported as measured "
-            "above and is claimed only for seeds whose hash sets are equal."
+            "above and is claimed only for seeds where each host produced a single frame hash "
+            "and the two hashes match; equal sets of several hashes are not such a claim."
         ),
         "",
     ]

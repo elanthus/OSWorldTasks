@@ -171,3 +171,56 @@ def test_report_finds_frames_recorded_under_another_workspace(tmp_path: Path) ->
         ["mac.json", "linux.json", "--output", str(out), "--repository-root", str(tmp_path)]
     )
     assert "| 7 | no | yes | yes | 1 | 2 | [3, 2, 4, 3] |" in out.read_text(encoding="utf-8")
+
+
+def test_cli_rejects_repeated_seeds(tmp_path: Path) -> None:
+    with pytest.raises(SystemExit) as exit_info:
+        recorder.main(["--output", str(tmp_path / "x.json"), "--seeds", *(["7"] * 8)])
+    assert exit_info.value.code == 2
+    assert not (tmp_path / "x.json").exists()
+
+
+def test_report_prefers_the_recorded_frames_directory(tmp_path: Path) -> None:
+    # Recorded with --output evidence/linux.json --frames-dir images/linux: the PNGs are not
+    # beside the evidence file.
+    other = _frame()
+    other[1, 1] = (10, 15, 10)
+    _evidence(tmp_path, "mac", "Darwin", {7: _frame()})
+    linux = _evidence(tmp_path, "linux", "Linux", {7: other})
+    (tmp_path / "evidence").mkdir()
+    (tmp_path / "images").mkdir()
+    (tmp_path / "frames-linux").rename(tmp_path / "images" / "linux")
+    record = json.loads(linux.read_text(encoding="utf-8"))
+    record["frames_dir"] = "images/linux"
+    (tmp_path / "evidence" / "linux.json").write_text(json.dumps(record), encoding="utf-8")
+    linux.unlink()
+    out = tmp_path / "REPORT.md"
+    report.main(
+        [
+            "mac.json",
+            "evidence/linux.json",
+            "--output",
+            str(out),
+            "--repository-root",
+            str(tmp_path),
+        ]
+    )
+    assert "| 7 | no | yes | yes | 1 | 5 | [1, 1, 2, 2] |" in out.read_text(encoding="utf-8")
+
+
+def test_equal_multi_hash_sets_are_not_counted_as_cross_host_identity(tmp_path: Path) -> None:
+    a, b = _frame(), _frame(30)
+    for name, system in (("mac", "Darwin"), ("linux", "Linux")):
+        path = _evidence(tmp_path, name, system, {7: a, 11: _frame(20)})
+        record = json.loads(path.read_text(encoding="utf-8"))
+        alternating = [a, b, a, b, a]
+        resets = [_reset(i, f) for i, f in enumerate(alternating)]
+        record["per_seed"][0] = recorder.summarize_seed(7, resets, alternating)
+        path.write_text(json.dumps(record), encoding="utf-8")
+    out = tmp_path / "REPORT.md"
+    report.main(
+        ["mac.json", "linux.json", "--output", str(out), "--repository-root", str(tmp_path)]
+    )
+    text = out.read_text(encoding="utf-8")
+    assert "Frame hash sets equal on 2 of 2 common seeds" in text
+    assert "each host produced one frame hash and the two match: 1 of 2." in text

@@ -20,7 +20,12 @@ from, writing raw values only:
 
 A time budget (default 85 minutes, under the 90-minute stop-loss) is checked before each reset
 using the slowest reset seen so far; resets that would not fit are recorded as skipped, never
-silently dropped. ``results.json`` is rewritten after every reset.
+silently dropped. If a reset fails and the backend's cleanup of that provider also fails, no
+further reset is attempted: the backend has already dropped its provider reference, so another
+reset would start a second guest while the first may still be running. The remaining resets are
+recorded as skipped with that reason. ``results.json`` is rewritten after every reset, with the
+repository root, home directory and system temporary directory replaced by ``<repo>``,
+``<home>`` and ``<system-temp>``.
 
 Usage (from the repository root, with the ``osworld`` extra installed)::
 
@@ -50,6 +55,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from pixelgym.backends.osworld import OSWorldBackend, OSWorldBackendConfig
 from pixelgym.env import PixelGuiEnv
+from pixelgym.evidence_redaction import redact_evidence_text, standard_path_replacements
 from pixelgym.tasks.vendor_form import generator, osworld_task, render
 from pixelgym.tasks.vendor_form.ui import INPUT_CONTRACT_VERSION
 from scripts.run_chromium_reset_determinism import (
@@ -62,6 +68,7 @@ from scripts.run_chromium_reset_determinism import (
 SCHEMA_VERSION = "pixelgym-osworld-reset-determinism-v1"
 DEFAULT_RESETS = 5
 DEFAULT_BUDGET_MINUTES = 85.0
+CLEANUP_FAILED_REASON = "provider cleanup failed after a reset failure"
 BackendFactory = Callable[[Path], OSWorldBackend]
 
 
@@ -117,7 +124,9 @@ def close_record(env: PixelGuiEnv, backend: OSWorldBackend) -> dict[str, Any]:
 
 
 def _write(path: Path, value: dict[str, Any]) -> None:
-    path.write_text(json.dumps(value, indent=2, sort_keys=True, default=str) + "\n", "utf-8")
+    text = json.dumps(value, indent=2, sort_keys=True, default=str) + "\n"
+    replacements = [(REPO_ROOT, "<repo>"), *standard_path_replacements([])]
+    path.write_text(redact_evidence_text(text, replacements), "utf-8")
 
 
 def default_backend(guest_image: Path) -> OSWorldBackend:
@@ -135,8 +144,13 @@ def run(
     clock: Callable[[], float] = time.monotonic,
     save_frames: bool = True,
 ) -> dict[str, Any]:
-    """Record the resets; always closes the provider and writes ``results.json``."""
+    """Record the resets; always closes the provider and writes ``results.json``.
 
+    Returns the record as stored, after path redaction.
+    """
+
+    if len(set(seeds)) != len(seeds):
+        raise ValueError(f"seeds must be distinct, got {seeds}")
     from PIL import Image
 
     output.mkdir(parents=True, exist_ok=True)
@@ -162,18 +176,25 @@ def run(
     backend = backend_factory(guest_image)
     env = PixelGuiEnv(backend)
     slowest = 0.0
+    cleanup_failed = False
     try:
         for seed in seeds:
             records: list[dict[str, Any]] = []
             frames: list[np.ndarray] = []
             errors: list[dict[str, Any]] = []
             for index in range(resets):
+                if cleanup_failed:
+                    results["skipped"].append(
+                        {"seed": seed, "reset_index": index, "reason": CLEANUP_FAILED_REASON}
+                    )
+                    continue
                 now = clock()
                 if now + slowest > deadline:
                     results["skipped"].append(
                         {"seed": seed, "reset_index": index, "reason": "time budget"}
                     )
                     continue
+                close_errors_before = len(backend.suppressed_close_errors)
                 try:
                     observation, _info = env.reset(seed=seed)
                     record = {
@@ -204,6 +225,7 @@ def run(
                             "seconds": round(clock() - now, 1),
                         }
                     )
+                    cleanup_failed = len(backend.suppressed_close_errors) > close_errors_before
                 slowest = max(slowest, clock() - now)
                 summary = summarize_seed(seed, records, frames) if records else {"seed": seed}
                 summary["reset_errors"] = errors
@@ -216,7 +238,8 @@ def run(
         results["provider_closed"] = results["provider_close"]["returned"] is True
         results["elapsed_seconds"] = round(clock() - started, 1)
         _write(output / "results.json", results)
-    return results
+    # Return what was stored, so callers see the same redacted record as the file.
+    return json.loads((output / "results.json").read_text(encoding="utf-8"))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -227,6 +250,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--resets", type=int, default=DEFAULT_RESETS)
     parser.add_argument("--budget-minutes", type=float, default=DEFAULT_BUDGET_MINUTES)
     args = parser.parse_args(argv)
+    if len(set(args.seeds)) != len(args.seeds):
+        parser.error(f"--seeds must not repeat a seed: {args.seeds}")
     if not args.guest_image.is_file():
         parser.error(f"guest image does not exist: {args.guest_image}")
     results = run(

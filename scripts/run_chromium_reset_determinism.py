@@ -217,8 +217,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seeds", type=int, nargs="+", default=list(DEFAULT_SEEDS))
     parser.add_argument("--resets", type=int, default=DEFAULT_RESETS)
     args = parser.parse_args(argv)
+    if len(set(args.seeds)) != len(args.seeds):
+        parser.error(f"--seeds must not repeat a seed: {args.seeds}")
     if len(args.seeds) < 8 or args.resets < 5:
-        parser.error("record at least 8 seeds and 5 resets per seed")
+        parser.error("record at least 8 distinct seeds and 5 resets per seed")
     result = record(args.seeds, args.resets, args.frames_dir)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")

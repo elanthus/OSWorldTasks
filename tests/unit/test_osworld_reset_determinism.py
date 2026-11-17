@@ -239,3 +239,58 @@ def test_time_budget_skips_resets_explicitly(world: _World, tmp_path: Path) -> N
     assert recorded + len(results["skipped"]) == 6
     assert results["skipped"] and all(s["reason"] == "time budget" for s in results["skipped"])
     assert results["provider_closed"] is True
+
+
+def test_a_failed_cleanup_after_a_failed_reset_stops_further_resets(
+    world: _World, tmp_path: Path
+) -> None:
+    # The backend drops its provider reference before closing it; once that close fails, another
+    # reset would build a second provider while the first may still be running.
+    world.fail_on = {1}
+    world.close_raises = True
+    results = _run(world, tmp_path, seeds=[7, 11], resets=3)
+    assert world.resets == 1
+    (seed,) = results["per_seed"]
+    assert seed["seed"] == 7 and [e["reset_index"] for e in seed["reset_errors"]] == [0]
+    assert [(k["seed"], k["reset_index"]) for k in results["skipped"]] == [
+        (7, 1),
+        (7, 2),
+        (11, 0),
+        (11, 1),
+        (11, 2),
+    ]
+    assert {k["reason"] for k in results["skipped"]} == {driver.CLEANUP_FAILED_REASON}
+    assert results["provider_close"]["suppressed_close_errors"]
+    assert results["provider_closed"] is False
+    assert _stored(tmp_path) == results
+
+
+def test_a_failed_reset_with_a_clean_cleanup_keeps_going(world: _World, tmp_path: Path) -> None:
+    world.fail_on = {1}
+    results = _run(world, tmp_path, seeds=[7, 11], resets=2)
+    assert world.resets == 4
+    assert results["skipped"] == []
+
+
+def test_repeated_seeds_are_rejected_before_a_provider_starts(
+    world: _World, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    with pytest.raises(ValueError, match="distinct"):
+        _run(world, tmp_path, seeds=[7, 11, 7])
+    assert world.resets == 0 and not (tmp_path / "out").exists()
+    image = tmp_path / "guest.qcow2"
+    monkeypatch.setattr(driver, "default_backend", _factory(world, tmp_path))
+    with pytest.raises(SystemExit) as exit_info:
+        driver.main([str(tmp_path / "out2"), "--guest-image", str(image), "--seeds", "7", "7"])
+    assert exit_info.value.code == 2 and world.resets == 0
+
+
+def test_stored_results_carry_no_local_absolute_paths(world: _World, tmp_path: Path) -> None:
+    world.fail_on = {2}
+    _run(world, tmp_path, seeds=[7], resets=2)
+    text = (tmp_path / "out" / "results.json").read_text(encoding="utf-8")
+    assert str(tmp_path) not in text and str(tmp_path.resolve()) not in text
+    assert str(driver.REPO_ROOT) not in text
+    stored = json.loads(text)
+    assert stored["provenance"]["guest_image_path"].endswith("/guest.qcow2")
+    assert stored["provenance"]["guest_image_path"].startswith("<")
