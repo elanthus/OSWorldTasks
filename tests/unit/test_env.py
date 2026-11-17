@@ -814,8 +814,37 @@ def test_restore_episode_preserves_step_limit_end_guard():
         max_episode_steps=1,
     )
     env.restore_episode(task, step_count=1)
-    with pytest.raises(RuntimeError, match="after the episode already ended"):
+    with pytest.raises(RuntimeError, match="the episode already ended"):
         env.step(_noop())
+
+
+def test_restore_submission_timeout_blocks_an_active_episode_until_recovery(monkeypatch):
+    backend = FakeBackend()
+    env = PixelGuiEnv(backend, max_episode_steps=2)
+    env.reset(seed=7)
+    env.step(_noop())
+    task = TaskSpec.from_generated(
+        generator.generate_task(7),
+        instruction=DEFAULT_INSTRUCTION,
+        app_url=backend.app_url,
+        max_episode_steps=2,
+    )
+    checkpoint = backend.checkpoint()
+    backend.restore(checkpoint)
+
+    def timeout():
+        raise TimeoutError("restore submission read")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(backend, "read_submissions", timeout)
+        with pytest.raises(TimeoutError, match="restore submission read"):
+            env.restore_episode(task, step_count=1)
+
+    with pytest.raises(RuntimeError, match="reset"):
+        env.step(_noop())
+    assert backend.checkpoint() == checkpoint
+    env.restore_episode(task, step_count=1)
+    assert env.step(_noop())[1:4] == (0.0, False, True)
 
 
 def test_reset_after_termination_starts_a_fresh_episode():
@@ -873,6 +902,79 @@ def test_wrong_shape_screenshot_on_step_is_rejected():
 
     with pytest.raises(BackendContractError, match="shape"):
         env.step(_noop())
+
+
+@pytest.mark.parametrize("failure_at", ["key", "screenshot", "read_submissions"])
+def test_uncertain_keypress_requires_recovery_before_another_action(monkeypatch, failure_at):
+    backend = FakeBackend()
+    env = PixelGuiEnv(backend, max_episode_steps=2)
+    env.reset(seed=7)
+    env.step(_click(768, 94))
+    keypress = _key(KEY_ALLOWLIST.index("A"))
+    original = getattr(backend, failure_at)
+
+    def timeout_after_operation(*args):
+        original(*args)
+        raise TimeoutError(failure_at)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(backend, failure_at, timeout_after_operation)
+        with pytest.raises(TimeoutError, match=failure_at):
+            env.step(keypress)
+
+    assert backend.key_calls == ["A"]
+    with pytest.raises(RuntimeError, match="may have been applied.*restore_episode"):
+        env.step(keypress)
+    assert backend.key_calls == ["A"]
+    with pytest.raises(RuntimeError, match="reset"):
+        env.step(_noop())
+
+    env.reset(seed=7)
+    assert env.step(_noop())[1:4] == (0.0, False, False)
+    assert env.step(_noop())[1:4] == (0.0, False, True)
+
+
+def test_failed_reset_screenshot_keeps_episode_closed(monkeypatch):
+    backend = FakeBackend()
+    env = PixelGuiEnv(backend)
+    env.reset(seed=7)
+
+    def timeout():
+        raise TimeoutError("reset screenshot")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(backend, "screenshot", timeout)
+        with pytest.raises(TimeoutError, match="reset screenshot"):
+            env.reset(seed=8)
+    with pytest.raises(RuntimeError, match="failed before the episode was ready"):
+        env.step(_noop())
+    assert backend.noop_calls == 0
+
+
+def test_outer_step_rechecks_readiness_after_a_nested_keypress_times_out(monkeypatch):
+    backend = FakeBackend()
+    env = PixelGuiEnv(backend)
+    env.reset(seed=7)
+    keypress = _key(KEY_ALLOWLIST.index("A"))
+
+    def timeout():
+        raise TimeoutError("nested screenshot")
+
+    class ReentrantAction(dict):
+        def __getitem__(self, field):
+            if field == "key":
+                with monkeypatch.context() as patch:
+                    patch.setattr(backend, "screenshot", timeout)
+                    with pytest.raises(TimeoutError, match="nested screenshot"):
+                        env.step(keypress)
+            return super().__getitem__(field)
+
+    with pytest.raises(RuntimeError, match="reset"):
+        env.step(ReentrantAction(keypress))
+    assert backend.key_calls == ["A"]
+    with pytest.raises(RuntimeError, match="reset"):
+        env.step(_noop())
+    assert backend.noop_calls == 0
 
 
 # -- close() -----------------------------------------------------------------
