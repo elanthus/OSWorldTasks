@@ -9,8 +9,6 @@ The replacement pilot and full campaign subsequently completed; their [review
 package](../artifacts/grounding-v5-d59-replication-results/review-guide.md) keeps the pilot
 separate and discloses one unresolved confirmed-stopped timeout. D5.10 was later declared on
 2026-10-25 ([decision record](../artifacts/decisions/d5.10.json)).
-No experiment call occurred while preparing this replacement; the separate owner-authorized
-Fable code-verification call is recorded outside experiment accounting.
 
 ## Historical parser-incompatible pilot
 
@@ -153,3 +151,6 @@ strict. The same validated preamble is recognized for confirmed zero-usage OAuth
 connection-reset envelopes under the existing bounded retry. The new parser version is
 `pixelgym-agent-v5-claude-stream-json-action-parser-v4-ui-render-preamble`. Four retained streams were checked offline; the
 previous pilot evidence is unchanged and remains separate from the newly approved pilot.
+
+No experiment call occurred while preparing this replacement; the separate owner-authorized
+Fable code-verification call is recorded outside experiment accounting.

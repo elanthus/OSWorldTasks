@@ -416,11 +416,11 @@ Print the digest to approve, and launch only after a human has approved that exa
 ```
 
 Adding a registry record, a price-catalog file, and the approval itself are human decisions under
-AGENTS.md §4 (provider choice and cloud spend). Agents may add records and tests but must not
-launch this path. Candidates produced this way carry `provider` other than `scripted-demo`, are
-labelled non-synthetic in the control plane, and remain subject to the same promotion gates. The
-registry's `kind` field is fixed to `grounding`; a stateful v5 policy kind requires the separate
-versioned flow described in the v5 plan's platform-boundary section and its own approval.
+AGENTS.md §4 (provider choice and cloud spend). Candidates produced this way carry `provider`
+other than `scripted-demo`, are labelled non-synthetic in the control plane, and remain subject
+to the same promotion gates. The registry's `kind` field is fixed to `grounding`; a stateful v5
+policy kind requires the separate versioned flow described in the v5 plan's platform-boundary
+section and its own approval.
 
 ## Production reference
 
