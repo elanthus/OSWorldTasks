@@ -224,3 +224,38 @@ def test_equal_multi_hash_sets_are_not_counted_as_cross_host_identity(tmp_path: 
     text = out.read_text(encoding="utf-8")
     assert "Frame hash sets equal on 2 of 2 common seeds" in text
     assert "each host produced one frame hash and the two match: 1 of 2." in text
+
+
+def test_incomparable_differing_pairs_are_not_reported_as_zero(tmp_path: Path) -> None:
+    path = _evidence(tmp_path, "mac", "Darwin", {7: _frame(), 11: _frame(20)})
+    record = json.loads(path.read_text(encoding="utf-8"))
+    narrow = np.zeros((4, 5, 3), dtype=np.uint8)
+    frames = [_frame(), narrow, _frame(), _frame(), _frame()]
+    record["per_seed"][0] = recorder.summarize_seed(
+        7, [_reset(i, f) for i, f in enumerate(frames)], frames
+    )
+    shifted = _frame(20)
+    shifted[0, 0] = (20, 20, 29)
+    frames = [_frame(20), narrow, shifted, _frame(20), _frame(20)]
+    record["per_seed"][1] = recorder.summarize_seed(
+        11, [_reset(i, f) for i, f in enumerate(frames)], frames
+    )
+    path.write_text(json.dumps(record), encoding="utf-8")
+    _evidence(tmp_path, "linux", "Linux", {7: _frame(), 11: _frame(20)})
+    out = tmp_path / "REPORT.md"
+    report.main(
+        ["mac.json", "linux.json", "--output", str(out), "--repository-root", str(tmp_path)]
+    )
+    text = out.read_text(encoding="utf-8")
+    assert "| 7 | 5 | 2 | 1 | 1 | 4/10 | not comparable | not comparable |" in text
+    assert "| 1 (4 incomparable pair(s) excluded) | 9 (4 incomparable pair(s) excluded) |" in text
+
+
+def test_evidence_outside_the_repository_root_loads(tmp_path: Path) -> None:
+    (tmp_path / "repo").mkdir()
+    mac = _evidence(tmp_path, "mac", "Darwin", {7: _frame()})
+    linux = _evidence(tmp_path, "linux", "Linux", {7: _frame()})
+    out = tmp_path / "REPORT.md"
+    args = [str(mac), str(linux), "--output", str(out), "--repository-root", str(tmp_path / "repo")]
+    assert report.main(args) == 0
+    assert "| 7 | yes | yes | yes | 0 | 0 | None |" in out.read_text(encoding="utf-8")

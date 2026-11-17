@@ -173,3 +173,44 @@ def test_skips_for_a_cleanup_failure_are_not_attributed_to_the_budget(tmp_path: 
     text = _render(tmp_path, tmp_path / "run")
     assert "0 skipped by the 85-minute budget, 1 skipped for another reason (listed below)" in text
     assert f"- seed 5 reset 2: {reason}" in text
+
+
+def _set_metadata(folder: Path, **fields: Any) -> None:
+    path = folder / "results.json"
+    evidence = json.loads(path.read_text(encoding="utf-8"))
+    evidence["integration_metadata"].update(fields)
+    path.write_text(json.dumps(evidence), encoding="utf-8")
+
+
+def test_scope_claims_come_from_the_recorded_runs(tmp_path: Path) -> None:
+    _run(tmp_path / "a")
+    _run(tmp_path / "b")
+    _set_metadata(tmp_path / "a", guest_artifact_sha256="sha256:one")
+    _set_metadata(tmp_path / "b", guest_artifact_sha256="sha256:one")
+    out = tmp_path / "report.md"
+    args = ["a", "b", "--output", str(out), "--repository-root", str(tmp_path)]
+    assert report.main(args) == 0
+    text = out.read_text(encoding="utf-8")
+    assert "No reset failed, so each run used one provider." in text
+    assert "One guest image (`guest_artifact_sha256` `sha256:one` in every run)" in text
+    assert "do not record the host" in text
+    _set_metadata(tmp_path / "b", guest_artifact_sha256="sha256:two")
+    path = tmp_path / "b" / "results.json"
+    evidence = json.loads(path.read_text(encoding="utf-8"))
+    evidence["per_seed"][0]["reset_errors"] = [{"reset_index": 2, "error": "x", "seconds": 1.0}]
+    path.write_text(json.dumps(evidence), encoding="utf-8")
+    assert report.main(args) == 0
+    text = out.read_text(encoding="utf-8")
+    assert "2 distinct guest artifact digests across runs" in text
+    assert "may have used more than one provider" in text
+    assert "One guest image" not in text
+
+
+def test_a_run_folder_outside_the_repository_root_loads(tmp_path: Path) -> None:
+    _run(tmp_path / "elsewhere" / "run")
+    (tmp_path / "repo").mkdir()
+    out = tmp_path / "report.md"
+    folder = str(tmp_path / "elsewhere" / "run")
+    args = [folder, "--output", str(out), "--repository-root", str(tmp_path / "repo")]
+    assert report.main(args) == 0
+    assert "2 completed, 0 failed" in out.read_text(encoding="utf-8")

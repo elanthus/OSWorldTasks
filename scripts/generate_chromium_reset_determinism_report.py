@@ -155,8 +155,14 @@ def render(root: Path, paths: list[Path], evidences: list[dict[str, Any]]) -> st
         ]
         for s in ev["per_seed"]:
             pairs = [d for d in s["differing_frame_pairs"] if d.get("comparable")]
-            max_px = max((d["differing_pixel_count"] for d in pairs), default=0)
-            max_delta = max((d["max_per_channel_delta"] for d in pairs), default=0)
+            max_px: Any = max((d["differing_pixel_count"] for d in pairs), default=0)
+            max_delta: Any = max((d["max_per_channel_delta"] for d in pairs), default=0)
+            incomparable = len(s["differing_frame_pairs"]) - len(pairs)
+            if incomparable and not pairs:
+                max_px = max_delta = "not comparable"
+            elif incomparable:
+                note = f" ({incomparable} incomparable pair(s) excluded)"
+                max_px, max_delta = f"{max_px}{note}", f"{max_delta}{note}"
             lines.append(
                 f"| {s['seed']} | {len(s['resets'])} | {len(s['distinct_frame_sha256'])} | "
                 f"{len(s['distinct_task_sha256'])} | {len(s['distinct_form_state_sha256'])} | "
@@ -221,7 +227,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repository-root", type=Path, default=REPO_ROOT)
     args = parser.parse_args(argv)
     root = args.repository_root
-    paths = [p if not p.is_absolute() else p.relative_to(root) for p in args.evidence]
+    paths = [p.relative_to(root) if p.is_relative_to(root) else p for p in args.evidence]
     evidences = [{**load(root / p), "_path": p} for p in paths]
     args.output.write_text(render(root, paths, evidences), encoding="utf-8")
     return 0
