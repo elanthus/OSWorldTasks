@@ -230,6 +230,11 @@ def probe_legibility(torch: Any, dev: Any, args: argparse.Namespace) -> dict[str
 # -- convergence -------------------------------------------------------------------------------
 
 
+def updates_in_block(step: int, eval_every: int, max_total_steps: int) -> int:
+    """Updates to run before the next evaluation, never past ``max_total_steps``."""
+    return max(0, min(eval_every, max_total_steps - step))
+
+
 def probe_convergence(torch: Any, dev: Any, args: argparse.Namespace) -> dict[str, Any]:
     model, run = _stored_weights(torch, dev, args.weights_dir)
     seeds = bc.split_seeds("standard")
@@ -266,7 +271,7 @@ def probe_convergence(torch: Any, dev: Any, args: argparse.Namespace) -> dict[st
     step = run["steps"]
     stop = "max_steps"
     while step < args.max_total_steps:
-        for _ in range(cfg.eval_every):
+        for _ in range(updates_in_block(step, cfg.eval_every, args.max_total_steps)):
             step += 1
             index = rng.integers(0, len(train), size=cfg.batch_size)
             idx = torch.from_numpy(index).to(dev)
@@ -300,6 +305,7 @@ def probe_convergence(torch: Any, dev: Any, args: argparse.Namespace) -> dict[st
         if time.perf_counter() - started > args.max_minutes * 60:
             stop = f"wall-clock cap {args.max_minutes} min"
             break
+    training_loop_seconds = round(time.perf_counter() - started, 1)
     model.load_state_dict(best_state)
     tf = bc.step_metrics(test, *bc.predict(torch, model, test.frames, dev), targets)
     closed = bc.closed_loop(bc.model_policy(torch, model, dev), list(seeds["test"]))
@@ -321,7 +327,10 @@ def probe_convergence(torch: Any, dev: Any, args: argparse.Namespace) -> dict[st
             "selection": "best validation step accuracy; test scored once afterwards",
         },
         "stop_reason": stop,
+        # From the start of training to the end of test scoring (kept for continuity with
+        # the stored v1 record); ``training_loop_seconds`` stops when the training loop ends.
         "train_seconds": round(time.perf_counter() - started, 1),
+        "training_loop_seconds": training_loop_seconds,
         "validation_at_start": start_metrics,
         "best_validation_step": best[1],
         "best_validation_step_accuracy": best[0],

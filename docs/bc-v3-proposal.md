@@ -11,7 +11,7 @@
 | Candidate direction | Evidence | Supported as the v3 change? |
 | --- | --- | --- |
 | Full-resolution or cropped input because the card is unreadable | A small classifier reads one card character from a crop at the policy's 384x512 resolution with 100.0% held-out accuracy (3,449 crops from validation seeds), the same as at full resolution. The characters survive downsampling. | No. Legibility is not the bottleneck. A crop could still help the model *find* the right character, which this probe does not test (it is told where the character is). |
-| Recovery data from the oracle (DAgger) | In all 16 runs, all 50 closed-loop episodes first go wrong on a Company-name keystroke (800 of 800; position 0–18, and 796 of them at position 7 or earlier; per-run median step 1–2), with no closed-loop frame drift before it. The first error happens on the oracle's own states. | No. Compounding distribution shift is not what ends the episodes. |
+| Recovery data from the oracle (DAgger) | In all 16 runs, all 50 closed-loop episodes first go wrong on a Company-name keystroke (800 of 800; position 0–18, and 796 of them at position 7 or earlier; per-run median step 1–2), with no closed-loop frame drift before it. The first error happens on the oracle's own states. | No. Compounding distribution shift does not cause the first error. This evidence does not establish whether recovery data would help: later errors, or failure to recover after the first one, could still contribute to the 0/800 result. |
 | A short frame history | The current frame already shows what has been typed into the focused field, which is what a key depends on. | No. |
 | Longer training | 15 of 16 v2 runs selected their last checkpoint. Continuing `standard-n256-seed0` from step 6,000 raised validation step accuracy from 59.3% to 69.3% by step 9,000 (69.2% at 9,500); it stopped on the wall-clock cap, not a plateau. On test, scored once afterwards, step accuracy went from 57.7% to 68.1% and key accuracy from 56.0% to 67.3%. Both are still below the card-blind baseline (75.7% step, 81.3% key), and the closed loop stayed at 0/50. The key head can fit one episode's 105 key frames (99.0% from scratch, 100% from the stored weights). | **Yes**, as the only direction with direct positive evidence. The evidence does not say it will be enough. |
 
@@ -36,7 +36,7 @@ steps, and best-validation checkpoint selection.
 | Steps | 6,000 fixed | up to 60,000, from scratch (no warm start, so no optimizer restart) |
 | Stopping | none | stop when validation step accuracy has not improved for 6 evaluations (3,000 steps), or at 60,000 |
 | Selection | best validation step accuracy | unchanged |
-| Test use | once per run, after training | unchanged; nothing is tuned after test is seen |
+| Test use | once per run, after training | unchanged. The stopping rule uses validation only. The v2 test results and the convergence probe's test results informed the choice to train longer, and the test seeds were already scored, so v3 test numbers on these seeds are a comparison with v2, not a fresh confirmation. |
 | New reported metric | — | key accuracy on keys whose correct value is not the card-blind guess, from stored per-frame predictions |
 
 Everything else in the report is unchanged, including both baselines, the lookup table, closed
@@ -57,7 +57,7 @@ loop on all 50 test episodes per split, and first wrong action per episode.
 ## Expected wall-clock time
 
 Measured on this host (Apple Silicon, MPS):
-- one process alone ran about 0.51 s per step including validation (convergence probe);
+- one process alone ran at most about 0.51 s per step including validation (convergence probe: 1,799.5 s over 3,500 steps; that time also includes test scoring, because training time alone was not recorded);
 - the v2 grid ran about 0.42 s per step per process with 8 processes in parallel (6,000 steps in about 42 min).
 
 | Case | Steps per run | Four runs in parallel |

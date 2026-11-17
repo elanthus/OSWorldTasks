@@ -21,6 +21,16 @@ FOLDER = Path("artifacts/bc-diagnosis-v1")
 PROBES = ("legibility", "convergence", "copy")
 
 
+def _convergence_seconds(conv: dict[str, Any]) -> str:
+    """Describe the recorded convergence timing without overstating what it measured."""
+    if "training_loop_seconds" in conv:
+        return f"training ran {conv['training_loop_seconds']} s"
+    return (
+        f"{conv['train_seconds']} s from the start of training to the end of test scoring "
+        "(training time alone was not recorded)"
+    )
+
+
 def pct(num: int, den: int) -> str:
     return "—" if den == 0 else f"{100 * num / den:.1f}%"
 
@@ -220,7 +230,7 @@ def render(diagnosis: dict[str, Any], probes: dict[str, dict[str, Any]]) -> str:
             "",
             (
                 f"`{c['run']}` continued from step {c['start_step']} ({c['optimizer_state']}). "
-                f"Stopped: {conv['stop_reason']}, after {conv['train_seconds']} s. Best validation "
+                f"Stopped: {conv['stop_reason']}; {_convergence_seconds(conv)}. Best validation "
                 f"step accuracy {100 * conv['best_validation_step_accuracy']:.1f}% at step "
                 f"{conv['best_validation_step']}, from {100 * start['step_accuracy']:.1f}% at "
                 f"step {c['start_step']}."

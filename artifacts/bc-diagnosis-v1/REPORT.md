@@ -307,7 +307,7 @@ A small classifier (conv3x3(32)-conv3x3(64)-fc128, AdamW lr 1e-3, batch 256, 300
 
 ### Convergence
 
-`standard-n256-seed0-steps6000` continued from step 6000 (AdamW restarted with zero moments (v2 stored no optimizer state)). Stopped: wall-clock cap 25.0 min, after 1799.5 s. Best validation step accuracy 69.3% at step 9000, from 59.3% at step 6000.
+`standard-n256-seed0-steps6000` continued from step 6000 (AdamW restarted with zero moments (v2 stored no optimizer state)). Stopped: wall-clock cap 25.0 min; 1799.5 s from the start of training to the end of test scoring (training time alone was not recorded). Best validation step accuracy 69.3% at step 9000, from 59.3% at step 6000.
 
 | Step | Validation step | Click target | Key |
 |---:|---:|---:|---:|
