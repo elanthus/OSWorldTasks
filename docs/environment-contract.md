@@ -70,8 +70,10 @@ The reward-hacking classification of these endpoints is in the
 
 If a backend call fails during dispatch or while reading the resulting frame or submissions,
 the input may already have reached the application. `step()` propagates the error and rejects
-further actions until a successful reset or a host-verified checkpoint restore. An action rejected
-during validation can be corrected and submitted in the same episode.
+further actions until a reset succeeds or the host restores a verified checkpoint from which the
+episode can still run. A restored episode accepts actions only if it has no successful submission
+and its step count is below the limit. An action rejected during validation can be corrected and
+resubmitted while the episode is still active.
 
 **Known limitations.**
 

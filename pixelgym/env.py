@@ -144,6 +144,11 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
             )
 
         validated = validate_action(self.action_space, action)
+        # Reading the caller's mapping can run a nested step that closes the episode.
+        if not self._ready_to_step:
+            raise RuntimeError(
+                "episode closed during action validation; call reset() before stepping again."
+            )
         # Dispatch may apply the action even if its acknowledgement or the subsequent read fails.
         # Only a complete transition, reset or verified restore may enable another action.
         self._ready_to_step = False
