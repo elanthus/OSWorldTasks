@@ -2,7 +2,7 @@
 
 Hand-written on 2026-11-16. The numbers are in the [generated report](osworld-reset-determinism-2026-11-15-report.md),
 built by `scripts/generate_osworld_reset_determinism_report.py` from the two `results.json` files.
-Nothing here changes those files. The **Observations** section is the author's reading of the
+Apart from the dated path redaction recorded at the end, nothing here changes those files. The **Observations** section is the author's reading of the
 saved PNGs; it is not generated and is not a measured cause.
 
 ## How the runs were made
