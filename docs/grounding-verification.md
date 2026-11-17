@@ -31,12 +31,17 @@ verification means comparing the checked-in bytes with their recorded SHA-256 di
 
 ## Choosing an output for a new evaluation
 
-Pass a fresh path with `--output` when collecting predictions. The paired runner can verify an
-existing prediction file using a complete response cache. A missing response or a mismatch stops
-the replay. During collection the runner reserves a sibling file named `.<filename>.in-progress`
-and publishes the complete predictions when all records are ready. If a process was killed, first
-confirm the writer has stopped, then remove its leftover reservation before resuming with the
-same response cache.
+Pass a fresh path with `--output` to `scripts/run_grounding_evaluation.py` when collecting
+predictions. The runner checks that the output filesystem supports hard links before making any
+provider calls. It publishes the complete prediction file after all records are ready. To verify
+an existing file, use the same output path and a complete response cache. A missing response or
+a mismatch stops the replay.
+
+During collection, the runner reserves a sibling file named `.<filename>.in-progress`. For names
+too long for that suffix, it uses a shorter name starting with `.pg-`. If a writer was killed
+before publication, retry with the same output path to see the reservation path in the file-exists error.
+Confirm that the writer has stopped before removing that reservation and resuming with the same
+response cache.
 
 ## Intentional report generation
 

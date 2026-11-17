@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
 import math
 import os
+import unicodedata
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Any, Literal, TextIO
 
 from pixelgym.grounding.protocols import (
@@ -471,7 +474,17 @@ def _prediction_output(path: Path, new_calls: int) -> Iterator[TextIO | None]:
 
     path.parent.mkdir(parents=True, exist_ok=True)
     pending = path.with_name(f".{path.name}.in-progress")
-    writer = pending.open("x", encoding="utf-8", newline="\n")
+    try:
+        writer = pending.open("x", encoding="utf-8", newline="\n")
+    except OSError as exc:
+        if exc.errno != errno.ENAMETOOLONG:
+            raise
+        # Keep equivalent long names under one reservation on case-insensitive filesystems.
+        normalized = unicodedata.normalize("NFC", path.name.casefold())
+        digest = hashlib.sha256(os.fsencode(normalized)).hexdigest()
+        name_max = os.pathconf(path.parent, "PC_NAME_MAX") if hasattr(os, "pathconf") else 255
+        pending = path.with_name(f".pg-{digest}"[:name_max])
+        writer = pending.open("x", encoding="utf-8", newline="\n")
     try:
         with writer:
             # Another writer may have finished between our first check and our reservation.
@@ -479,6 +492,9 @@ def _prediction_output(path: Path, new_calls: int) -> Iterator[TextIO | None]:
                 raise FileExistsError(
                     f"predictions already exist at {path}; choose a fresh --output"
                 )
+            # Exercise no-overwrite publication on this filesystem before a provider can be billed.
+            with TemporaryDirectory(dir=path.parent) as probe_dir:
+                os.link(pending, Path(probe_dir) / "link")
             yield writer
         os.link(pending, path)  # Publish complete bytes without replacing an existing file.
     finally:
