@@ -5,9 +5,12 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, TextIO
 
 from pixelgym.grounding.protocols import (
     V1_PROTOCOL,
@@ -272,6 +275,7 @@ def evaluate_one(
     parser_version: str = PARSER_VERSION_V1,
     prediction_schema_version: str = PREDICTION_SCHEMA_VERSION,
     protocol_version: str = PROTOCOL_VERSION,
+    allow_new_call: bool = True,
 ) -> tuple[dict[str, Any], bool]:
     validate_evaluation_versions(
         prompt_version=prompt_version,
@@ -301,6 +305,8 @@ def evaluate_one(
     response = cache.get(key)
     cache_hit = response is not None
     if response is None:
+        if not allow_new_call:
+            raise RuntimeError("cache miss during replay or after reaching the new-call cap")
         response = provider.invoke(image_path=image_path, prompt=prompt, schema=schema)
         cache.put(key, response)
     if response.request_failure is not None:
@@ -452,6 +458,33 @@ def planned_new_calls(
     return {"total_condition_records": total, "cached_calls": cached, "new_calls": total - cached}
 
 
+@contextmanager
+def _prediction_output(path: Path, new_calls: int) -> Iterator[TextIO | None]:
+    """Reserve a fresh output before any calls, or verify an existing file from cache."""
+    if path.is_file():
+        if new_calls:
+            raise ValueError(f"predictions already exist at {path}; choose a fresh --output")
+        yield None
+        return
+    if path.exists() or path.is_symlink():
+        raise ValueError(f"expected a prediction file at {path}; choose a fresh --output")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    pending = path.with_name(f".{path.name}.in-progress")
+    writer = pending.open("x", encoding="utf-8", newline="\n")
+    try:
+        with writer:
+            # Another writer may have finished between our first check and our reservation.
+            if path.exists() or path.is_symlink():
+                raise FileExistsError(
+                    f"predictions already exist at {path}; choose a fresh --output"
+                )
+            yield writer
+        os.link(pending, path)  # Publish complete bytes without replacing an existing file.
+    finally:
+        pending.unlink()
+
+
 def run_evaluation(
     *,
     repository_root: Path,
@@ -493,30 +526,33 @@ def run_evaluation(
     if pilot:
         selected = set(pilot_example_ids(examples, protocol=protocol))
         examples = [row for row in examples if row["example_id"] in selected]
-    records = []
-    cache_hits = 0
-    for example in examples:
-        overlay = overlays[example["example_id"]]
-        for condition in ("raw", "marks"):
-            record, cache_hit = evaluate_one(
-                repository_root=repository_root,
-                example=example,
-                overlay=overlay,
-                condition=condition,
-                provider=provider,
-                cache=cache,
-                prompt_version=prompt_version,
-                parser_version=parser_version,
-                prediction_schema_version=prediction_schema_version,
-                protocol_version=protocol.protocol_version,
-            )
-            records.append(record)
-            cache_hits += cache_hit
-    encoded = "".join(canonical_json_text(row) + "\n" for row in records)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    if output_path.is_file() and output_path.read_text() != encoded:
-        raise ValueError("refusing to overwrite a different immutable prediction file")
-    output_path.write_text(encoded)
+    with _prediction_output(output_path, plan["new_calls"]) as writer:
+        records = []
+        cache_hits = 0
+        for example in examples:
+            overlay = overlays[example["example_id"]]
+            for condition in ("raw", "marks"):
+                record, cache_hit = evaluate_one(
+                    repository_root=repository_root,
+                    example=example,
+                    overlay=overlay,
+                    condition=condition,
+                    provider=provider,
+                    cache=cache,
+                    prompt_version=prompt_version,
+                    parser_version=parser_version,
+                    prediction_schema_version=prediction_schema_version,
+                    protocol_version=protocol.protocol_version,
+                    allow_new_call=writer is not None and len(records) - cache_hits < max_new_calls,
+                )
+                records.append(record)
+                cache_hits += cache_hit
+        encoded = "".join(canonical_json_text(row) + "\n" for row in records)
+        if writer is None:
+            if output_path.read_bytes() != encoded.encode("utf-8"):
+                raise ValueError("refusing to overwrite a different immutable prediction file")
+        else:
+            writer.write(encoded)
     return {
         "protocol_version": protocol.protocol_version,
         "prompt_version": prompt_version,

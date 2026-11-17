@@ -29,6 +29,15 @@ rendering stack are not fully pinned, so this repository does not claim that reg
 another machine produces identical bytes. Numerical recomputation is supported; rendered-image
 verification means comparing the checked-in bytes with their recorded SHA-256 digests.
 
+## Choosing an output for a new evaluation
+
+Pass a fresh path with `--output` when collecting predictions. The paired runner can verify an
+existing prediction file using a complete response cache. A missing response or a mismatch stops
+the replay. During collection the runner reserves a sibling file named `.<filename>.in-progress`
+and publishes the complete predictions when all records are ready. If a process was killed, first
+confirm the writer has stopped, then remove its leftover reservation before resuming with the
+same response cache.
+
 ## Intentional report generation
 
 Report generation is a separate, write-producing maintenance operation:

@@ -337,6 +337,74 @@ def test_mock_pipeline_caches_both_conditions_and_makes_no_duplicate_calls(tmp_p
     assert all(record["parse_status"] == "parsed" for record in records)
 
 
+def test_cli_refuses_existing_predictions_before_any_provider_call(tmp_path, monkeypatch):
+    from scripts import run_grounding_evaluation as cli
+
+    _write_mock_inputs(tmp_path)
+    output = tmp_path / "artifacts/grounding-predictions.jsonl"
+    frozen = b'{"provider":"historical"}\n'
+    output.write_bytes(frozen)
+    provider = MockProvider()
+    monkeypatch.setattr(cli, "MockProvider", lambda: provider)
+    with pytest.raises(ValueError, match="--output"):
+        cli.main(["--provider", "mock", "--full", "--max-new-calls", "200"], tmp_path)
+    assert provider.call_count == 0
+    assert output.read_bytes() == frozen
+
+
+def test_concurrent_run_for_same_predictions_stops_before_dispatch(tmp_path):
+    _write_mock_inputs(tmp_path)
+    output = tmp_path / "pilot.jsonl"
+    contender = MockProvider()
+
+    def run(provider):
+        return run_evaluation(
+            repository_root=tmp_path,
+            provider=provider,
+            output_path=output,
+            pilot=True,
+            max_new_calls=20,
+        )
+
+    class StartSecondRun(MockProvider):
+        def invoke(self, **kwargs):
+            if self.call_count == 0:
+                with pytest.raises(FileExistsError):
+                    run(contender)
+            return super().invoke(**kwargs)
+
+    assert run(StartSecondRun())["new_calls"] == 20
+    assert contender.call_count == 0
+
+
+def test_interrupted_collection_can_resume_from_partial_cache(tmp_path):
+    _write_mock_inputs(tmp_path)
+    output = tmp_path / "pilot.jsonl"
+
+    class StopAfterOneResponse(MockProvider):
+        def invoke(self, **kwargs):
+            if self.call_count == 1:
+                raise TimeoutError("provider interrupted")
+            return super().invoke(**kwargs)
+
+    def run(provider):
+        return run_evaluation(
+            repository_root=tmp_path,
+            provider=provider,
+            output_path=output,
+            pilot=True,
+            max_new_calls=20,
+        )
+
+    with pytest.raises(TimeoutError, match="provider interrupted"):
+        run(StopAfterOneResponse())
+    assert not output.exists()
+    provider = MockProvider()
+    assert run(provider)["cache_hits"] == 1
+    assert provider.call_count == 19
+    assert len(output.read_text().splitlines()) == 20
+
+
 def test_call_cap_blocks_provider_before_first_request(tmp_path: Path) -> None:
     _write_mock_inputs(tmp_path)
     provider = MockProvider()
