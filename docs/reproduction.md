@@ -5,7 +5,8 @@ Commands and historical timing moved from the README; start with the default set
 ## Quick reproduction without OSWorld
 
 Python 3.12 is required. The default development setup does not install OSWorld. The unit suite
-does not need a VM, browser, socket, network, external service, or provider credential.
+uses local loopback sockets for proxy tests. It runs without a VM, browser, external service,
+network access beyond loopback, or provider credential.
 
 ```bash
 python3.12 -m venv .venv

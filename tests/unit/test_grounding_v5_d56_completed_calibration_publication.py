@@ -410,10 +410,10 @@ def test_readme_v5_status_links_to_generated_derivative() -> None:
         assert f"{counts['success']}/{run['assigned_tasks']}" not in readme
     # D5.10 is recorded for the environment, platform, and evidence-discipline claim only; the
     # README must keep the Haiku result descriptive and never promote calibration counts.
-    assert "D5.10 was declared `PASS` on 2026-10-25" in section
-    assert "evidence-discipline claim only" in section
+    assert "The owner closed D5.10 on 2026-10-25 at `fd54dc2`" in section
+    assert "for the environment, platform and evidence discipline" in section
     assert "descriptive" in section
-    assert "without being promoted to a headline result" in section
+    assert "artifacts/grounding-v5-d510/human-gate.json" in section
     assert "docs/v5-benchmark-design.md" in section
     assert "docs/evidence-index.md" in section
     assert "remains withdrawn" in evidence_index
