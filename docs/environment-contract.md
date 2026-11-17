@@ -45,10 +45,26 @@ These define the project's claim. Do not weaken one to make a task easier; stop 
 | Invariants | Enforcing code | Tests |
 | --- | --- | --- |
 | 1–4 (observation and action) | [`pixelgym/env.py`](../pixelgym/env.py), [`pixelgym/actions.py`](../pixelgym/actions.py) | [`test_env.py`](../tests/unit/test_env.py), [`test_actions.py`](../tests/unit/test_actions.py), [`test_action_contract_properties.py`](../tests/unit/test_action_contract_properties.py) |
-| 5–8 (reward) | [`pixelgym/env.py`](../pixelgym/env.py), [`pixelgym/evaluator.py`](../pixelgym/evaluator.py) | [`test_env.py`](../tests/unit/test_env.py), [`test_evaluator.py`](../tests/unit/test_evaluator.py), [`test_evaluator_contract_properties.py`](../tests/unit/test_evaluator_contract_properties.py) |
+| 5–8 (reward; 8 includes [recovery after a backend failure](#recovery-after-a-backend-failure-invariant-8)) | [`pixelgym/env.py`](../pixelgym/env.py), [`pixelgym/evaluator.py`](../pixelgym/evaluator.py) | [`test_env.py`](../tests/unit/test_env.py), [`test_evaluator.py`](../tests/unit/test_evaluator.py), [`test_evaluator_contract_properties.py`](../tests/unit/test_evaluator_contract_properties.py) |
 | 9–11 (determinism) | [`pixelgym/task_spec.py`](../pixelgym/task_spec.py), [`pixelgym/backends/base.py`](../pixelgym/backends/base.py), [`pixelgym/tasks/vendor_form/render.py`](../pixelgym/tasks/vendor_form/render.py) | [`test_fake_backend.py`](../tests/unit/test_fake_backend.py), [`test_golden_trajectory.py`](../tests/unit/test_golden_trajectory.py) |
 | 12–13 (environment boundary) | [`pixelgym/env.py`](../pixelgym/env.py), [`pixelgym/backends/base.py`](../pixelgym/backends/base.py) | [`test_core_import_boundaries.py`](../tests/unit/test_core_import_boundaries.py), [`test_env.py`](../tests/unit/test_env.py) |
 | 14–15 (grounding boundary) | [`pixelgym/grounding/capture.py`](../pixelgym/grounding/capture.py), [`pixelgym/grounding/evaluation.py`](../pixelgym/grounding/evaluation.py) | [`test_grounding_capture_instrumentation_boundary.py`](../tests/unit/test_grounding_capture_instrumentation_boundary.py), [`test_grounding_overlays.py`](../tests/unit/test_grounding_overlays.py) |
+
+### Recovery after a backend failure (invariant 8)
+
+Invariant 8 also covers an episode left in an unknown state. If a backend call fails during
+dispatch or while reading the resulting frame or submissions, the input may already have reached
+the application without being counted against the step limit. `step()` propagates the error and
+then refuses further actions, naming the cause, until a reset succeeds or the host restores a
+verified checkpoint from which the episode can still run. A failed `reset()` or
+`restore_episode()` leaves the environment refusing actions in the same way. A restored episode
+accepts actions only if it has no successful submission and its step count is below the limit.
+An action rejected during validation (invariant 4) can be corrected and resubmitted while the
+episode is still active. Enforced in [`pixelgym/env.py`](../pixelgym/env.py)
+(`PixelGuiEnv._step_blocker`); tested in [`test_env.py`](../tests/unit/test_env.py)
+(`test_uncertain_keypress_requires_recovery_before_another_action`,
+`test_failed_reset_screenshot_keeps_episode_closed`,
+`test_restore_submission_timeout_blocks_an_active_episode_until_recovery`).
 
 ## Input contract and acknowledgement barrier
 
@@ -67,13 +83,6 @@ processed before reward is read (invariants 5–7).
 
 The reward-hacking classification of these endpoints is in the
 [2026-11 addendum](../artifacts/reward-hacking-addendum-2026-11.json).
-
-If a backend call fails during dispatch or while reading the resulting frame or submissions,
-the input may already have reached the application. `step()` propagates the error and rejects
-further actions until a reset succeeds or the host restores a verified checkpoint from which the
-episode can still run. A restored episode accepts actions only if it has no successful submission
-and its step count is below the limit. An action rejected during validation can be corrected and
-resubmitted while the episode is still active.
 
 **Known limitations.**
 

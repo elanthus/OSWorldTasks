@@ -64,6 +64,14 @@ DEFAULT_MAX_EPISODE_STEPS = 200
 # it stays deterministic once *that* stream has been seeded.
 _TASK_SEED_UPPER_BOUND = 2**31 - 1
 
+# Reasons step() refuses to run, surfaced in its RuntimeError.
+_NOT_RESET = "no episode has been started with reset()"
+_EPISODE_ENDED = "the episode already ended (terminated or truncated)"
+_BACKEND_FAILED = (
+    "a backend operation failed, so the last action may have been applied without being counted"
+)
+_SETUP_FAILED = "the last reset() or restore_episode() failed before the episode was ready"
+
 
 class BackendContractError(RuntimeError):
     """A backend returned something that violates the `Backend` protocol
@@ -99,7 +107,8 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
         self._task: TaskSpec | None = None
         self._episode_id: str | None = None
         self._step_count = 0
-        self._ready_to_step = False
+        # None when the next step() may run; otherwise why it may not.
+        self._step_blocker: str | None = _NOT_RESET
 
     @property
     def task_id(self) -> str:
@@ -120,7 +129,7 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
             seed if seed is not None else int(self.np_random.integers(_TASK_SEED_UPPER_BOUND))
         )
 
-        self._ready_to_step = False
+        self._step_blocker = _SETUP_FAILED
         record = self.backend.reset(task_seed)
         self._task = TaskSpec.from_generated(
             record,
@@ -132,37 +141,30 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
         self._step_count = 0
 
         observation = self._capture_observation()
-        self._ready_to_step = True
+        self._step_blocker = None
         info = {"episode_id": self._episode_id}
         return observation, info
 
     def step(self, action: Mapping[str, Any]) -> tuple[Frame, float, bool, bool, dict[str, Any]]:
-        if self._task is None or not self._ready_to_step:
-            raise RuntimeError(
-                "step() called before reset() or after the episode already ended "
-                "or a backend operation failed; call reset() before stepping again."
-            )
+        self._require_steppable()
 
         validated = validate_action(self.action_space, action)
         # Reading the caller's mapping can run a nested step that closes the episode.
-        if not self._ready_to_step:
-            raise RuntimeError(
-                "episode closed during action validation; call reset() before stepping again."
-            )
+        task = self._require_steppable()
         # Dispatch may apply the action even if its acknowledgement or the subsequent read fails.
         # Only a complete transition, reset or verified restore may enable another action.
-        self._ready_to_step = False
+        self._step_blocker = _BACKEND_FAILED
         self._dispatch(validated)
 
         observation = self._capture_observation()
-        result = evaluate(self._task, self.backend.read_submissions())
+        result = evaluate(task, self.backend.read_submissions())
 
         terminated = bool(result.success)
         reward = 1.0 if terminated else 0.0
 
         self._step_count += 1
-        truncated = not terminated and self._step_count >= self._task.max_episode_steps
-        self._ready_to_step = not (terminated or truncated)
+        truncated = not terminated and self._step_count >= task.max_episode_steps
+        self._step_blocker = _EPISODE_ENDED if terminated or truncated else None
 
         # `result` (EvaluationResult) carries privileged diagnostics -- score,
         # mismatched_fields, task_id_matches -- that must stay host-side; only
@@ -193,12 +195,22 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
             raise ValueError("restored task app URL does not match the backend")
         if task.max_episode_steps != self._max_episode_steps:
             raise ValueError("restored task step limit does not match the environment")
-        self._ready_to_step = False
+        self._step_blocker = _SETUP_FAILED
         self._task = task
         self._episode_id = secrets.token_hex(16)
         self._step_count = step_count
         result = evaluate(task, self.backend.read_submissions())
-        self._ready_to_step = not result.success and step_count < task.max_episode_steps
+        ended = result.success or step_count >= task.max_episode_steps
+        self._step_blocker = _EPISODE_ENDED if ended else None
+
+    def _require_steppable(self) -> TaskSpec:
+        if self._task is None or self._step_blocker is not None:
+            reason = self._step_blocker or _NOT_RESET
+            raise RuntimeError(
+                f"step() rejected: {reason}; call reset() or restore_episode() "
+                "with a verified checkpoint before stepping again."
+            )
+        return self._task
 
     def close(self) -> None:
         self.backend.close()

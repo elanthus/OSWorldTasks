@@ -190,8 +190,9 @@ class _RewardWithoutSubmissionEnv:
     def step(self, action):
         if self._ended:
             raise RuntimeError(
-                "step() called before reset() or after the episode already ended "
-                "(terminated or truncated); call reset() before stepping again."
+                "step() rejected: the episode already ended (terminated or truncated); "
+                "call reset() or restore_episode() with a verified checkpoint "
+                "before stepping again."
             )
         self._seen += 1
         last = self._seen == self.total_actions

@@ -274,7 +274,7 @@ def test_v5_golden_policy_reaches_sparse_reward_once_for_every_family(seed: int)
         assert rewards[:-1] == [0.0] * (len(rewards) - 1)
         assert rewards[-1] == 1.0
         assert terminated and not truncated
-        with pytest.raises(RuntimeError, match="after the episode already ended"):
+        with pytest.raises(RuntimeError, match="the episode already ended"):
             env.step(actions[-1])
     finally:
         env.close()

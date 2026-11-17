@@ -814,7 +814,7 @@ def test_restore_episode_preserves_step_limit_end_guard():
         max_episode_steps=1,
     )
     env.restore_episode(task, step_count=1)
-    with pytest.raises(RuntimeError, match="after the episode already ended"):
+    with pytest.raises(RuntimeError, match="the episode already ended"):
         env.step(_noop())
 
 
@@ -923,7 +923,7 @@ def test_uncertain_keypress_requires_recovery_before_another_action(monkeypatch,
             env.step(keypress)
 
     assert backend.key_calls == ["A"]
-    with pytest.raises(RuntimeError, match="reset"):
+    with pytest.raises(RuntimeError, match="may have been applied.*restore_episode"):
         env.step(keypress)
     assert backend.key_calls == ["A"]
     with pytest.raises(RuntimeError, match="reset"):
@@ -946,7 +946,7 @@ def test_failed_reset_screenshot_keeps_episode_closed(monkeypatch):
         patch.setattr(backend, "screenshot", timeout)
         with pytest.raises(TimeoutError, match="reset screenshot"):
             env.reset(seed=8)
-    with pytest.raises(RuntimeError, match="reset"):
+    with pytest.raises(RuntimeError, match="failed before the episode was ready"):
         env.step(_noop())
     assert backend.noop_calls == 0
 
