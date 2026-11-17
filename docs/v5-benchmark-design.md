@@ -183,18 +183,18 @@ rules that use only what the decision screen shows give higher reference levels:
   [chance supplement v2](../artifacts/grounding-v5-stateless-chance-ceiling-v2.md), which repeats
   v1 unchanged.
 
-None of these is a proven upper bound for every stateless policy. The consequence is that the
-stateful-versus-stateless comparison could not have come out the other way. A stateless arm capped
-near 21–30 of 192 cannot match a history arm that succeeds more often than that, whatever the
-history arm does with its memory. The three campaigns show that history beat a design-limited
+None of these is a proven upper bound for every stateless policy, and only the rules named above
+were evaluated. The consequence is that the stateful-versus-stateless comparison was structurally
+tilted against the stateless arm: without memory it can only guess or apply a fixed rule to what
+the screen shows, while the history arm can carry the answer forward. The three campaigns show that history beat a design-limited
 reference arm. They do not isolate the contribution of episode-local state. A control in which the
 stateless arm can succeed is [proposed, not run](v5-stateless-control-proposal.md).
 
 **Every model-facing v5 run used the in-process PIL backend.** Every v5 runner in this tree
 instantiates `V5FakeBackend` from
 [`pixelgym/grounding/v5/backend.py`](../pixelgym/grounding/v5/backend.py) or one of its subclasses,
-`MemoryBackend` and `FocusMemoryBackend`
-([`memory_focus_backend.py`](../pixelgym/grounding/v5/memory_focus_backend.py)). Every D5.9 policy
+`MemoryBackend` ([`memory_backend.py`](../pixelgym/grounding/v5/memory_backend.py)) and
+`FocusMemoryBackend` ([`memory_focus_backend.py`](../pixelgym/grounding/v5/memory_focus_backend.py)). Every D5.9 policy
 manifest records task renderer `pixelgym-v5-memory-focus-backend-v3`; the stored calibration
 manifests record that renderer or `pixelgym-agent-v5-task-renderer-v1`. No v5 model call saw a
 browser page or the OSWorld backend. The v5 browser app (`pixelgym/grounding/v5/v5_app/`) and its
@@ -245,7 +245,9 @@ A post hoc supplement counts the retries and shows each arm both ways
 `python -m scripts.verify_v5_retry_sensitivity`). Every retried attempt in all three campaigns was
 in the history arm. The historical counts are inferred from per-episode counters because its
 journal was not retained. The same inference reproduces the recorded retries exactly in the other
-two campaigns.
+two campaigns, but those campaigns contain only timeout retries and no infrastructure failures, so
+the check does not exercise the inference's infrastructure-failure branch or a retry after a
+connection reset, both of which the historical rule allowed.
 
 | Campaign | Retried attempts (episodes) | History successes as recorded | With retried episodes as failures | Stateless successes |
 | --- | ---: | ---: | ---: | ---: |

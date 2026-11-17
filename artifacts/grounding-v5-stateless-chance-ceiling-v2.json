@@ -59,6 +59,7 @@
       "position_2+position_2": 25
     }
   },
+  "post_hoc": true,
   "schema_version": "pixelgym-v5-stateless-chance-ceiling-v2",
   "supersedes_nothing": "v1 is unchanged; every v1 field below is recomputed by the v1 code and must equal it",
   "v1": {
@@ -178,5 +179,6 @@
       "expected_successes": 21.333333333333332,
       "success_probability": "1/9"
     }
-  }
+  },
+  "written_on": "2026-11-15"
 }

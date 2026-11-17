@@ -164,3 +164,53 @@ def test_markdown_is_labelled_post_hoc_and_numbers_come_from_json(result: dict[s
     assert "| historical | history | 106/192 | 15 (10) | 96/192 |" in text
     assert json.loads(retry.serialize(result)) == result
     assert result["post_hoc"] is True
+
+
+def test_rejects_duplicate_trial_ids(inputs: Inputs) -> None:
+    broken = copy.deepcopy(inputs)
+    results = broken["replication"][0]["results"]
+    results.append(copy.deepcopy(results[0]))
+    with pytest.raises(retry.RetrySensitivityError, match="replication: duplicate trial ids"):
+        retry.analyze(broken)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [("counted_attempts_for_action", 3), ("trial_id", "not-a-trial")],
+)
+def test_rejects_an_unexpected_retry_record(inputs: Inputs, field: str, value: Any) -> None:
+    broken = copy.deepcopy(inputs)
+    broken["parser_sensitivity"][0]["unresolved_timeouts"][0][field] = value
+    with pytest.raises(retry.RetrySensitivityError, match="unexpected retry record"):
+        retry.analyze(broken)
+
+
+def test_rejects_arms_with_different_primary_sizes(inputs: Inputs) -> None:
+    broken = copy.deepcopy(inputs)
+    results = broken["historical"][0]["results"]
+    drop = next(
+        i
+        for i, r in enumerate(results)
+        if r["phase"] == "primary" and r["mode"] == "stateless" and not r["success"]
+    )
+    del results[drop]
+    with pytest.raises(retry.RetrySensitivityError, match="different primary sizes"):
+        retry.analyze(broken)
+
+
+@pytest.mark.parametrize("damage", ["tamper", "delete"])
+def test_verifier_fails_on_a_damaged_json_output(tmp_path: Path, damage: str) -> None:
+    for _name, report, plan in retry.CAMPAIGNS:
+        for source in (report, plan):
+            (tmp_path / source).parent.mkdir(parents=True, exist_ok=True)
+            (tmp_path / source).write_bytes((ROOT / source).read_bytes())
+    for output in (retry.JSON_OUTPUT, retry.MD_OUTPUT):
+        (tmp_path / output).write_bytes((ROOT / output).read_bytes())
+    stored = tmp_path / retry.JSON_OUTPUT
+    if damage == "tamper":
+        value = json.loads(stored.read_text(encoding="utf-8"))
+        value["post_hoc"] = False
+        stored.write_text(retry.serialize(value), encoding="utf-8")
+    else:
+        stored.unlink()
+    assert verify_v5_retry_sensitivity.main(["--repository-root", str(tmp_path)]) == 1

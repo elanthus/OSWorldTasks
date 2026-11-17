@@ -81,3 +81,10 @@ def test_markdown_keeps_v1_sections_and_states_selection(result: dict[str, Any])
     assert "at most 30 of 192 times; position-only pairs reach 26 of 192" in text
     assert "optimistic in-sample reference level" in text
     assert text.index("added in v2") < text.index("## Scope")
+
+
+def test_v2_is_labelled_post_hoc_and_limits_its_rule_family(result: dict[str, Any]) -> None:
+    assert result["post_hoc"] is True and result["written_on"] == "2026-11-15"
+    text = v2.render_markdown(result)
+    assert "**Post hoc.** Written on 2026-11-15" in text
+    assert "Only these six rules per stage are evaluated" in text

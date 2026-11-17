@@ -7,8 +7,9 @@
   <request|verification> reference is no longer visible." A stateless policy that is otherwise
   perfect succeeds 1 time in 9 (21.3 of 192), the best fixed on-screen positions reach 26 of 192,
   and the best fixed label-order rule pair, chosen in-sample, reaches 30 of 192
-  ([chance supplement v2](../artifacts/grounding-v5-stateless-chance-ceiling-v2.md)). The
-  stateful-versus-stateless comparison therefore could not have come out the other way. It cannot
+  ([chance supplement v2](../artifacts/grounding-v5-stateless-chance-ceiling-v2.md)). None of
+  these is an upper bound for every stateless policy. The stateful-versus-stateless comparison was
+  therefore structurally tilted against the stateless arm. It cannot
   tell "the history arm remembers" apart from "the stateless harness fails for some other reason".
 
 ## Design
