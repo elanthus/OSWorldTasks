@@ -8,6 +8,8 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from pixelgym.tasks.vendor_form import generator, osworld_task
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -36,7 +38,10 @@ def _claims() -> Iterator[str]:
     assert all(row["divergence_count"] == 0 for row in runs)
     sequences = sum(row["sequence_count"] for row in runs)
     actions = sum(row["action_count"] for row in runs)
-    yield f"{sequences} seeded sequences and {actions:,} actions"
+    yield (
+        f"Across {sequences} seeded sequences and {actions:,} actions, the in-process form and "
+        "Chromium agreed on form state and submissions after every action."
+    )
 
     guest = [
         row
@@ -78,19 +83,37 @@ def _claims() -> Iterator[str]:
     marks = _json("grounding-results.json")["set_of_marks"]
     yield f"Proposal coverage was {marks['proposal_covered_count']}/{marks['proposal_total_count']}"
     split = _json("grounding-ambiguity-split-v1.json")["counts"]
-    yield f"Of the {split['raw_misses']} raw misses, {split['request_card_same_row']} landed"
+    yield (
+        f"Of the {split['raw_misses']} raw misses, {split['request_card_same_row']} landed on the "
+        "matching row of the read-only request card."
+    )
 
     training = _json("bc-experiment-v2/results.json")["runs"]
-    successes = sum(run["closed_loop"]["successes"] for run in training)
-    episodes = sum(run["closed_loop"]["episodes"] for run in training)
+    episode_records = [run["closed_loop"]["per_episode"] for run in training]
+    successes = sum(episode["success"] for records in episode_records for episode in records)
+    episodes = sum(len(records) for records in episode_records)
     n_runs = len(training)
     yield f"{successes}/{episodes} held-out episode evaluations across {n_runs} training runs"
-    diagnosis = _json("bc-diagnosis-v1/diagnosis.json")["runs"].values()
+    diagnoses = _json("bc-diagnosis-v1/diagnosis.json")["runs"]
     largest = max(run["demo_episodes"] for run in training)
-    for run in diagnosis:
-        if run["demo_episodes"] == largest:
-            errors = run["first_wrong_action"]
-            assert errors["by_field_for_keys"] == {"company_name": errors["episodes"]}
+    for run, records in zip(training, episode_records, strict=True):
+        if run["demo_episodes"] != largest:
+            continue
+        name = run["name"]
+        assert name in diagnoses, f"missing BC diagnosis for {name}"
+        diagnosed = diagnoses[name]["first_wrong_action_per_episode"]
+        assert sorted(row["seed"] for row in diagnosed) == sorted(row["seed"] for row in records), (
+            f"BC diagnosis episode seeds differ for {name}"
+        )
+        for row in diagnosed:
+            first = row["first_wrong"]
+            assert first and first["kind"] == "key" and first["field"] == "company_name", (
+                f"unexpected first error for {name}, seed {row['seed']}"
+            )
+    yield (
+        "In every largest-training-set run, the first wrong action in every test episode "
+        "was a company-name keystroke."
+    )
 
     resume = _json("platform/seed-policy-fanout-evidence-v1.json")["resume_run"]
     assert resume["failed_command_exit_code"] != 0 and resume["resume_command_exit_code"] == 0
@@ -101,7 +124,7 @@ def _claims() -> Iterator[str]:
 def _unchecked_numbers(section: str) -> list[str]:
     for claim in _claims():
         assert claim in section, claim
-        section = section.replace(claim, "")
+        section = section.replace(claim, " ", 1)
     # The model alias is a recorded identifier.
     return re.findall(r"\d+", section.replace("`gpt-5.4-mini`", ""))
 
@@ -112,6 +135,17 @@ def test_results_match_stored_evidence() -> None:
 
 def test_uncovered_number_is_reported() -> None:
     assert _unchecked_numbers(_results() + " another 4242 actions") == ["4242"]
+
+
+def test_repeated_numeric_claim_is_reported() -> None:
+    claim = next(claim for claim in _claims() if claim.startswith("Across "))
+    assert _unchecked_numbers(f"{_results()} {claim}") == re.findall(r"\d+", claim)
+
+
+def test_results_reject_a_different_request_card_row() -> None:
+    changed = _results().replace("matching row", "unrelated row", 1)
+    with pytest.raises(AssertionError, match="matching row"):
+        _unchecked_numbers(changed)
 
 
 def test_frozen_instructions_have_fixed_boxes_and_marks_across_seeds() -> None:
@@ -136,7 +170,17 @@ def test_frozen_instructions_have_fixed_boxes_and_marks_across_seeds() -> None:
 
 
 def test_evidence_index_current_guest_bundle_matches_build(tmp_path: Path) -> None:
-    current = _json("osworld-guest-check-2026-11-12-248097d/results.json")
+    evidence_path = "osworld-guest-check-2026-11-12-248097d/results.json"
+    index = (ROOT / "docs/evidence-index.md").read_text(encoding="utf-8")
+    (current_row,) = (
+        line
+        for line in index.splitlines()
+        if line.startswith("| Does the current guest bundle run on the pinned OSWorld guest? |")
+    )
+    results_links = re.findall(r"\]\(([^)]+/results\.json)\)", current_row)
+    assert results_links == [f"../artifacts/{evidence_path}"]
+
+    current = _json(evidence_path)
     assert (
         osworld_task.build_guest_bundle(generator.generate_task(7), tmp_path / "b.zip")
         == (current["provenance"]["guest_bundle_sha256_seed7"])

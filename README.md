@@ -78,14 +78,15 @@ tested and what remains exposed.
 ## Quickstart
 
 From the repository root with Python 3.12, replay the golden trajectory and recompute the
-grounding result from checked-in predictions. Both checks run locally without provider credentials
-or a guest VM.
+grounding scores and target-clustered interval from checked-in predictions. These checks run
+locally without provider credentials or a guest VM.
 
 ```bash
 python3.12 -m venv .venv
 .venv/bin/pip install -e ".[dev]"
 .venv/bin/python scripts/golden_trajectory.py check
 .venv/bin/python scripts/verify_grounding_report.py
+.venv/bin/python -m pytest -q tests/unit/test_grounding_clustered_analysis_v2.py::test_committed_artifacts_match_regeneration
 ```
 
 The replay checks the reward timeline and frame hashes. To use the in-process environment directly:

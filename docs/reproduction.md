@@ -103,9 +103,9 @@ and requires no browser, Docker service, OSWorld image, or optional dependency b
   tests/integration/test_vendor_form_server_contract.py
 ```
 
-This group is separate so a socket-restricted sandbox can run every unit test without weakening or
-skipping the real-loopback assertions. Pull-request CI exercises it through the explicitly named
-loopback step in the `Release integration` job; the required `Fast suite` result depends on that job
+The vendor-form HTTP contract checks run separately from the unit suite. The full unit suite also
+requires loopback for the proxy tests. Pull-request CI runs the HTTP checks in the loopback step of
+the `Release integration` job. The required `Fast suite` result depends on that job
 in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 
 Re-capturing the frozen browser dataset additionally requires Playwright's Chromium binary,
