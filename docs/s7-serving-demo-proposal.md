@@ -373,7 +373,7 @@ without constructing a policy, transport, server, backend, or network client. Re
 explicit verifier operation, never a side effect of reporting. Test this boundary by denying those
 constructors/network access during report generation. Keep all negative outcomes and missing data.
 The human S8 review receives raw evidence and unmarked acceptance criteria; agents declare no
-milestone verdict and change no public portfolio wording.
+milestone verdict and change no public wording.
 
 After quiescence, use the merged generic `capture`, `restore`, and `check-cleanup` operations to
 retain one local archive copy under a new name and verify a fresh local restore. On each fresh
@@ -444,6 +444,6 @@ exit 0; 119 passed, 4 warnings in 15.71s
 
 The warnings were existing PyYAML/Metaflow deprecations. No rehearsal, OS sandbox integration,
 budget observation, LFS transfer, or publication was performed in this preparation. The full
-suite and retention results quoted in the handoff remain historical PR #249 results, not newly
+suite and retention results remain historical PR #249 results, not newly
 executed checks. The D5.9 private journals remain missing. This successor plan cannot reconstruct
 them, and D5.10 and public claims remain human-owned.

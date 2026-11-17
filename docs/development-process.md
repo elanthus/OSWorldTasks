@@ -157,7 +157,7 @@ misread pre-initialization frame in PR #156, and the accounting gaps in issues #
 that a green check can validate the wrong proxy or omit a liability. Human scientific and security
 judgment is still needed to challenge the measurement, the threat model, and the interpretation.
 
-### Lessons for the next project
+### Lessons carried forward
 
 - A single manifest-driven calibration runner and a shared CLI lifecycle come first; experiment
   variants are added on top of them, with provider-specific parsing and security contracts still
