@@ -68,6 +68,11 @@ processed before reward is read (invariants 5–7).
 The reward-hacking classification of these endpoints is in the
 [2026-11 addendum](../artifacts/reward-hacking-addendum-2026-11.json).
 
+If a backend call fails during dispatch or while reading the resulting frame or submissions,
+the input may already have reached the application. `step()` propagates the error and rejects
+further actions until a successful reset or a host-verified checkpoint restore. An action rejected
+during validation can be corrected and submitted in the same episode.
+
 **Known limitations.**
 
 - Tab order, the country select's keyboard behaviour, and the caret are defined by the task

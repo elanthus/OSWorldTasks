@@ -99,7 +99,7 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
         self._task: TaskSpec | None = None
         self._episode_id: str | None = None
         self._step_count = 0
-        self._episode_ended = False
+        self._ready_to_step = False
 
     @property
     def task_id(self) -> str:
@@ -120,6 +120,7 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
             seed if seed is not None else int(self.np_random.integers(_TASK_SEED_UPPER_BOUND))
         )
 
+        self._ready_to_step = False
         record = self.backend.reset(task_seed)
         self._task = TaskSpec.from_generated(
             record,
@@ -129,20 +130,23 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
         )
         self._episode_id = secrets.token_hex(16)
         self._step_count = 0
-        self._episode_ended = False
 
         observation = self._capture_observation()
+        self._ready_to_step = True
         info = {"episode_id": self._episode_id}
         return observation, info
 
     def step(self, action: Mapping[str, Any]) -> tuple[Frame, float, bool, bool, dict[str, Any]]:
-        if self._task is None or self._episode_ended:
+        if self._task is None or not self._ready_to_step:
             raise RuntimeError(
                 "step() called before reset() or after the episode already ended "
-                "(terminated or truncated); call reset() before stepping again."
+                "or a backend operation failed; call reset() before stepping again."
             )
 
         validated = validate_action(self.action_space, action)
+        # Dispatch may apply the action even if its acknowledgement or the subsequent read fails.
+        # Only a complete transition, reset or verified restore may enable another action.
+        self._ready_to_step = False
         self._dispatch(validated)
 
         observation = self._capture_observation()
@@ -153,7 +157,7 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
 
         self._step_count += 1
         truncated = not terminated and self._step_count >= self._task.max_episode_steps
-        self._episode_ended = terminated or truncated
+        self._ready_to_step = not (terminated or truncated)
 
         # `result` (EvaluationResult) carries privileged diagnostics -- score,
         # mismatched_fields, task_id_matches -- that must stay host-side; only
@@ -184,11 +188,12 @@ class PixelGuiEnv(gym.Env[Frame, Mapping[str, Any]]):
             raise ValueError("restored task app URL does not match the backend")
         if task.max_episode_steps != self._max_episode_steps:
             raise ValueError("restored task step limit does not match the environment")
+        self._ready_to_step = False
         self._task = task
         self._episode_id = secrets.token_hex(16)
         self._step_count = step_count
         result = evaluate(task, self.backend.read_submissions())
-        self._episode_ended = result.success or step_count >= task.max_episode_steps
+        self._ready_to_step = not result.success and step_count < task.max_episode_steps
 
     def close(self) -> None:
         self.backend.close()

@@ -875,6 +875,53 @@ def test_wrong_shape_screenshot_on_step_is_rejected():
         env.step(_noop())
 
 
+@pytest.mark.parametrize("failure_at", ["key", "screenshot", "read_submissions"])
+def test_uncertain_keypress_requires_recovery_before_another_action(monkeypatch, failure_at):
+    backend = FakeBackend()
+    env = PixelGuiEnv(backend, max_episode_steps=2)
+    env.reset(seed=7)
+    env.step(_click(768, 94))
+    keypress = _key(KEY_ALLOWLIST.index("A"))
+    original = getattr(backend, failure_at)
+
+    def timeout_after_operation(*args):
+        original(*args)
+        raise TimeoutError(failure_at)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(backend, failure_at, timeout_after_operation)
+        with pytest.raises(TimeoutError, match=failure_at):
+            env.step(keypress)
+
+    assert backend.key_calls == ["A"]
+    with pytest.raises(RuntimeError, match="reset"):
+        env.step(keypress)
+    assert backend.key_calls == ["A"]
+    with pytest.raises(RuntimeError, match="reset"):
+        env.step(_noop())
+
+    env.reset(seed=7)
+    assert env.step(_noop())[1:4] == (0.0, False, False)
+    assert env.step(_noop())[1:4] == (0.0, False, True)
+
+
+def test_failed_reset_screenshot_keeps_episode_closed(monkeypatch):
+    backend = FakeBackend()
+    env = PixelGuiEnv(backend)
+    env.reset(seed=7)
+
+    def timeout():
+        raise TimeoutError("reset screenshot")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(backend, "screenshot", timeout)
+        with pytest.raises(TimeoutError, match="reset screenshot"):
+            env.reset(seed=8)
+    with pytest.raises(RuntimeError, match="reset"):
+        env.step(_noop())
+    assert backend.noop_calls == 0
+
+
 # -- close() -----------------------------------------------------------------
 
 
