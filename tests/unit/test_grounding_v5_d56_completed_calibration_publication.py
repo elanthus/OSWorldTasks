@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 import json
-import re
 import subprocess
 from pathlib import Path
 
@@ -388,9 +387,12 @@ def test_redaction_scan_rejects_payloads_paths_and_credentials() -> None:
 
 def test_readme_v5_status_links_to_generated_derivative() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    section_start = readme.split("### Supporting platform work and status\n", 1)[1]
-    section = re.split(r"^#{1,3}[ \t]", section_start, maxsplit=1, flags=re.MULTILINE)[0]
-    section = " ".join(section.split())
+    (gate_paragraph,) = (
+        paragraph
+        for paragraph in readme.split("\n\n")
+        if "](artifacts/grounding-v5-d510/human-gate.json)" in paragraph
+    )
+    section = " ".join(gate_paragraph.split())
     evidence_index = (ROOT / "docs/evidence-index.md").read_text(encoding="utf-8")
 
     derivative = _load_json(ROOT / DERIVATIVE_PATH)
@@ -412,10 +414,22 @@ def test_readme_v5_status_links_to_generated_derivative() -> None:
     # README must keep the Haiku result descriptive and never promote calibration counts.
     assert "The owner closed D5.10 on 2026-10-25 at `fd54dc2`" in section
     assert "for the environment, platform and evidence discipline" in section
+    campaigns = _load_json(ROOT / "artifacts/grounding-v5-stateless-chance-ceiling-v2.json")["v1"][
+        "campaigns"
+    ]
+    assert set(campaigns) == {"historical", "replication", "parser_sensitivity"}
+    assert all(c["history_successes"] > c["stateless_successes"] for c in campaigns.values())
+    assert len(
+        {
+            (c["history_successes"] - c["stateless_successes"]) / c["episodes_per_arm"]
+            for c in campaigns.values()
+        }
+    ) == len(campaigns)
+    assert "Claude Haiku succeeded more often with screenshot history in each campaign" in section
+    assert "with different effect sizes" in section
     assert "descriptive" in section
-    assert "](artifacts/grounding-v5-d510/human-gate.json)" in section
     assert "](docs/v5-benchmark-design.md)" in section
-    assert "](docs/evidence-index.md)" in section
+    assert "](docs/evidence-index.md)" in readme
     assert "remains withdrawn" in evidence_index
     assert "cannot be verified from a public clone" in evidence_index
     assert DERIVATIVE_PATH.as_posix() in evidence_index

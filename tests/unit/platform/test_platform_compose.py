@@ -84,7 +84,7 @@ def test_manual_platform_workflow_excludes_compose_lifecycle_suite() -> None:
     assert "tests/integration/platform/test_metaflow_runtime.py" in workflow
     assert "tests/integration/platform/test_mlflow_tracking.py" in workflow
     assert "test_compose_lifecycle.py" not in workflow
-    assert "does **not** run the Docker/Playwright lifecycle suite" in " ".join(root_readme.split())
+    assert "](.github/workflows/platform-integration.yml)" in root_readme
     assert "does not run the fresh-stack Docker/Playwright lifecycle" in " ".join(
         deploy_readme.split()
     )

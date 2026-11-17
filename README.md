@@ -18,7 +18,8 @@ the golden trajectory earned its only reward on step 109. Across 480 seeded sequ
 2,865 actions, the in-process form and Chromium agreed on form state and submissions after every
 action. A separate guest check exercised final-step reward on OSWorld.
 [Barrier controls and differential replay](artifacts/browser-differential-v1/REPORT.md) ·
-[OSWorld guest check](artifacts/osworld-guest-check-2026-11-12-248097d/README.md)
+[OSWorld guest check](artifacts/osworld-guest-check-2026-11-12-248097d/README.md) ·
+[Historical guest episode (GIF)](artifacts/day-3/review/real-osworld-episode.gif)
 
 **What repeats after reset.** In the guest, task and form-state hashes repeated on 8/8 seeds
 across five resets each. Screenshots were byte-identical on 6/8 seeds. In a separate Chromium
@@ -27,16 +28,23 @@ Both reports retain the raw pixel differences.
 [Guest reset measurements](artifacts/osworld-reset-determinism-2026-11-15-report.md) ·
 [Cross-host Chromium comparison](artifacts/chromium-reset-determinism-v1/REPORT.md)
 
-**What the grounding score measures.** On a fixed form, `gpt-5.4-mini` placed raw coordinates
+**What the grounding score measures.** On a fixed form, the moving model alias `gpt-5.4-mini` placed raw coordinates
 inside the target on 56/100 screenshots. It selected the correct numbered mark on 100/100.
 The paired difference was +44 points, with a target-clustered 95% interval of [+21, +67].
+The interval resamples 10 controls. Each appeared in only one screen state.
 The marks came from offline DOM geometry. Proposal coverage was 100/100 by the retention rule.
 Each instruction kept the same box and mark ID across seeds, so the layout permits a lookup
 by instruction alone. Of the 44 raw misses, 22 landed on the matching row of the read-only
-request card. The result applies to this layout, prompt and moving model alias.
+request card.
+
+![The raw click lands on the read-only company name. The numbered mark selects the editable field.](artifacts/grounding/gallery/marks_win-vendor-form-0001-company-name.png)
+
+In a separate run, Claude Haiku 4.5 scored 100/100 with raw coordinates on the same screenshots.
+The recorded raw prompts matched across runs. The CLI harness and parser differed.
 [Paired results](artifacts/grounding-report-v2.md) ·
 [Target-clustered analysis](artifacts/grounding-clustered-analysis-v2.md) ·
-[Error review](artifacts/grounding-ambiguity-split-v1.md)
+[Error review](artifacts/grounding-ambiguity-split-v1.md) ·
+[Haiku comparison](artifacts/grounding-v3-haiku-gemini-report.md)
 
 **What the learned policy could do.** A behavior-cloning policy trained on scripted demonstrations
 completed 0/800 held-out episode evaluations across 16 training runs. The runs reused the test
@@ -47,9 +55,11 @@ episode success metric stayed flat.
 [First-error diagnosis](artifacts/bc-diagnosis-v1/REPORT.md)
 
 **Recovering an evaluation job.** A scripted Metaflow run injected a branch failure and resumed.
-Its provider ledger recorded 80 attempts and 80 unique request IDs. This measures duplicate
-work during local recovery. The capacity note separates those measurements from estimates for
-a larger deployment. [Fan-out and recovery evidence](docs/million-episode-design-note.md)
+Its provider ledger recorded 80 attempts and 80 unique request IDs across the failure and recovery.
+In a separate scripted rehearsal, the approval API rejected a candidate that failed its evaluation
+gate. After a later deployment, rollback restored the earlier approved policy version.
+[Recovery measurements and capacity estimates](docs/million-episode-design-note.md) ·
+[Approval and rollback evidence](artifacts/platform/d4.12/4c4a7fb2fcb983e81084542365abc0ec2d7df538/REPORT.md)
 
 ## Start here
 
@@ -104,15 +114,13 @@ assert obs.shape == (768, 1024, 3) and reward == 0.0  # 0 until an exact submiss
 ```
 <!-- readme-snippet:end -->
 
-For lint, type checks and the unit suite, see the [reproduction guide](docs/reproduction.md).
-The default unit suite uses loopback sockets. The manual platform CI workflow runs Metaflow/MLflow
-tests and does **not** run the Docker/Playwright lifecycle suite.
-[CI](.github/workflows/ci.yml) · [Integration test commands](deploy/README.md#test-suite-boundaries)
+The [reproduction guide](docs/reproduction.md) covers lint, type checks and the unit suite,
+which uses loopback sockets. See the [manual platform workflow](.github/workflows/platform-integration.yml)
+and [integration test commands](deploy/README.md#test-suite-boundaries) for platform checks.
 
-### Supporting platform work and status
+## Platform and benchmark status
 
-The local control plane compares runs, checks promotion criteria, records approval, serves an
-exact policy version and rolls back. The demonstrated lifecycle uses a scripted provider.
+The local control plane serves an exact policy version after approval.
 The control plane has no caller authentication. Keep it and the MLflow UI on loopback and off
 any shared network. The stateful serving rehearsal is still open.
 [Platform design](docs/platform-design.md) · [Rehearsal status](docs/s8-rehearsal.md)
@@ -125,7 +133,7 @@ and the models saw frames from the in-process simulator. The final campaign test
 sensitivity on the same tasks. [Owner decision](artifacts/grounding-v5-d510/human-gate.json) ·
 [Benchmark design](docs/v5-benchmark-design.md) · [Chance analysis](artifacts/grounding-v5-stateless-chance-ceiling-v2.md)
 
-The [evidence index](docs/evidence-index.md) identifies the revision behind each claim,
+The [evidence index](docs/evidence-index.md) lists source records, available revisions,
 corrections, and limits on public replay. The [development record](docs/development-process.md)
 traces design decisions and defects that escaped automated review. The optional guest uses
 [OSWorld](https://proceedings.neurips.cc/paper_files/paper/2024/hash/5d413e48f84dc61244b6be550f1cd8f5-Abstract-Datasets_and_Benchmarks_Track.html).

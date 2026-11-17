@@ -19,9 +19,22 @@ def _json(relative: str) -> Any:
     return json.loads((ROOT / "artifacts" / relative).read_text(encoding="utf-8"))
 
 
+def _rows(relative: str) -> list[dict[str, Any]]:
+    path = ROOT / "artifacts" / relative
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
+
 def _results() -> str:
-    section = (ROOT / "README.md").read_text().split("## Results\n", 1)[1].split("\n## ", 1)[0]
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    section = readme.split("## Results\n", 1)[1].split("\n## ", 1)[0]
     return " ".join(re.sub(r"\]\([^)]+\)", "]", section).split())
+
+
+def _raw_predictions(filename: str) -> dict[str, dict[str, Any]]:
+    raw = [r for r in _rows(filename) if r["condition"] == "raw"]
+    by_id = {r["example_id"]: r for r in raw}
+    assert raw and len(by_id) == len(raw), filename
+    return by_id
 
 
 def _claims() -> Iterator[str]:
@@ -48,6 +61,7 @@ def _claims() -> Iterator[str]:
         for batch in ("a", "b")
         for row in _json(f"osworld-reset-determinism-2026-11-15-{batch}/results.json")["per_seed"]
     ]
+    assert len({row["seed"] for row in guest}) == len(guest), "guest reset batches repeat a seed"
     assert all(len(row["resets"]) == 5 and not row["reset_errors"] for row in guest)
     semantic = sum(
         len(row["distinct_task_sha256"]) == len(row["distinct_form_state_sha256"]) == 1
@@ -72,7 +86,11 @@ def _claims() -> Iterator[str]:
     clustered = _json("grounding-clustered-analysis-v2.json")
     counts = clustered["counts"]
     total = counts["example_count"]
-    yield f"inside the target on {counts['raw_correct']}/{total} screenshots"
+    results = _json("grounding-results.json")
+    yield (
+        f"`{results['model']}` placed raw coordinates inside the target on "
+        f"{counts['raw_correct']}/{total} screenshots"
+    )
     yield f"correct numbered mark on {counts['marks_correct']}/{total}"
     low, high = clustered["target_clustered_bootstrap_95_ci_percentage_points"]
     confidence = clustered["method"]["confidence_level"]
@@ -80,12 +98,31 @@ def _claims() -> Iterator[str]:
         f"+{clustered['delta_percentage_points']:.0f} points, with a target-clustered "
         f"{confidence:.0%} interval of [+{low:.0f}, +{high:.0f}]"
     )
-    marks = _json("grounding-results.json")["set_of_marks"]
+    allocation = clustered["allocation"]
+    assert allocation["screen_states_per_target"] == [1]
+    yield (
+        f"The interval resamples {allocation['target_count']} controls. "
+        "Each appeared in only one screen state."
+    )
+    marks = results["set_of_marks"]
     yield f"Proposal coverage was {marks['proposal_covered_count']}/{marks['proposal_total_count']}"
     split = _json("grounding-ambiguity-split-v1.json")["counts"]
     yield (
         f"Of the {split['raw_misses']} raw misses, {split['request_card_same_row']} landed on the "
         "matching row of the read-only request card."
+    )
+
+    original = _raw_predictions("grounding-predictions.jsonl")
+    haiku = _raw_predictions("grounding-v3a-scored-predictions-claude-haiku-4.5.jsonl")
+    assert original.keys() == haiku.keys() and len(original) == total
+    assert {r["model"] for r in haiku.values()} == {"claude-haiku-4-5-20251001"}
+    for example_id, row in original.items():
+        for field in ("image_sha256", "prompt_sha256"):
+            assert row[field] and row[field] == haiku[example_id][field], (example_id, field)
+    correct = sum(r["correct"] for r in haiku.values())
+    yield (
+        f"Claude Haiku 4.5 scored {correct}/{len(haiku)} with raw coordinates on the same "
+        "screenshots. The recorded raw prompts matched across runs."
     )
 
     training = _json("bc-experiment-v2/results.json")["runs"]
@@ -125,8 +162,7 @@ def _unchecked_numbers(section: str) -> list[str]:
     for claim in _claims():
         assert claim in section, claim
         section = section.replace(claim, " ", 1)
-    # The model alias is a recorded identifier.
-    return re.findall(r"\d+", section.replace("`gpt-5.4-mini`", ""))
+    return re.findall(r"\d+", section)
 
 
 def test_results_match_stored_evidence() -> None:
@@ -149,14 +185,10 @@ def test_results_reject_a_different_request_card_row() -> None:
 
 
 def test_frozen_instructions_have_fixed_boxes_and_marks_across_seeds() -> None:
-    def rows(name: str) -> list[dict[str, Any]]:
-        path = ROOT / "artifacts" / f"grounding-{name}.jsonl"
-        return [json.loads(line) for line in path.read_text().splitlines()]
-
-    overlays = {row["example_id"]: row for row in rows("overlays")}
+    overlays = {row["example_id"]: row for row in _rows("grounding-overlays.jsonl")}
     labels: dict[str, set[tuple[tuple[int, ...], int]]] = {}
     seeds: dict[str, set[int]] = {}
-    for example in rows("dataset"):
+    for example in _rows("grounding-dataset.jsonl"):
         instruction = example["target"]
         (mark,) = (
             m
