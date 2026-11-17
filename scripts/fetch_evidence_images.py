@@ -45,7 +45,7 @@ from scripts.package_evidence_images import (
     sha256_file,
 )
 
-DEFAULT_REPO = "elanthus/OSWorldTasks"
+DEFAULT_REPO = "elanthus/PixelGym-OSWorld"
 
 
 def read_verified_archive(archive: Path, entries: Sequence[ManifestEntry]) -> dict[str, bytes]:

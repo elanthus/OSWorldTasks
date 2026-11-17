@@ -7,7 +7,7 @@ claims (reset determinism, reward timing, space integrity, and a reward-hacking 
 stored evidence. The [evidence index](docs/evidence-index.md) names the code revision and guest
 bundle each record was made against, and which records predate the current code. It is a narrow, inspectable environment, not a broad desktop-agent benchmark.
 
-[![CI](https://github.com/elanthus/OSWorldTasks/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/elanthus/OSWorldTasks/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Python](https://img.shields.io/badge/python-3.12-blue)
+[![CI](https://github.com/elanthus/PixelGym-OSWorld/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/elanthus/PixelGym-OSWorld/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE) ![Python](https://img.shields.io/badge/python-3.12-blue)
 
 ## Start here
 
