@@ -6,7 +6,8 @@ against --expect-files before any file is changed. A file that already carries a
 retention, or whose retention the key is not authorized to read, stops the run.
 
 Command record 14 was produced by this file as committed in 1c84009. The unreadable-retention
-check was added afterwards in review; the script was not run again.
+check was added afterwards in review. Command record 36 was produced by this file as committed in
+a0fa54d6, which has that check.
 """
 
 from __future__ import annotations

@@ -1,0 +1,21 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-I",
+    "artifacts/osworld-guest-check-frames-regeneration-2026-11-18/apply_governance_retention.py",
+    "osworld-guest-check-frames-regeneration-2026-11-18",
+    "--retain-until-ms",
+    "1826566570000",
+    "--expect-files",
+    "11"
+  ],
+  "command": ".venv/bin/python -I artifacts/osworld-guest-check-frames-regeneration-2026-11-18/apply_governance_retention.py osworld-guest-check-frames-regeneration-2026-11-18 --retain-until-ms 1826566570000 --expect-files 11",
+  "cwd": "<path-0>",
+  "duration_seconds": 3.056704,
+  "ended_at_utc": "2026-11-18T19:36:13.625106+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "bucket: OSWorld\nprefixes: ['osworld-guest-check-frames-regeneration-2026-11-18']\nfiles listed: 11 (expected 11)\nfiles whose retention this key cannot read: 0\nfiles already carrying a different retention: 0\ngovernance 1826566570000  osworld-guest-check-frames-regeneration-2026-11-18/guest-bundles/vendor-form-vf-6bed55ed612d3c5a-4067dc638dbaaa8e.zip\ngovernance 1826566570000  osworld-guest-check-frames-regeneration-2026-11-18/guest-bundles/vendor-form-vf-6bed55ed612d3c5a-505a15bf40bac294.zip\ngovernance 1826566570000  osworld-guest-check-frames-regeneration-2026-11-18/rerun-output/627e09b/raw/real-golden-episode.json\ngovernance 1826566570000  osworld-guest-check-frames-regeneration-2026-11-18/rerun-output/627e09b/run-record.json\ngovernance 1826566570000  osworld-guest-check-frames-regeneration-2026-11-18/rerun-output/627e09b/stderr.log\ngovernance 1826566570000  osworld-guest-check-frames-regeneration-2026-11-18/rerun-output/627e09b/stdout.log\ngovernance 1826566570000  osworld-guest-check-frames-regeneration-2026-11-18/rerun-output/d4e711e/raw/real-golden-episode.json\ngovernance 1826566570000  osworld-guest-check-frames-regeneration-2026-11-18/rerun-output/d4e711e/run-record.json\ngovernance 1826566570000  osworld-guest-check-frames-regeneration-2026-11-18/rerun-output/d4e711e/stderr.log\ngovernance 1826566570000  osworld-guest-check-frames-regeneration-2026-11-18/rerun-output/d4e711e/stdout.log\ngovernance 1826566570000  osworld-guest-check-frames-regeneration-2026-11-18/rerun-output/run_regen.py\n{\"already_set\": 0, \"files_listed\": 11, \"mode\": \"governance\", \"retain_until_ms\": 1826566570000, \"retention_applied\": 11}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-11-18T19:36:10.566445+00:00"
+}

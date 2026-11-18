@@ -24,6 +24,10 @@ SETS = {
     ),
 }
 RETAIN_UNTIL_MS = 1_826_518_402_000
+RERUN_FILES_RETAIN_UNTIL_MS = 1_826_566_570_000
+# Committer times of 7338ca2c and a0fa54d6, from `git log --format=%cI`, in UTC.
+COMMITTED_7338CA2C = datetime(2026, 11, 18, 7, 59, 14, tzinfo=UTC)
+COMMITTED_A0FA54D6 = datetime(2026, 11, 18, 8, 9, 40, tzinfo=UTC)
 WORK = ".cache/guest-check-regen-2026-11-18"
 PREFIX = "osworld-guest-check-frames-regeneration-2026-11-18"
 DOWNLOAD_MATCH = {
@@ -62,7 +66,7 @@ def _manifest(folder: str) -> dict[str, int]:
 
 def test_every_recorded_command_exited_zero_and_holds_no_local_path() -> None:
     records = sorted((RECORD / "commands").glob("*.json"))
-    assert [path.name[:2] for path in records] == [f"{index:02d}" for index in range(35)]
+    assert [path.name[:2] for path in records] == [f"{index:02d}" for index in range(38)]
     for path in records:
         record = _json(path)
         assert record["exit_status"] == 0, path.name
@@ -245,6 +249,62 @@ def test_rerun_output_and_bundle_archives_were_copied_and_read_back() -> None:
     assert {entry["retention_mode"] for entry in listing["files"]} == {None}
 
 
+def test_rerun_output_and_bundle_archives_were_locked_once_and_read_back() -> None:
+    before = json.loads(_command("30")["output"])
+    names = [entry["name"] for entry in before["files"]]
+    applied = _command("36")
+    assert applied["argv"][2:] == [
+        f"artifacts/{PREFIX}/apply_governance_retention.py",
+        PREFIX,
+        "--retain-until-ms",
+        str(RERUN_FILES_RETAIN_UNTIL_MS),
+        "--expect-files",
+        "11",
+    ]
+    lines = applied["output"].strip().splitlines()
+    assert lines[2:5] == [
+        "files listed: 11 (expected 11)",
+        "files whose retention this key cannot read: 0",
+        "files already carrying a different retention: 0",
+    ]
+    assert json.loads(lines[-1]) == {
+        "already_set": 0,
+        "files_listed": 11,
+        "mode": "governance",
+        "retain_until_ms": RERUN_FILES_RETAIN_UNTIL_MS,
+        "retention_applied": 11,
+    }
+    assert lines[5:-1] == [f"governance {RERUN_FILES_RETAIN_UNTIL_MS}  {name}" for name in names]
+
+    after = json.loads(_command("37")["output"])
+    unlocked = [
+        entry | {"retention_mode": None, "retain_until_ms": None} for entry in after["files"]
+    ]
+    assert unlocked == before["files"]
+    assert {(entry["retention_mode"], entry["retain_until_ms"]) for entry in after["files"]} == {
+        ("governance", RERUN_FILES_RETAIN_UNTIL_MS)
+    }
+    assert after["file_count"] == 11 and after["bytes"] == 1_675_324
+    assert after["all_governance"] is True and after["mutations"] == 0
+    assert after["min_retain_until_ms"] == RERUN_FILES_RETAIN_UNTIL_MS
+    assert after["object_lock_enabled"] is True and after["bucket_type"] == "allPrivate"
+    retain_until = datetime.fromtimestamp(RERUN_FILES_RETAIN_UNTIL_MS / 1000, UTC)
+    assert retain_until.isoformat() == "2027-11-18T19:36:10+00:00"
+    started = datetime.fromisoformat(applied["started_at_utc"])
+    assert timedelta(days=364, hours=23) < retain_until - started <= timedelta(days=365)
+    frames_until = datetime.fromtimestamp(RETAIN_UNTIL_MS / 1000, UTC)
+    assert timedelta(hours=13) < retain_until - frames_until < timedelta(hours=14)
+
+
+def test_review_records_were_written_at_the_revisions_the_note_names() -> None:
+    assert _command("16")["output"].strip().startswith("6b1c75f2")
+    for record in ("32", "33", "34"):
+        started = datetime.fromisoformat(_command(record)["started_at_utc"])
+        assert COMMITTED_7338CA2C < started < COMMITTED_A0FA54D6, record
+    assert _command("35")["output"].strip().startswith("a0fa54d6")
+    assert _command("35")["started_at_utc"] < _command("36")["started_at_utc"]
+
+
 def _listed_in_both_manifests() -> dict[str, int]:
     return {
         f"{folder}/{path}": size
@@ -392,6 +452,12 @@ def test_note_states_the_recorded_numbers() -> None:
         _command("16")["output"].strip()[:8],
         "228 files listed, 228 changed, 0 already set, exit 0",
         "one retain-until time, 2027-11-18T06:13:22Z",
+        "11 files listed, 0 with unreadable retention, 0 with a different retention,",
+        "retention, 11 changed, 0 already set, exit 0",
+        "one retain-until time, 2027-11-18T19:36:10Z",
+        "Records 16 to 31 were added",
+        "Records 32 to 34 were added later",
+        "Records 35 to 37 were written with the checkout at `a0fa54d6`",
         "| `627e09b` | 2026-11-18T04:22:21Z | 625.3 | 0 |",
         "| `d4e711e` | 2026-11-18T04:32:47Z | 570.9 | 0 |",
         _command("00")["output"].strip()[:8],

@@ -39,9 +39,12 @@ after either run. Both ran on the pinned OSWorld-V2 guest (`v2026.06.24`, provid
 
 Each row is a raw command record under [`commands/`](commands/), written by
 [`scripts/record_gate_command.py`](../../scripts/record_gate_command.py). Records 00 to 15 were
-written at revision `1f62145e` ([00](commands/00-git-revision.json)). Records 16 to 34 were added
+written at revision `1f62145e` ([00](commands/00-git-revision.json)). Records 16 to 31 were added
 during review of the pull request, with the checkout at `6b1c75f2`
-([16](commands/16-git-revision-at-review.json)).
+([16](commands/16-git-revision-at-review.json)). Records 32 to 34 were added later in that
+review. No revision record was stored for them; they started after the commit time of `7338ca2c`
+and before that of `a0fa54d6`. Records 35 to 37 were written with the checkout at `a0fa54d6`
+([35](commands/35-git-revision-at-second-lock.json)).
 
 | Compared files | Manifest | Files identical by size and SHA-256 | Raw record |
 |---|---|---|---|
@@ -105,8 +108,8 @@ The file names and sizes in the second read-back equal those in the first.
 
 Record 14 was produced by the script as committed in `1c84009`. Review later added a check that
 stops the script when the key is not authorized to read a file's retention, because an unreadable
-retention is not an unset one. The script was not run again. The read-backs used the same
-credentials as the lock, and read-back 15 returned a retention for every file.
+retention is not an unset one. The script was not run again on these 228 files. The read-backs
+used the same credentials as the lock, and read-back 15 returned a retention for every file.
 
 ## Rerun output and guest bundle archives
 
@@ -130,6 +133,18 @@ files, and each file name ends in the first 16 hex digits of its digest.
 | Download and check against that manifest, in one command | 11 of 11 by size and SHA-256 | [34](commands/34-download-and-check-in-one-command-rerun-output.json); earlier as two commands in [28](commands/28-download-rerun-output-and-bundles.json), [29](commands/29-named-directory-vs-rerun-output-manifest.json) |
 | Bucket read-back under the prefix | 11 files, 1,675,324 bytes, no retention set | [30](commands/30-object-lock-readback-rerun-output.json) |
 | Whole bucket afterwards | 444 files and 26,109,040,644 bytes, old versions included | [31](commands/31-bucket-size-all-versions.json) |
+
+The owner later approved the same one-year governance-mode retention on these 11 files. The same
+script set it, this time with the unreadable-retention check in place.
+
+| Step | Stored result | Raw record |
+|---|---|---|
+| Apply the retention | 11 files listed, 0 with unreadable retention, 0 with a different retention, 11 changed, 0 already set, exit 0 | [36](commands/36-apply-governance-retention-rerun-output.json) |
+| Bucket read-back afterwards | 11 files, 1,675,324 bytes, every file governance mode, one retain-until time, 2027-11-18T19:36:10Z | [37](commands/37-object-lock-readback-rerun-output-after-retention.json) |
+
+The file names, sizes and SHA-1 values in read-back 37 equal those in read-back 30. This lock
+ends about 13 hours after the lock on the frames, because each is one year from when it was
+applied.
 
 [`tests/unit/test_osworld_guest_check_frames_regeneration.py`](../../tests/unit/test_osworld_guest_check_frames_regeneration.py)
 checks these statements against the stored files.
@@ -164,7 +179,5 @@ rclone copy bb:OSWorld/osworld-guest-check-frames-regeneration-2026-11-18 .cache
   files, which remain the record of rewards.
 - **The copied guest bundle archives are not the files the reruns built.** They are tied to the
   reruns by file name, and to the original runs by full SHA-256.
-- **Eleven files carry no retention lock.** The rerun output and the guest bundle archives can be
-  deleted by anyone holding the bucket key.
 - **Same-owner custody.** The bucket, its key and the local copies belong to one owner account. A
   governance-mode lock can be removed by a key with the `bypassGovernance` capability.

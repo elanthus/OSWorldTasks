@@ -26,9 +26,11 @@ remaining 45 the same retain-until time. That output was not stored either.
 
 Each row is a raw command record under [`commands/`](commands/), written by
 [`scripts/record_gate_command.py`](../../../scripts/record_gate_command.py). Records 00 to 04 were
-written at revision `1f62145e` ([00](commands/00-git-revision.json)). Records 05 to 08 were added
+written at revision `1f62145e` ([00](commands/00-git-revision.json)). Records 05 to 07 were added
 during review of the pull request, with the checkout at `6b1c75f2`
-([05](commands/05-git-revision-at-review.json)).
+([05](commands/05-git-revision-at-review.json)). Record 08 was added later in that review. No
+revision record was stored for it; it started after the commit time of `7338ca2c` and before that
+of `a0fa54d6`.
 
 | Observation | Stored result | Raw record |
 |---|---|---|

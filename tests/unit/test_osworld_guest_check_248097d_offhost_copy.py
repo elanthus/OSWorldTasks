@@ -102,6 +102,10 @@ def test_one_command_downloads_into_a_new_directory_and_checks_that_directory() 
     output = record["output"]
     assert output.count("Copied (new)") == 114
     assert json.loads(output[output.rindex("\n{") + 1 :]) == FULL_MATCH
+    # Committer times of 7338ca2c and a0fa54d6, from `git log --format=%cI`, in UTC.
+    started = datetime.fromisoformat(record["started_at_utc"])
+    assert datetime(2026, 11, 18, 7, 59, 14, tzinfo=UTC) < started
+    assert started < datetime(2026, 11, 18, 8, 9, 40, tzinfo=UTC)
 
 
 def test_two_command_repeat_reports_a_full_match() -> None:
@@ -125,6 +129,8 @@ def test_note_states_the_recorded_numbers_and_leaves_the_readme_unchanged() -> N
         _command("00-git-revision")["output"].strip()[:8],
         _command("05-git-revision-at-review")["output"].strip()[:8],
         "as one command",
+        "Records 05 to 07 were added",
+        "Record 08 was added later in that review",
     ):
         assert statement in note, statement
     assert "are not checked in" in (EVIDENCE / "README.md").read_text(encoding="utf-8")
