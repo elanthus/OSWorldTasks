@@ -148,12 +148,13 @@ The file names, sizes and SHA-1 values in read-back 37 equal those in read-back 
 ends about 13 hours after the lock on the frames, because each is one year from when it was
 applied.
 
-The retention locks add no stored bytes, so record 31 is the latest bucket size. Record 39
-reads <https://www.backblaze.com/cloud-storage/pricing> once. It takes the rate from the page's
-billing sentence and the allowance from the page's statement that the first 10 GB of storage is
-free, and multiplies the size in record 31 by that rate. It takes 1 TB as 10^12 bytes, which
-the page does not state. The page also shows the figures $5 and $15 per TB in other sentences;
-the estimate does not use them. The estimate covers storage only and is not a bill.
+Record 39 reads <https://www.backblaze.com/cloud-storage/pricing> once. It takes the rate from
+the page's billing sentence and the allowance from the page's statement that the first 10 GB of
+storage is free, and multiplies the size in record 31 by that rate. Record 31 is the last size
+recorded; the bucket was not measured again after the retention locks, which add no stored
+bytes. Taking 1 TB as 10^12 bytes is the record's own assumption. The page also shows the
+figures $5 and $15 per TB in other sentences; the estimate does not use them. The estimate
+covers storage only and is not a bill.
 
 [`tests/unit/test_osworld_guest_check_frames_regeneration.py`](../../tests/unit/test_osworld_guest_check_frames_regeneration.py)
 checks these statements against the stored files.
