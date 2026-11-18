@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -95,3 +96,31 @@ def test_paths_outside_the_repository_keep_no_local_directory(
     assert stored("cwd=/home/alice/dev/repo") == "cwd=<repo>"
     # A sibling directory that only shares the root's spelling is not inside it.
     assert stored("/home/alice/dev/repo-old/a.png") == "<home>/dev/repo-old/a.png"
+
+
+def test_a_directory_json_escapes_is_still_rewritten_in_dumped_evidence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The writers dump JSON and then rewrite the text, where a non-ASCII directory name
+    # appears only in its escaped spelling.
+    monkeypatch.setattr("pixelgym.evidence_redaction.Path.home", lambda: Path("/home/jürgen"))
+    monkeypatch.setattr("pixelgym.evidence_redaction.tempfile.gettempdir", lambda: "/tmp")
+    root = Path("/home/jürgen/dev/repo")
+    dumped = json.dumps(
+        {"inside": "/home/jürgen/dev/repo/artifacts/a.png", "outside": "/home/jürgen/guest.qcow2"}
+    )
+    assert "jürgen" not in dumped and "j\\u00fcrgen" in dumped
+
+    assert json.loads(repository_relative_evidence_text(dumped, root)) == {
+        "inside": "artifacts/a.png",
+        "outside": "<home>/guest.qcow2",
+    }
+
+
+def test_a_url_under_the_repository_keeps_the_repository_label() -> None:
+    # Dropping the root from file:///root/repo/app/x would leave file://app/x, a different URL.
+    root = Path("/srv/checkout/repo")
+
+    assert repository_relative_evidence_text("file:///srv/checkout/repo/app/x", root) == (
+        "file://<repo>/app/x"
+    )

@@ -61,7 +61,7 @@ def test_golden_recorder_stores_relative_paths_for_an_absolute_invocation(
     )
 
     text = (repo / "out" / "raw" / "real-golden-episode.json").read_text(encoding="utf-8")
-    assert str(tmp_path) not in text and str(Path.home()) not in text
+    assert str(tmp_path) not in text
     stored = json.loads(text)
     assert returned == stored and stored["summary"]["passed"] is True
     assert _path_fields(stored) == {

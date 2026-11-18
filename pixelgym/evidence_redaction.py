@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 import tempfile
 from collections.abc import Iterable, Sequence
@@ -85,8 +86,18 @@ def repository_relative_evidence_text(value: str, repository_root: Path) -> str:
 
     A path outside the repository has no relative form. Its home or system temporary
     directory is replaced by ``<home>`` or ``<system-temp>``, as in
-    :func:`standard_path_replacements`. The root itself is stored as ``<repo>``.
+    :func:`standard_path_replacements`. The root itself is stored as ``<repo>``, and so is
+    the root inside a URL such as ``file://<repo>/app``, which has no relative form either.
+
+    The text may be dumped JSON, where a directory name with a character JSON escapes
+    appears only in its escaped spelling, so that spelling is replaced as well.
     """
 
     replacements = [(repository_root, REPOSITORY_PLACEHOLDER), *standard_path_replacements([])]
-    return redact_evidence_text(value, replacements).replace(f"{REPOSITORY_PLACEHOLDER}/", "")
+    for path, placeholder in list(replacements):
+        for spelling in (str(path), str(path.resolve())):
+            escaped = json.dumps(spelling)[1:-1]
+            if escaped != spelling:
+                replacements.append((Path(escaped), placeholder))
+    redacted = redact_evidence_text(value, replacements)
+    return re.sub(rf"(?<!/){re.escape(REPOSITORY_PLACEHOLDER)}/", "", redacted)
