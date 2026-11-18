@@ -29,6 +29,7 @@ The candidate and generated field inventory live in
 The executed replication plan remains
 `sha256:ce6776def9066d2c3b4a1b2701b25567dc182364dfa3cf694b4044d865d59159`.
 Its results, pilot evidence and unresolved timeout retain their original disposition.
+The other agent's current-results analysis is outside this change.
 
 ## Offline diagnostic
 
