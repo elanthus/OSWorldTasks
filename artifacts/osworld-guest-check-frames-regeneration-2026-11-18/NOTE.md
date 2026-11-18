@@ -44,7 +44,7 @@ during review of the pull request, with the checkout at `6b1c75f2`
 ([16](commands/16-git-revision-at-review.json)). Records 32 to 34 were added later in that
 review. No revision record was stored for them; they started after the commit time of `7338ca2c`
 and before that of `a0fa54d6`. Records 35 to 37 were written with the checkout at `a0fa54d6`
-([35](commands/35-git-revision-at-second-lock.json)).
+([35](commands/35-git-revision-before-rerun-output-retention.json)).
 
 | Compared files | Manifest | Files identical by size and SHA-256 | Raw record |
 |---|---|---|---|
