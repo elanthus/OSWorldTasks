@@ -26,4 +26,9 @@ exclude = [
 
 [commands]
 test = ".venv/bin/pytest -q -n 4 --dist worksteal tests/unit"
-lint = ".venv/bin/ruff check ."
+# Match the Ruff and mypy checks in .github/workflows/ci.yml.
+lint = """
+.venv/bin/ruff check . && \
+.venv/bin/ruff format --check pixelgym flows scripts tests && \
+.venv/bin/mypy pixelgym
+"""
