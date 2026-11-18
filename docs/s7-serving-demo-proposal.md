@@ -1,13 +1,20 @@
 # S7 proposal: a bounded scripted serving rehearsal
 
-- **Status:** owner approved implementation and scripted qualification on 2026-10-20 under the
-  proposed caps. Exact package activation and publication remain blocked pending owner review.
-- **Reader and decision:** the project owner, deciding whether to implement and qualify the two
-  packages and rehearsal below. Exact package approval and serving approval remain separate.
-- **Inspected base:** `acaa0da8a6ec752e39510a3f05339a9f204fe1a7` (PR #249).
 - **Purpose:** demonstrate environment correctness, durable evaluation evidence, and serving
   controls with scripted policies and fake transports. This is engineering validation; it supplies
   no model-quality result or D5.10 verdict.
+- **Status:** owner approved implementation and scripted qualification on 2026-10-20 under the
+  proposed caps. Exact package activation and publication remain blocked pending owner review.
+- **Current state:** the owner approved a fresh successor qualification on 2026-10-26
+  ([details](#activation-compatibility-after-review-repairs)). The rehearsal driver is implemented
+  and has not been executed ([S8 driver status](#s8-driver-status)).
+- **Reader and decision:** the project owner, deciding whether to implement and qualify the two
+  packages and rehearsal below. Exact package approval and serving approval remain separate.
+- **Inspected base:** `acaa0da8a6ec752e39510a3f05339a9f204fe1a7` (PR #249).
+- **Terms:** S7 and S8 are stages of the v5 stateful serving extension; see the
+  [glossary](glossary.md).
+
+## Approval scope and qualification history
 
 Owner clarification: retain one local archive copy and one private LFS copy, preserving the
 original run. This supersedes the original second-volume/two-local-copy prerequisite.

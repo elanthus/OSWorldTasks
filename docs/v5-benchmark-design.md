@@ -1,6 +1,14 @@
 # v5 agent benchmark design
 
 - **Protocol identifier:** `pixelgym-agent-v5`
+- **Summary (added 2026-11-18):** v5 measures exact end-to-end task completion by a complete,
+  versioned policy system on the same synthetic vendor-onboarding application. History beat
+  stateless in the same direction in all three Haiku campaigns (106 vs 15, 62 vs 20, and 132 vs 20
+  of 192); the result is descriptive and the magnitude is unresolved. Each task has two three-way
+  choices whose answers appear only on an earlier screen, so an otherwise-perfect stateless policy
+  succeeds 1 time in 9, about 21 of 192. The campaigns show that history beat a design-limited
+  reference arm; they do not isolate the contribution of episode-local state
+  ([amendment](#amendment-2026-11-15-the-stateless-chance-level-the-backend-and-replay)).
 - **Status:** v5 benchmark gate (D5.10) declared on 2026-10-25 (UTC) against `fd54dc27` for the environment, platform, and evidence-discipline claim; the Haiku result is descriptive ([decision record](../artifacts/decisions/d5.10.json), [gate record](../artifacts/grounding-v5-d510/human-gate.json))
 - **Terms:** see the [glossary](glossary.md) for D-numbers, workflow names, and model codenames
 

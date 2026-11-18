@@ -1,8 +1,7 @@
 # Environment contract
 
 This document is the authoritative statement of the fifteen invariants that define the PixelGym
-environment and grounding claim. The numbered text below is unchanged from the version previously
-kept in section 3 of `AGENTS.md`; code comments and tests that cite an invariant by number refer
+environment and grounding claim. Code comments and tests that cite an invariant by number refer
 to this list.
 
 A change that would relax any invariant is a scope change. It is raised as a question and decided
@@ -39,6 +38,8 @@ These define the project's claim. Do not weaken one to make a task easier; stop 
     *Note:* `PixelGuiEnv` puts only an opaque per-episode ID (`episode_id`, random at every reset) in `info`, never the task hash. The task ID is a pure function of the seed, so exposing it would let an agent regenerate the answers with the public generator; host-side code reads it from the `PixelGuiEnv.task_id` property.
 14. Dataset-capture instrumentation (bounding boxes) is build-time only and must not be reachable from the evaluation adapter.
 15. Set-of-marks candidates are generated **without consulting the requested target**. Marking only the ground-truth element leaks the answer.
+
+The numbered text above is unchanged from the version previously kept in section 3 of `AGENTS.md`.
 
 ## Where the invariants are enforced
 
