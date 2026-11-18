@@ -39,7 +39,7 @@ after either run. Both ran on the pinned OSWorld-V2 guest (`v2026.06.24`, provid
 
 Each row is a raw command record under [`commands/`](commands/), written by
 [`scripts/record_gate_command.py`](../../scripts/record_gate_command.py). Records 00 to 15 were
-written at revision `1f62145e` ([00](commands/00-git-revision.json)). Records 16 to 31 were added
+written at revision `1f62145e` ([00](commands/00-git-revision.json)). Records 16 to 34 were added
 during review of the pull request, with the checkout at `6b1c75f2`
 ([16](commands/16-git-revision-at-review.json)).
 
@@ -71,15 +71,19 @@ Each set was copied with `rclone copy --checksum --immutable` to the owner's pri
 bucket `OSWorld`, under a prefix named after its evidence folder, with the manifest's relative
 paths.
 
-| Set | Prefix | Upload | `rclone check` | Download into a named directory, against the SHA-256 manifest |
+| Set | Prefix | Upload | `rclone check` | Download and check against the SHA-256 manifest, in one command |
 |---|---|---|---|---|
-| 2026-11-11 | `osworld-guest-check-2026-11-11/` | 114 new files, exit 0 ([03](commands/03-upload-2026-11-11.json)) | 114 matching, 0 differences ([04](commands/04-check-2026-11-11.json)) | 114 of 114 ([19](commands/19-download-to-named-directory-2026-11-11.json), [20](commands/20-named-directory-vs-manifest-2026-11-11.json)) |
-| 2026-11-12 attempt 3 | `osworld-guest-check-2026-11-12/attempt-3/` | 114 new files, exit 0 ([08](commands/08-upload-2026-11-12-attempt-3.json)) | 114 matching, 0 differences ([09](commands/09-check-2026-11-12-attempt-3.json)) | 114 of 114 ([21](commands/21-download-to-named-directory-2026-11-12-attempt-3.json), [22](commands/22-named-directory-vs-manifest-2026-11-12-attempt-3.json)) |
+| 2026-11-11 | `osworld-guest-check-2026-11-11/` | 114 new files, exit 0 ([03](commands/03-upload-2026-11-11.json)) | 114 matching, 0 differences ([04](commands/04-check-2026-11-11.json)) | 114 of 114 ([32](commands/32-download-and-check-in-one-command-2026-11-11.json)) |
+| 2026-11-12 attempt 3 | `osworld-guest-check-2026-11-12/attempt-3/` | 114 new files, exit 0 ([08](commands/08-upload-2026-11-12-attempt-3.json)) | 114 matching, 0 differences ([09](commands/09-check-2026-11-12-attempt-3.json)) | 114 of 114 ([33](commands/33-download-and-check-in-one-command-2026-11-12-attempt-3.json)) |
 
-Records 05, 06, 10 and 11 hold an earlier download and check of each set, each reporting 114 of
-114. Their download directory appears only as a redaction placeholder, which does not show that
-the checked directory is the one downloaded into. Records 19 to 22 repeat the download into a new
-directory whose path is written out in both the download record and the check record.
+Records 32 and 33 each run the download and the check as one command in one working directory.
+The command first requires that the target directory does not exist, then downloads into it,
+then checks it, so the checked directory is the one downloaded into.
+
+Two earlier pairs of records hold the same download and check as separate commands, each
+reporting 114 of 114. In records 05, 06, 10 and 11 the download directory appears only as a
+redaction placeholder. In records 19 to 22 it is a relative path, but each record redacts its
+working directory separately. Neither pair shows that the two commands used one directory.
 
 The first bucket read-back ([12](commands/12-object-lock-readback.json)) lists 228 files and
 14,571,126 bytes under the two prefixes, with no retention set on any of them. After these uploads
@@ -123,7 +127,7 @@ files, and each file name ends in the first 16 hex digits of its digest.
 | Size and SHA-256 of the local files | 11 files, 1,675,324 bytes | [23](commands/23-rerun-output-and-bundle-manifest.json), also stored as [`rerun-output.manifest.json`](rerun-output.manifest.json) |
 | Upload with `rclone copy --checksum --immutable` | 9 new files and 2 new files, exit 0 | [24](commands/24-upload-rerun-output.json), [25](commands/25-upload-guest-bundles.json) |
 | `rclone check` | 9 matching and 2 matching, 0 differences | [26](commands/26-check-rerun-output.json), [27](commands/27-check-guest-bundles.json) |
-| Download into a named directory, against that manifest | 11 of 11 by size and SHA-256 | [28](commands/28-download-rerun-output-and-bundles.json), [29](commands/29-named-directory-vs-rerun-output-manifest.json) |
+| Download and check against that manifest, in one command | 11 of 11 by size and SHA-256 | [34](commands/34-download-and-check-in-one-command-rerun-output.json); earlier as two commands in [28](commands/28-download-rerun-output-and-bundles.json), [29](commands/29-named-directory-vs-rerun-output-manifest.json) |
 | Bucket read-back under the prefix | 11 files, 1,675,324 bytes, no retention set | [30](commands/30-object-lock-readback-rerun-output.json) |
 | Whole bucket afterwards | 444 files and 26,109,040,644 bytes, old versions included | [31](commands/31-bucket-size-all-versions.json) |
 

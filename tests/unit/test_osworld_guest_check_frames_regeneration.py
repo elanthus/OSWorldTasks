@@ -62,7 +62,7 @@ def _manifest(folder: str) -> dict[str, int]:
 
 def test_every_recorded_command_exited_zero_and_holds_no_local_path() -> None:
     records = sorted((RECORD / "commands").glob("*.json"))
-    assert [path.name[:2] for path in records] == [f"{index:02d}" for index in range(32)]
+    assert [path.name[:2] for path in records] == [f"{index:02d}" for index in range(35)]
     for path in records:
         record = _json(path)
         assert record["exit_status"] == 0, path.name
@@ -150,9 +150,11 @@ def test_rerun_output_itself_matches_the_manifest(tag: str, record: str) -> None
     ("tag", "download", "check"),
     [("2026-11-11", "19", "20"), ("2026-11-12-attempt-3", "21", "22")],
 )
-def test_named_directory_download_is_the_directory_that_was_checked(
+def test_two_command_download_and_check_report_a_full_match(
     tag: str, download: str, check: str
 ) -> None:
+    # Each record redacts its own working directory, so this pair does not prove one directory.
+    # The one-command records below do.
     folder = SETS[tag][0]
     directory = f"{WORK}/review-download/{folder}"
     downloaded = _command(download)
@@ -161,6 +163,39 @@ def test_named_directory_download_is_the_directory_that_was_checked(
     checked = _command(check)
     assert checked["argv"][-2:] == [f"artifacts/{folder}/images.manifest.json", directory]
     assert json.loads(checked["output"]) == DOWNLOAD_MATCH
+
+
+@pytest.mark.parametrize(
+    ("record", "remote", "manifest", "files", "size"),
+    [
+        ("32", SETS["2026-11-11"][0], "images.manifest.json", 114, 7_285_563),
+        ("33", SETS["2026-11-12-attempt-3"][0], "images.manifest.json", 114, 7_285_563),
+        ("34", PREFIX, "rerun-output.manifest.json", 11, 1_675_324),
+    ],
+)
+def test_one_command_downloads_into_a_new_directory_and_checks_that_directory(
+    record: str, remote: str, manifest: str, files: int, size: int
+) -> None:
+    command = _command(record)
+    script, _, source, directory, _, checked_manifest = command["argv"][2:]
+    assert command["argv"][:2] == ["sh", "-c"]
+    # One shell command: "$2" must not exist, is the download target, and is what is checked.
+    assert script.startswith('set -e; test ! -e "$2"; rclone copy "$1" "$2" ')
+    assert script.endswith('.venv/bin/python -I -c "$3" "$4" "$2"')
+    assert source == f"bb:OSWorld/{remote}"
+    assert checked_manifest == f"artifacts/{remote}/{manifest}"
+    assert directory == f"{WORK}/review-download-one-command/{remote}"
+    output = command["output"]
+    assert output.count("Copied (new)") == files
+    assert json.loads(output[output.rindex("\n{") + 1 :]) == {
+        "manifest_files": files,
+        "downloaded_files": files,
+        "size_and_sha256_match": files,
+        "missing": [],
+        "not_matching": [],
+        "not_in_manifest": [],
+        "bytes": size,
+    }
 
 
 def test_rerun_output_and_bundle_archives_were_copied_and_read_back() -> None:
