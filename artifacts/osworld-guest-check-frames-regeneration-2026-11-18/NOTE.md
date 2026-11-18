@@ -44,7 +44,8 @@ during review of the pull request, with the checkout at `6b1c75f2`
 ([16](commands/16-git-revision-at-review.json)). Records 32 to 34 were added later in that
 review. No revision record was stored for them; they started after the commit time of `7338ca2c`
 and before that of `a0fa54d6`. Records 35 to 37 were written with the checkout at `a0fa54d6`
-([35](commands/35-git-revision-before-rerun-output-retention.json)).
+([35](commands/35-git-revision-before-rerun-output-retention.json)). Records 38 and 39 were
+written with the checkout at `c6eb00cb` ([38](commands/38-git-revision-at-rate-read.json)).
 
 | Compared files | Manifest | Files identical by size and SHA-256 | Raw record |
 |---|---|---|---|
@@ -133,6 +134,7 @@ files, and each file name ends in the first 16 hex digits of its digest.
 | Download and check against that manifest, in one command | 11 of 11 by size and SHA-256 | [34](commands/34-download-and-check-in-one-command-rerun-output.json); earlier as two commands in [28](commands/28-download-rerun-output-and-bundles.json), [29](commands/29-named-directory-vs-rerun-output-manifest.json) |
 | Bucket read-back under the prefix | 11 files, 1,675,324 bytes, no retention set | [30](commands/30-object-lock-readback-rerun-output.json) |
 | Whole bucket afterwards | 444 files and 26,109,040,644 bytes, old versions included | [31](commands/31-bucket-size-all-versions.json) |
+| Estimated storage charge for that size | about $0.11 per 30 days after the free 10 GB, about $0.18 with no free allowance, at $6.95 per TB per 30 days, read from Backblaze's pricing page on 2026-11-18 | [39](commands/39-backblaze-rate-and-storage-estimate.json) |
 
 The owner later approved the same one-year governance-mode retention on these 11 files. The same
 script set it, this time with the unreadable-retention check in place.
@@ -145,6 +147,13 @@ script set it, this time with the unreadable-retention check in place.
 The file names, sizes and SHA-1 values in read-back 37 equal those in read-back 30. This lock
 ends about 13 hours after the lock on the frames, because each is one year from when it was
 applied.
+
+The retention locks add no stored bytes, so record 31 is the latest bucket size. Record 39
+reads <https://www.backblaze.com/cloud-storage/pricing> once. It takes the rate from the page's
+billing sentence and the allowance from the page's statement that the first 10 GB of storage is
+free, and multiplies the size in record 31 by that rate. It takes 1 TB as 10^12 bytes, which
+the page does not state. The page also shows the figures $5 and $15 per TB in other sentences;
+the estimate does not use them. The estimate covers storage only and is not a bill.
 
 [`tests/unit/test_osworld_guest_check_frames_regeneration.py`](../../tests/unit/test_osworld_guest_check_frames_regeneration.py)
 checks these statements against the stored files.

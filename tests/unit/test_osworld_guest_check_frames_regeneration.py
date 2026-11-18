@@ -66,7 +66,7 @@ def _manifest(folder: str) -> dict[str, int]:
 
 def test_every_recorded_command_exited_zero_and_holds_no_local_path() -> None:
     records = sorted((RECORD / "commands").glob("*.json"))
-    assert [path.name[:2] for path in records] == [f"{index:02d}" for index in range(38)]
+    assert [path.name[:2] for path in records] == [f"{index:02d}" for index in range(40)]
     for path in records:
         record = _json(path)
         assert record["exit_status"] == 0, path.name
@@ -303,6 +303,28 @@ def test_review_records_were_written_at_the_revisions_the_note_names() -> None:
         assert COMMITTED_7338CA2C < started < COMMITTED_A0FA54D6, record
     assert _command("35")["output"].strip().startswith("a0fa54d6")
     assert _command("35")["started_at_utc"] < _command("36")["started_at_utc"]
+    assert _command("38")["output"].strip().startswith("c6eb00cb")
+
+
+def test_storage_estimate_is_the_recorded_size_times_the_rate_read_from_the_pricing_page() -> None:
+    record = _command("39")
+    size_record = f"artifacts/{PREFIX}/commands/31-bucket-size-all-versions.json"
+    assert record["argv"][-2:] == ["https://www.backblaze.com/cloud-storage/pricing", size_record]
+    estimate = json.loads(record["output"])
+    size = json.loads(_command("31")["output"].strip().splitlines()[-1])
+    assert estimate["http_status"] == 200 and estimate["read_utc"].startswith("2026-11-18T")
+    assert (estimate["bucket_files"], estimate["bucket_bytes"]) == (size["count"], size["bytes"])
+    assert estimate["bucket_size_record"] == size_record
+    # One rate in the billing sentence and one free allowance; other figures are listed, unused.
+    assert estimate["billing_sentence_usd_per_tb_per_30_days"] == ["6.95"]
+    assert estimate["free_storage_gb"] == ["10"]
+    assert estimate["every_usd_per_tb_figure_on_the_page"] == ["5", "6.95", "15"]
+    assert estimate["bytes_per_tb_assumed"] == 10**12
+    full = size["bytes"] / 10**12 * 6.95
+    after_allowance = (size["bytes"] - 10 * 10**9) / 10**12 * 6.95
+    assert estimate["usd_per_30_days_with_no_free_allowance"] == round(full, 4)
+    assert estimate["usd_per_30_days_after_free_allowance"] == round(after_allowance, 4)
+    assert (f"{full:.2f}", f"{after_allowance:.2f}") == ("0.18", "0.11")
 
 
 def _listed_in_both_manifests() -> dict[str, int]:
@@ -458,6 +480,11 @@ def test_note_states_the_recorded_numbers() -> None:
         "Records 16 to 31 were added",
         "Records 32 to 34 were added later",
         "Records 35 to 37 were written with the checkout at `a0fa54d6`",
+        "Records 38 and 39 were written with the checkout at `c6eb00cb`",
+        "about $0.11 per 30 days after the free 10 GB, about $0.18 with no free allowance,",
+        "at $6.95 per TB per 30 days, read from Backblaze's pricing page on 2026-11-18",
+        "It takes 1 TB as 10^12 bytes",
+        "shows the figures $5 and $15 per TB in other sentences",
         "| `627e09b` | 2026-11-18T04:22:21Z | 625.3 | 0 |",
         "| `d4e711e` | 2026-11-18T04:32:47Z | 570.9 | 0 |",
         _command("00")["output"].strip()[:8],
