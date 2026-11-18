@@ -125,12 +125,12 @@ The control plane has no caller authentication. Keep it and the MLflow UI on loo
 any shared network. The stateful serving rehearsal is still open.
 [Platform design](docs/platform-design.md) · [Rehearsal status](docs/s8-rehearsal.md)
 
-The owner closed D5.10 on 2026-10-25 at `fd54dc2` for the environment, platform and evidence
-discipline.
+The tasks hid two references needed on later screens.
 Claude Haiku succeeded more often with screenshot history in each campaign, with different
-effect sizes. The result is descriptive. The tasks hid two references needed on later screens,
-and the models saw frames from the in-process simulator. The final campaign tested parser
-sensitivity on the same tasks. [Owner decision](artifacts/grounding-v5-d510/human-gate.json) ·
+effect sizes. The result is descriptive. The models saw frames from the in-process simulator,
+and the final campaign tested parser sensitivity on the same tasks.
+The owner closed D5.10 on 2026-10-25 at `fd54dc2` for the environment, platform and evidence
+discipline. [Owner decision](artifacts/grounding-v5-d510/human-gate.json) ·
 [Benchmark design](docs/v5-benchmark-design.md) · [Chance analysis](artifacts/grounding-v5-stateless-chance-ceiling-v2.md)
 
 The [evidence index](docs/evidence-index.md) lists source records, available revisions,
