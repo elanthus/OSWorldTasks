@@ -23,6 +23,10 @@ What it records, all as raw values in ``results.json`` (nothing is graded here):
 ``finally`` block, and the record holds whether it returned and the error if it raised. The
 driver never sets it unconditionally. The exit status is non-zero if any close failed.
 
+Paths in ``results.json`` and in the golden episode file are stored relative to the repository
+root, however the output directory and guest image were given. A path outside the repository has
+its home or system temporary directory replaced by ``<home>`` or ``<system-temp>``.
+
 Usage (from the repository root, with the ``osworld`` extra installed in this checkout's venv)::
 
     .venv/bin/python scripts/osworld_guest_check.py OUTPUT_DIR \\
@@ -53,6 +57,7 @@ from pixelgym.actions import KEY_ALLOWLIST, ActionType
 from pixelgym.backends.fake import FakeBackend
 from pixelgym.backends.osworld import OSWorldBackend, OSWorldBackendConfig
 from pixelgym.env import PixelGuiEnv
+from pixelgym.evidence_redaction import repository_relative_evidence_text
 from pixelgym.tasks.vendor_form import generator, osworld_task, render
 from pixelgym.tasks.vendor_form.ui import INPUT_CONTRACT_VERSION
 
@@ -148,7 +153,8 @@ def _close(env: PixelGuiEnv, backend: OSWorldBackend) -> dict[str, Any]:
 
 
 def _write(path: Path, value: dict[str, Any]) -> None:
-    path.write_text(json.dumps(value, indent=2, sort_keys=True, default=str) + "\n", "utf-8")
+    text = json.dumps(value, indent=2, sort_keys=True, default=str) + "\n"
+    path.write_text(repository_relative_evidence_text(text, REPO_ROOT), "utf-8")
 
 
 def _provenance(guest_image: Path) -> dict[str, Any]:

@@ -9,14 +9,23 @@ import time
 import traceback
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from PIL import Image
 
 from pixelgym.backends.osworld import OSWorldBackend, OSWorldBackendConfig
 from pixelgym.env import PixelGuiEnv
+from pixelgym.evidence_redaction import repository_relative_evidence_text
 from pixelgym.validation.metrics import privileged_hashes
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
 _MINIMUM_FREE_ROOT_BYTES = 5 * 1024**3
+
+
+def evidence_text(evidence: dict[str, Any]) -> str:
+    """The evidence as stored and printed: paths under the repository are relative to it."""
+    text = json.dumps(evidence, indent=2, sort_keys=True) + "\n"
+    return repository_relative_evidence_text(text, REPO_ROOT)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -130,8 +139,9 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     args.evidence.parent.mkdir(parents=True, exist_ok=True)
-    args.evidence.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n")
-    print(json.dumps(evidence, indent=2, sort_keys=True))
+    stored = evidence_text(evidence)
+    args.evidence.write_text(stored)
+    print(stored, end="")
     return 0 if evidence["summary"]["passed"] else 1
 
 

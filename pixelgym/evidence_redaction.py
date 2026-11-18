@@ -8,6 +8,7 @@ from collections.abc import Iterable, Sequence
 from pathlib import Path
 
 SYSTEM_TEMP_PLACEHOLDER = "<system-temp>"
+REPOSITORY_PLACEHOLDER = "<repo>"
 
 # pytest's default basetemp is ``<system-temp>/pytest-of-<username>``, so the username
 # survives the temp-directory replacement one component deeper. Matched against the
@@ -72,3 +73,20 @@ def redact_evidence_text(
     for secret in secrets:
         redacted = redacted.replace(secret, "<redacted-local-demo-secret>")
     return redacted
+
+
+def repository_relative_evidence_text(value: str, repository_root: Path) -> str:
+    """Store evidence text with repository-relative paths and no local directory.
+
+    A writer that records ``str(path)`` stores whatever the operator typed, so an absolute
+    invocation puts the operator's checkout path in the evidence and makes the stored value
+    differ between machines. Every path under ``repository_root`` is rewritten relative to
+    it, wherever it appears in the text, including inside an error message or traceback.
+
+    A path outside the repository has no relative form. Its home or system temporary
+    directory is replaced by ``<home>`` or ``<system-temp>``, as in
+    :func:`standard_path_replacements`. The root itself is stored as ``<repo>``.
+    """
+
+    replacements = [(repository_root, REPOSITORY_PLACEHOLDER), *standard_path_replacements([])]
+    return redact_evidence_text(value, replacements).replace(f"{REPOSITORY_PLACEHOLDER}/", "")

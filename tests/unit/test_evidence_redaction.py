@@ -4,7 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from pixelgym.evidence_redaction import redact_evidence_text, standard_path_replacements
+from pixelgym.evidence_redaction import (
+    redact_evidence_text,
+    repository_relative_evidence_text,
+    standard_path_replacements,
+)
 
 
 def test_path_redaction_requires_filename_boundaries() -> None:
@@ -50,3 +54,44 @@ def test_shared_redactor_removes_known_local_demo_secrets() -> None:
     assert redact_evidence_text("token=local_demo_postgres_only", []) == (
         "token=<redacted-local-demo-secret>"
     )
+
+
+def test_paths_under_the_repository_are_stored_repository_relative(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Regression: a golden replay started with an absolute --output-dir stored the
+    # operator's checkout path in every frame path of its episode file.
+    monkeypatch.setattr("pixelgym.evidence_redaction.Path.home", lambda: Path("/home/alice"))
+    monkeypatch.setattr("pixelgym.evidence_redaction.tempfile.gettempdir", lambda: "/tmp")
+    root = Path("/home/alice/dev/repo")
+
+    def stored(value: str) -> str:
+        return repository_relative_evidence_text(value, root)
+
+    assert stored('"/home/alice/dev/repo/artifacts/run/frames/step-001.png"') == (
+        '"artifacts/run/frames/step-001.png"'
+    )
+    assert stored('File "/home/alice/dev/repo/scripts/driver.py", line 3') == (
+        'File "scripts/driver.py", line 3'
+    )
+    # Already relative: unchanged, so a relative and an absolute invocation store one value.
+    assert stored('"artifacts/run/frames/step-001.png"') == '"artifacts/run/frames/step-001.png"'
+
+
+def test_paths_outside_the_repository_keep_no_local_directory(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("pixelgym.evidence_redaction.Path.home", lambda: Path("/home/alice"))
+    monkeypatch.setattr("pixelgym.evidence_redaction.tempfile.gettempdir", lambda: "/tmp")
+    root = Path("/home/alice/dev/repo")
+
+    def stored(value: str) -> str:
+        return repository_relative_evidence_text(value, root)
+
+    # A path with no repository-relative form is labelled, never left absolute and local.
+    assert stored("/home/alice/images/guest.qcow2") == "<home>/images/guest.qcow2"
+    assert stored("/tmp/run/out.json") == "<system-temp>/run/out.json"
+    # The root itself has no relative form either; it stays labelled.
+    assert stored("cwd=/home/alice/dev/repo") == "cwd=<repo>"
+    # A sibling directory that only shares the root's spelling is not inside it.
+    assert stored("/home/alice/dev/repo-old/a.png") == "<home>/dev/repo-old/a.png"
