@@ -1,13 +1,20 @@
 # S7 proposal: a bounded scripted serving rehearsal
 
-- **Status:** owner approved implementation and scripted qualification on 2026-10-20 under the
-  proposed caps. Exact package activation and publication remain blocked pending owner review.
-- **Reader and decision:** the project owner, deciding whether to implement and qualify the two
-  packages and rehearsal below. Exact package approval and serving approval remain separate.
-- **Inspected base:** `acaa0da8a6ec752e39510a3f05339a9f204fe1a7` (PR #249).
 - **Purpose:** demonstrate environment correctness, durable evaluation evidence, and serving
   controls with scripted policies and fake transports. This is engineering validation; it supplies
   no model-quality result or D5.10 verdict.
+- **Status:** owner approved implementation and scripted qualification on 2026-10-20 under the
+  proposed caps. Exact package activation and publication remain blocked pending owner review.
+- **Current state:** the owner approved a fresh successor qualification on 2026-10-26
+  ([details](#activation-compatibility-after-review-repairs)). The rehearsal driver is implemented
+  and has not been executed ([S8 driver status](#s8-driver-status)).
+- **Reader and decision:** the project owner, deciding whether to implement and qualify the two
+  packages and rehearsal below. Exact package approval and serving approval remain separate.
+- **Inspected base:** `acaa0da8a6ec752e39510a3f05339a9f204fe1a7` (PR #249).
+- **Terms:** S7 and S8 are stages of the v5 stateful serving extension; see the
+  [glossary](glossary.md).
+
+## Approval scope and qualification history
 
 Owner clarification: retain one local archive copy and one private LFS copy, preserving the
 original run. This supersedes the original second-volume/two-local-copy prerequisite.
@@ -373,7 +380,7 @@ without constructing a policy, transport, server, backend, or network client. Re
 explicit verifier operation, never a side effect of reporting. Test this boundary by denying those
 constructors/network access during report generation. Keep all negative outcomes and missing data.
 The human S8 review receives raw evidence and unmarked acceptance criteria; agents declare no
-milestone verdict and change no public portfolio wording.
+milestone verdict and change no public wording.
 
 After quiescence, use the merged generic `capture`, `restore`, and `check-cleanup` operations to
 retain one local archive copy under a new name and verify a fresh local restore. On each fresh
@@ -444,6 +451,6 @@ exit 0; 119 passed, 4 warnings in 15.71s
 
 The warnings were existing PyYAML/Metaflow deprecations. No rehearsal, OS sandbox integration,
 budget observation, LFS transfer, or publication was performed in this preparation. The full
-suite and retention results quoted in the handoff remain historical PR #249 results, not newly
+suite and retention results remain historical PR #249 results, not newly
 executed checks. The D5.9 private journals remain missing. This successor plan cannot reconstruct
 them, and D5.10 and public claims remain human-owned.

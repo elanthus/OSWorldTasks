@@ -102,7 +102,7 @@ Some decisions belong to a person, not an agent. An agent prepares work up to th
 
 ## 7. Evidence and reporting standards
 
-The portfolio claim lives or dies on honesty here.
+The project's claim lives or dies on honesty here.
 
 - Reports are **generated from stored structured evidence**. The report generator must not rerun or reinterpret tests.
 - Distinguish **semantic/state determinism**, **bitwise visual determinism**, and **perceptual visual stability**. Never label a perceptual similarity score as bitwise determinism.
@@ -110,7 +110,7 @@ The portfolio claim lives or dies on honesty here.
 - Report set-of-marks **proposal coverage separately** from conditional mark-selection accuracy.
 - Keep invalid/unparseable model outputs in the results. No hidden retries, no discarding a wrong answer.
 - A null or negative set-of-marks result is a fine outcome. Do not shape the analysis toward an improvement.
-- Every number in the README or a resume bullet must trace to a checked-in artifact. Leave a placeholder rather than inventing a metric.
+- Every number in the README or any published summary must trace to a checked-in artifact. Leave a placeholder rather than inventing a metric.
 - Classify every reward-hacking surface as **blocked**, **tested**, **mitigated**, or **known limitation**, with evidence, and state residual risks plainly.
 
 ## 8. Definition of done for an agent task

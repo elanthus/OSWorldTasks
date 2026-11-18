@@ -1,5 +1,17 @@
 # D5.9 subscription identity verification
 
+- **Type:** historical incident and decision record for the D5.9 replication launch.
+- **What it records:** Claude Code's auth-status command reports a subscription tier taken from an
+  optional environment hint; it does not authenticate the tier. The runner therefore checks the
+  tier itself with one fresh read of the CLI's OAuth profile endpoint, using exactly the credential
+  passed to the CLI. Anything other than a verified Max organization type stops preparation; there
+  are no retries or cached proofs.
+- **Outcome:** the replacement pilot and full campaign completed
+  ([review package](../artifacts/grounding-v5-d59-replication-results/review-guide.md)).
+- **Terms:** see the [glossary](glossary.md) for D-numbers.
+
+## Status and approvals
+
 Status: PR #258 is merged. After the first pilot stream failures, the owner authorized the
 strict parser compatibility fix, replacement freeze, a new four-assignment pilot, and full
 execution only after operational checks pass. The original investigation

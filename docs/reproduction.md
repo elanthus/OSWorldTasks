@@ -1,6 +1,9 @@
 # Reproduction guide
 
-Commands and historical timing moved from the README; start with the default setup below.
+This guide reproduces the project's checks locally. The default setup runs lint, type checks, the
+fast unit suite, and the golden trajectory without OSWorld, a VM, a browser, or a provider
+credential. Later sections cover the release-hosted evidence images, the loopback HTTP contract,
+browser dataset capture, and the optional OSWorld-V2 integration.
 
 ## Quick reproduction without OSWorld
 

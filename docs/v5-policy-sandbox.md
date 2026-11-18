@@ -142,8 +142,8 @@ is a new policy ID. The D5.9 Haiku pair is unchanged; its manifests keep
 
 ## Known limitations
 
-- The CLI's scratch root `/private/tmp/claude-<uid>` is shared with the owner's own Claude Code
-  sessions and holds their live state, so the runner never empties it. The CLI opens that root
+- The CLI's scratch root `/private/tmp/claude-<uid>` is shared with other Claude Code sessions
+  of the same OS user and holds their live state, so the runner never empties it. The CLI opens that root
   itself, so a launch can list the root and read entry metadata, which exposes other sessions'
   entry names; it can create, read, and write only its own project directory there. In
   `--print` mode with session persistence off the CLI was observed to create nothing.
