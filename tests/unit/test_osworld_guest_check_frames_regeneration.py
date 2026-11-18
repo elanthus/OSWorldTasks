@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
+import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 import pytest
@@ -21,6 +24,17 @@ SETS = {
     ),
 }
 RETAIN_UNTIL_MS = 1_826_518_402_000
+WORK = ".cache/guest-check-regen-2026-11-18"
+PREFIX = "osworld-guest-check-frames-regeneration-2026-11-18"
+DOWNLOAD_MATCH = {
+    "manifest_files": 114,
+    "downloaded_files": 114,
+    "size_and_sha256_match": 114,
+    "missing": [],
+    "not_matching": [],
+    "not_in_manifest": [],
+    "bytes": 7_285_563,
+}
 MATCH = {
     "manifest_files": 114,
     "png_files_present": 114,
@@ -48,7 +62,7 @@ def _manifest(folder: str) -> dict[str, int]:
 
 def test_every_recorded_command_exited_zero_and_holds_no_local_path() -> None:
     records = sorted((RECORD / "commands").glob("*.json"))
-    assert [path.name[:2] for path in records] == [f"{index:02d}" for index in range(16)]
+    assert [path.name[:2] for path in records] == [f"{index:02d}" for index in range(32)]
     for path in records:
         record = _json(path)
         assert record["exit_status"] == 0, path.name
@@ -84,7 +98,7 @@ def test_rerun_was_clean_at_the_original_revision_and_built_the_recorded_bundle(
         ("2026-11-12-attempt-3", "07", "11"),
     ],
 )
-def test_regenerated_and_downloaded_files_match_the_manifest(
+def test_copies_at_the_manifest_paths_and_first_downloads_match_the_manifest(
     tag: str, local: str, downloaded: str
 ) -> None:
     folder = SETS[tag][0]
@@ -113,6 +127,87 @@ def test_upload_copied_every_file_and_the_check_found_no_difference(
     assert uploaded["output"].count("Copied (new)") == 114
     checked = _command(check)["output"]
     assert "0 differences found" in checked and "114 matching files" in checked
+
+
+@pytest.mark.parametrize(("tag", "record"), [("2026-11-11", "17"), ("2026-11-12-attempt-3", "18")])
+def test_rerun_output_itself_matches_the_manifest(tag: str, record: str) -> None:
+    folder, revision, _ = SETS[tag]
+    document = _json(RECORD / "runs" / f"{revision}.json")
+    (placeholder,) = document["path_replacement"]
+    assert WORK in document["path_replacement"][placeholder]
+    compared = _command(record)
+    assert compared["argv"][-2] == f"artifacts/{folder}/images.manifest.json"
+    assert compared["argv"][-1] == document["run"]["argv"][-1].replace(placeholder, WORK)
+    output = json.loads(compared["output"])
+    earliest, latest = output.pop("earliest_modified_utc"), output.pop("latest_modified_utc")
+    assert output.pop("path_rule").startswith("manifest path with a leading 'real-golden/' removed")
+    assert output == MATCH
+    run = document["run"]
+    assert run["started_utc"] <= earliest <= latest <= run["ended_utc"]
+
+
+@pytest.mark.parametrize(
+    ("tag", "download", "check"),
+    [("2026-11-11", "19", "20"), ("2026-11-12-attempt-3", "21", "22")],
+)
+def test_named_directory_download_is_the_directory_that_was_checked(
+    tag: str, download: str, check: str
+) -> None:
+    folder = SETS[tag][0]
+    directory = f"{WORK}/review-download/{folder}"
+    downloaded = _command(download)
+    assert downloaded["argv"][:4] == ["rclone", "copy", f"bb:OSWorld/{folder}", directory]
+    assert downloaded["output"].count("Copied (new)") == 114
+    checked = _command(check)
+    assert checked["argv"][-2:] == [f"artifacts/{folder}/images.manifest.json", directory]
+    assert json.loads(checked["output"]) == DOWNLOAD_MATCH
+
+
+def test_rerun_output_and_bundle_archives_were_copied_and_read_back() -> None:
+    manifest = _json(RECORD / "rerun-output.manifest.json")
+    assert (RECORD / "rerun-output.manifest.json").read_text("utf-8") == _command("23")["output"]
+    files = {entry["path"]: entry for entry in manifest["files"]}
+    assert len(files) == manifest["file_count"] == 11 and manifest["bytes"] == 1_675_324
+    for folder, revision, bundle in SETS.values():
+        document = _json(RECORD / "runs" / f"{revision}.json")
+        record = files[f"rerun-output/{revision}/run-record.json"]
+        assert record["sha256"] == document["run_record_sha256_before_path_replacement"]
+        assert f"rerun-output/{revision}/raw/real-golden-episode.json" in files
+        (archive,) = document["guest_bundle_archives_built_in_the_worktree_cache"]
+        provenance = _json(ARTIFACTS / folder.split("/")[0] / "provenance.json")
+        assert (
+            files[f"guest-bundles/{archive}"]["sha256"]
+            == (provenance["guest_bundle_sha256_recorded"])
+        )
+        assert provenance["guest_bundle_sha256_recorded"].startswith(bundle)
+    for upload, check, remote, count in (
+        ("24", "26", "rerun-output", 9),
+        ("25", "27", "guest-bundles", 2),
+    ):
+        uploaded = _command(upload)
+        assert uploaded["argv"][3] == f"bb:OSWorld/{PREFIX}/{remote}"
+        assert "--immutable" in uploaded["argv"] and "--checksum" in uploaded["argv"]
+        assert uploaded["output"].count("Copied (new)") == count
+        checked = _command(check)["output"]
+        assert "0 differences found" in checked and f"{count} matching files" in checked
+    directory = f"{WORK}/review-download/{PREFIX}"
+    assert _command("28")["argv"][:4] == ["rclone", "copy", f"bb:OSWorld/{PREFIX}", directory]
+    verified = _command("29")
+    assert verified["argv"][-2:] == [f"artifacts/{PREFIX}/rerun-output.manifest.json", directory]
+    assert json.loads(verified["output"]) == {
+        "manifest_files": 11,
+        "downloaded_files": 11,
+        "size_and_sha256_match": 11,
+        "missing": [],
+        "not_matching": [],
+        "not_in_manifest": [],
+        "bytes": 1_675_324,
+    }
+    listing = json.loads(_command("30")["output"])
+    assert {entry["name"]: entry["size"] for entry in listing["files"]} == {
+        f"{PREFIX}/{path}": entry["size"] for path, entry in files.items()
+    }
+    assert {entry["retention_mode"] for entry in listing["files"]} == {None}
 
 
 def _listed_in_both_manifests() -> dict[str, int]:
@@ -191,13 +286,75 @@ def test_the_two_manifests_list_the_same_digests() -> None:
     assert first == second and len(first) == 114
 
 
+def _lock_script() -> ModuleType:
+    spec = importlib.util.spec_from_file_location(
+        "apply_governance_retention", RECORD / "apply_governance_retention.py"
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.mark.parametrize(
+    ("retention", "exit_status", "updates"),
+    [
+        ({"isClientAuthorizedToRead": True, "value": {"mode": None}}, 0, 2),
+        ({"isClientAuthorizedToRead": False, "value": None}, 1, 0),
+        ({"isClientAuthorizedToRead": True, "value": {"mode": "governance"}}, 1, 0),
+    ],
+    ids=["readable-and-unset", "unreadable", "different-retention"],
+)
+def test_lock_script_changes_nothing_unless_every_retention_is_readable_and_unset(
+    retention: dict[str, Any],
+    exit_status: int,
+    updates: int,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    unset = {"isClientAuthorizedToRead": True, "value": {"mode": None}}
+    listed = [
+        {"fileName": "p/a.png", "fileId": "id-a", "fileRetention": unset},
+        {"fileName": "p/b.png", "fileId": "id-b", "fileRetention": retention},
+    ]
+    update_calls: list[dict[str, Any]] = []
+
+    def fake_call(url: str, body: dict[str, Any] | None, authorization: str) -> dict[str, Any]:
+        operation = url.rsplit("/", 1)[-1]
+        if operation == "b2_authorize_account":
+            api = {"storageApi": {"apiUrl": "https://api.invalid"}}
+            return {"apiInfo": api, "authorizationToken": "token", "accountId": "account"}
+        if operation == "b2_list_buckets":
+            return {"buckets": [{"bucketName": "bucket", "bucketId": "bucket-id"}]}
+        if operation == "b2_list_file_names":
+            return {"files": listed, "nextFileName": None}
+        assert operation == "b2_update_file_retention" and body is not None
+        update_calls.append(body)
+        return {"fileRetention": body["fileRetention"]}
+
+    module = _lock_script()
+    monkeypatch.setattr(module, "call", fake_call)
+    for name in ("BACKBLAZE_KEY_ID", "BACKBLAZE_APPLICATION_KEY"):
+        monkeypatch.setenv(name, "not-a-credential")
+    monkeypatch.setenv("BACKBLAZE_BUCKET_NAME", "bucket")
+    arguments = ["lock", "p", "--retain-until-ms", "1", "--expect-files", "2"]
+    monkeypatch.setattr(sys, "argv", arguments)
+    assert module.main() == exit_status
+    assert [call["fileName"] for call in update_calls] == ["p/a.png", "p/b.png"][:updates]
+
+
 def test_note_states_the_recorded_numbers() -> None:
-    note = (RECORD / "NOTE.md").read_text(encoding="utf-8")
+    note = " ".join((RECORD / "NOTE.md").read_text(encoding="utf-8").split())
     size = json.loads(_command("13")["output"].strip().splitlines()[-1])
     assert size == {"count": 433, "bytes": 26_107_365_320, "sizeless": 0, "fs": "bb:OSWorld"}
+    later = json.loads(_command("31")["output"].strip().splitlines()[-1])
+    assert later == {"count": 444, "bytes": 26_109_040_644, "sizeless": 0, "fs": "bb:OSWorld"}
     for statement in (
         "433 files and 26,107,365,320 bytes",
-        "228 files and\n14,571,126 bytes",
+        "444 files and 26,109,040,644 bytes",
+        "228 files and 14,571,126 bytes",
+        "11 files, 1,675,324 bytes",
+        "holds the 112-step trace",
+        _command("16")["output"].strip()[:8],
         "228 files listed, 228 changed, 0 already set, exit 0",
         "one retain-until time, 2027-11-18T06:13:22Z",
         "| `627e09b` | 2026-11-18T04:22:21Z | 625.3 | 0 |",

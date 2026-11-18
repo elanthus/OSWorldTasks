@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "rclone",
+    "size",
+    "bb:OSWorld",
+    "--b2-versions",
+    "--json"
+  ],
+  "command": "rclone size bb:OSWorld --b2-versions --json",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.645893,
+  "ended_at_utc": "2026-11-18T07:56:30.465903+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "2026/11/17 23:56:29 NOTICE: Config file \"<home>/.config/rclone/rclone.conf\" not found - using defaults\n{\"count\":444,\"bytes\":26109040644,\"sizeless\":0,\"fs\":\"bb:OSWorld\"}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-11-18T07:56:29.818124+00:00"
+}

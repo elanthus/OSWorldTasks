@@ -17,7 +17,20 @@ COMMANDS = (
     "02-object-lock-readback",
     "03-download-to-fresh-directory",
     "04-downloaded-vs-sha256-manifest",
+    "05-git-revision-at-review",
+    "06-download-to-named-directory",
+    "07-named-directory-vs-sha256-manifest",
 )
+MANIFEST = f"artifacts/{SET}/images.manifest.json"
+FULL_MATCH = {
+    "manifest_files": 114,
+    "downloaded_files": 114,
+    "size_and_sha256_match": 114,
+    "missing": [],
+    "not_matching": [],
+    "not_in_manifest": [],
+    "bytes": 7_312_308,
+}
 
 
 def _json(path: Path) -> Any:
@@ -66,30 +79,34 @@ def test_every_remote_file_is_governance_locked_to_one_time() -> None:
     assert retain_until.strftime("%Y-%m-%dT%H:%M:%SZ") == "2027-11-18T04:15:08Z"
 
 
-def test_fresh_download_matches_the_sha256_manifest() -> None:
+def test_earlier_download_and_check_report_a_full_match() -> None:
+    # The directory in these two records is a per-record redaction placeholder, so they are not
+    # asserted to name the same directory. Records 06 and 07 carry that link.
     download = _command("03-download-to-fresh-directory")
     assert download["argv"][:3] == ["rclone", "copy", f"bb:OSWorld/{SET}"]
     verify = _command("04-downloaded-vs-sha256-manifest")
-    assert verify["argv"][-2] == f"artifacts/{SET}/images.manifest.json"
-    assert verify["argv"][-1] == download["argv"][3]
-    assert json.loads(verify["output"]) == {
-        "manifest_files": 114,
-        "downloaded_files": 114,
-        "size_and_sha256_match": 114,
-        "missing": [],
-        "not_matching": [],
-        "not_in_manifest": [],
-        "bytes": 7_312_308,
-    }
+    assert verify["argv"][-2] == MANIFEST
+    assert json.loads(verify["output"]) == FULL_MATCH
+
+
+def test_named_directory_download_is_the_directory_that_was_checked() -> None:
+    directory = f".cache/guest-check-regen-2026-11-18/review-download/{SET}"
+    download = _command("06-download-to-named-directory")
+    assert download["argv"][:4] == ["rclone", "copy", f"bb:OSWorld/{SET}", directory]
+    assert download["output"].count("Copied (new)") == 114
+    verify = _command("07-named-directory-vs-sha256-manifest")
+    assert verify["argv"][-2:] == [MANIFEST, directory]
+    assert json.loads(verify["output"]) == FULL_MATCH
 
 
 def test_note_states_the_recorded_numbers_and_leaves_the_readme_unchanged() -> None:
-    note = (RECORD / "NOTE.md").read_text(encoding="utf-8")
+    note = " ".join((RECORD / "NOTE.md").read_text(encoding="utf-8").split())
     for statement in (
         "114 files, 7,312,308 bytes",
         "2027-11-18T04:15:08Z",
         "114 downloaded, 114 match by size and SHA-256, 0 missing, 0 extra",
         _command("00-git-revision")["output"].strip()[:8],
+        _command("05-git-revision-at-review")["output"].strip()[:8],
     ):
         assert statement in note, statement
     assert "are not checked in" in (EVIDENCE / "README.md").read_text(encoding="utf-8")

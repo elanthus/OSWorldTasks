@@ -2,8 +2,11 @@
 
 Credentials come from BACKBLAZE_KEY_ID, BACKBLAZE_APPLICATION_KEY and BACKBLAZE_BUCKET_NAME in
 the environment and are never printed. Nothing is uploaded or deleted. The listing is checked
-against --expect-files before any file is changed, and a file that already carries a different
-retention stops the run.
+against --expect-files before any file is changed. A file that already carries a different
+retention, or whose retention the key is not authorized to read, stops the run.
+
+Command record 14 was produced by this file as committed in 1c84009. The unreadable-retention
+check was added afterwards in review; the script was not run again.
 """
 
 from __future__ import annotations
@@ -74,6 +77,13 @@ def main() -> int:
                 break
 
     wanted = {"mode": "governance", "retainUntilTimestamp": args.retain_until_ms}
+    # A key without the read capability gets isClientAuthorizedToRead false and a null value.
+    # That says nothing about the retention the file carries, so it is never read as "unset".
+    unreadable = [
+        f["fileName"]
+        for f in files
+        if (f.get("fileRetention") or {}).get("isClientAuthorizedToRead") is not True
+    ]
     current = [(f.get("fileRetention") or {}).get("value") or {} for f in files]
     conflicting = [
         f["fileName"]
@@ -83,8 +93,9 @@ def main() -> int:
     print(f"bucket: {bucket}")
     print(f"prefixes: {args.prefixes}")
     print(f"files listed: {len(files)} (expected {args.expect_files})")
+    print(f"files whose retention this key cannot read: {len(unreadable)}")
     print(f"files already carrying a different retention: {len(conflicting)}")
-    if len(files) != args.expect_files or conflicting:
+    if len(files) != args.expect_files or unreadable or conflicting:
         print("stopping before any change")
         return 1
 
