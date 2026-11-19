@@ -66,7 +66,7 @@ def _manifest(folder: str) -> dict[str, int]:
 
 def test_every_recorded_command_exited_zero_and_holds_no_local_path() -> None:
     records = sorted((RECORD / "commands").glob("*.json"))
-    assert [path.name[:2] for path in records] == [f"{index:02d}" for index in range(40)]
+    assert [path.name[:2] for path in records] == [f"{index:02d}" for index in range(42)]
     for path in records:
         record = _json(path)
         assert record["exit_status"] == 0, path.name
@@ -304,6 +304,76 @@ def test_review_records_were_written_at_the_revisions_the_note_names() -> None:
     assert _command("35")["output"].strip().startswith("a0fa54d6")
     assert _command("35")["started_at_utc"] < _command("36")["started_at_utc"]
     assert _command("38")["output"].strip().startswith("c6eb00cb")
+    assert _command("40")["output"].strip().startswith("a293538b")
+    assert _command("40")["started_at_utc"] < _command("41")["started_at_utc"]
+
+
+@pytest.mark.parametrize(
+    ("tag", "folder"),
+    [
+        ("627e09b", "osworld-guest-check-2026-11-11"),
+        ("d4e711e", "osworld-guest-check-2026-11-12/attempt-3"),
+    ],
+)
+def test_rerun_episode_equals_the_original_run_apart_from_ids_paths_and_python_version(
+    tag: str, folder: str
+) -> None:
+    record = _command("41")
+    run = json.loads(record["output"])["runs"][tag]
+    original = f"artifacts/{folder}/real-golden-episode.json"
+    results = f"artifacts/{folder}/results.json"
+    rerun = f"{WORK}/{tag}/raw/real-golden-episode.json"
+    entry = f"rerun-output/{tag}/raw/real-golden-episode.json"
+    assert record["argv"][4] == f"artifacts/{PREFIX}/rerun-output.manifest.json"
+    start = record["argv"].index(tag)
+    assert record["argv"][start : start + 5] == [tag, original, results, rerun, entry]
+    # The rerun file compared is the file listed in the off-host manifest.
+    (listed,) = (
+        item
+        for item in _json(RECORD / "rerun-output.manifest.json")["files"]
+        if item["path"] == entry
+    )
+    assert (run["rerun_episode_bytes"], run["rerun_episode_sha256"]) == (
+        listed["size"],
+        listed["sha256"],
+    )
+    assert run["rerun_episode_equals_offhost_manifest_entry"] is True
+    # The original run's side of the comparison is checked in; the record must agree with it.
+    episode = _json(ROOT / original)
+    rewards = [step["reward"] for step in episode["trace"]]
+    assert rewards == _json(ROOT / results)["golden"]["rewards"]
+    assert (len(rewards), sum(rewards)) == (112, 1.0)
+    assert episode["backend_metadata"]["python_version"] == run["python_version"]["original"]
+    assert episode["summary"] == run["summary"]
+
+    assert run["leaf_values"] == {"original": 2418, "rerun": 2418}
+    assert (run["keys_only_in_original"], run["keys_only_in_rerun"]) == (0, 0)
+    assert run["differing_leaf_values"] == 226
+    assert run["differing_leaf_values_by_field"] == {
+        ".backend_metadata.python_version": 1,
+        ".contact_sheet_path": 1,
+        ".trace[*].info.episode_id": 112,
+        ".trace[*].screenshot_path": 112,
+    }
+    assert run["steps"] == {"original": 112, "rerun": 112}
+    assert run["steps_equal_apart_from_screenshot_path_and_episode_id"] == 112
+    assert run["frame_file_names_equal"] == 112 and run["contact_sheet_file_name_equal"] is True
+    assert run["absolute_screenshot_paths"] == {"original": 0, "rerun": 112}
+    assert run["distinct_episode_ids"] == {"original": 1, "rerun": 1, "shared": 0}
+    assert run["python_version"] == {"original": "3.12.15", "rerun": "3.12.16"}
+    assert run["rewards"] == {
+        "original_episode": 112,
+        "rerun_episode": 112,
+        "original_results": 112,
+        "rerun_sum": 1.0,
+        "rerun_equals_original_episode": True,
+        "rerun_equals_original_results": True,
+    }
+    assert run["summary"]["first_positive_reward_step"] == run["summary"]["terminal_step"] == 112
+    assert run["summary"]["positive_reward_count"] == 1
+    assert run["summary_equals_original_episode"] is True
+    assert run["summary_equals_original_results"] is True
+    assert run["reward_timing_subset_equal"] is True
 
 
 def test_storage_estimate_is_the_recorded_size_times_the_rate_read_from_the_pricing_page() -> None:
@@ -486,6 +556,17 @@ def test_note_states_the_recorded_numbers() -> None:
         "Taking 1 TB as 10^12 bytes is the record's own assumption",
         "Record 31 is the last size recorded",
         "shows the figures $5 and $15 per TB in other sentences",
+        "Records 40 and 41 were written with the checkout at `a293538b`",
+        "| Leaf values in each episode file | 2,418 and 2,418, same keys | 2,418 and 2,418,",
+        "| Leaf values that differ | 226 | 226 |",
+        "the episode id | 112 of 112 | 112 of 112 |",
+        "| equal, 112 values, sum 1.0 | equal, 112 values, sum 1.0 |",
+        "The 226 differing values are the same four fields in both pairs",
+        "no id is shared between a rerun and its original run",
+        "The frame file names are equal on all 112 steps",
+        "recorded Python 3.12.15 and the reruns recorded 3.12.16",
+        "the only positive reward is at step 112, which is also the terminal step",
+        "Record 41 compares it with the original run's files",
         "| `627e09b` | 2026-11-18T04:22:21Z | 625.3 | 0 |",
         "| `d4e711e` | 2026-11-18T04:32:47Z | 570.9 | 0 |",
         _command("00")["output"].strip()[:8],

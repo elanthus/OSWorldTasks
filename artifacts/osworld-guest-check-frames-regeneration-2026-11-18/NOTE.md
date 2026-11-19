@@ -9,7 +9,8 @@ be found on 2026-11-17:
   `d4e711e`, [manifest](../osworld-guest-check-2026-11-12/attempt-3/images.manifest.json)
 
 This note records one rerun of the golden replay at each revision, the comparison of its output
-with those manifests, an off-host copy, and the retention lock on that copy. It changes no result.
+with those manifests, an off-host copy, and the retention lock on that copy. It also records a
+comparison of each rerun's episode file with the original run's files. It changes no result.
 Both guest-check folders are left as checked in, and no PNG is added to git.
 
 ## The reruns
@@ -46,6 +47,8 @@ review. No revision record was stored for them; they started after the commit ti
 and before that of `a0fa54d6`. Records 35 to 37 were written with the checkout at `a0fa54d6`
 ([35](commands/35-git-revision-before-rerun-output-retention.json)). Records 38 and 39 were
 written with the checkout at `c6eb00cb` ([38](commands/38-git-revision-at-rate-read.json)).
+Records 40 and 41 were written with the checkout at `a293538b`
+([40](commands/40-git-revision-at-episode-comparison.json)).
 
 | Compared files | Manifest | Files identical by size and SHA-256 | Raw record |
 |---|---|---|---|
@@ -156,6 +159,35 @@ bytes. Taking 1 TB as 10^12 bytes is the record's own assumption. The page also 
 figures $5 and $15 per TB in other sentences; the estimate does not use them. The estimate
 covers storage only and is not a bill.
 
+## Rerun episode files compared with the original runs
+
+Record [41](commands/41-rerun-episodes-vs-original-runs.json) compares each rerun's episode file
+with the original run's checked-in episode file and `results.json`. It also checks that the
+local rerun file has the size and SHA-256 listed for it in `rerun-output.manifest.json`, the
+manifest of the off-host copy, and exits non-zero if it does not.
+
+| Compared | `627e09b` rerun and the 2026-11-11 run | `d4e711e` rerun and 2026-11-12 attempt 3 |
+|---|---|---|
+| Leaf values in each episode file | 2,418 and 2,418, same keys | 2,418 and 2,418, same keys |
+| Leaf values that differ | 226 | 226 |
+| Steps equal apart from the frame path and the episode id | 112 of 112 | 112 of 112 |
+| Rerun rewards and the original episode file | equal, 112 values, sum 1.0 | equal, 112 values, sum 1.0 |
+| Rerun rewards and the original `results.json` | equal | equal |
+| Summary and reward-timing subset | equal | equal |
+
+The 226 differing values are the same four fields in both pairs: the episode id on each of the
+112 steps, the frame path on each of the 112 steps, the contact-sheet path, and
+`backend_metadata.python_version`. Each file holds one episode id, and no id is shared between a
+rerun and its original run. The frame file names are equal on all 112 steps; the rerun files
+store the frame paths as absolute paths and the original files store none as absolute. The
+original runs recorded Python 3.12.15 and the reruns recorded 3.12.16.
+
+In both reruns the only positive reward is at step 112, which is also the terminal step, as in
+the original runs.
+
+The comparison reads stored files and reruns nothing. It adds no result: the original runs'
+files remain the record of rewards.
+
 [`tests/unit/test_osworld_guest_check_frames_regeneration.py`](../../tests/unit/test_osworld_guest_check_frames_regeneration.py)
 checks these statements against the stored files.
 
@@ -184,9 +216,10 @@ rclone copy bb:OSWorld/osworld-guest-check-frames-regeneration-2026-11-18 .cache
 
 - **The frames are regenerated, not the original files.** They equal the originals in size and
   SHA-256 according to the manifests, which is the only surviving record of the originals.
-- **Only the frames are compared.** Each rerun's episode file holds its step trace and rewards. It
-  is copied off-host but not checked in, and it was not compared with the original runs' result
-  files, which remain the record of rewards.
+- **The rerun episode files are compared but not checked in.** Each holds its rerun's step trace
+  and rewards and is copied off-host. Record 41 compares it with the original run's files, which
+  remain the record of rewards. The reruns recorded Python 3.12.16 where the original runs
+  recorded 3.12.15.
 - **The copied guest bundle archives are not the files the reruns built.** They are tied to the
   reruns by file name, and to the original runs by full SHA-256.
 - **Same-owner custody.** The bucket, its key and the local copies belong to one owner account. A
