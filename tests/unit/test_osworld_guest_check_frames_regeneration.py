@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -11,8 +12,6 @@ from types import ModuleType
 from typing import Any
 
 import pytest
-
-from pixelgym.evidence_redaction import redact_evidence_text
 
 ROOT = Path(__file__).resolve().parents[2]
 ARTIFACTS = ROOT / "artifacts"
@@ -314,15 +313,17 @@ def test_review_records_were_written_at_the_revisions_the_note_names() -> None:
 
 
 def test_repeats_store_the_program_text_that_redaction_changed_in_records_39_and_41() -> None:
-    # The recorder was given ``--cwd .`` and redacts its working directory, so it replaced each
-    # standalone "." in the stored program text. The repeats were given an absolute path.
-    working_directory = [(Path("."), "<path-0>")]
+    # The recorder was given ``--cwd .`` and redacted its working directory, so it replaced each
+    # standalone "." in the stored program text. The repeats were given an absolute path. The
+    # replacement is spelled out here, not taken from the redactor, so that this check on stored
+    # records does not change when the redactor does.
+    standalone_dot = re.compile(r"(?<![A-Za-z0-9._~-])\.(?![A-Za-z0-9._~-])")
     for earlier, repeat in (("41", "43"), ("39", "44")):
         old, new = _command(earlier), _command(repeat)
         assert "<path-0>" in old["argv"][3], earlier
         assert "<path-" not in json.dumps(new["argv"]) and new["cwd"] == "<path-0>", repeat
         assert old["argv"] == [
-            redact_evidence_text(argument, working_directory) for argument in new["argv"]
+            standalone_dot.sub("<path-0>", argument) for argument in new["argv"]
         ], earlier
     assert "at + '.' + key" in _command("43")["argv"][3]
     assert _command("44")["argv"][3].count("(?:\\.[0-9]+)?") == 2
