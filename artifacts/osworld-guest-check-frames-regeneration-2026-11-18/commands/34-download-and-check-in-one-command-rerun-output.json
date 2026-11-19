@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "sh",
+    "-c",
+    "set -e; test ! -e \"$2\"; rclone copy \"$1\" \"$2\" --checksum --stats-one-line -v; .venv/bin/python -I -c \"$3\" \"$4\" \"$2\"",
+    "sh",
+    "bb:OSWorld/osworld-guest-check-frames-regeneration-2026-11-18",
+    ".cache/guest-check-regen-2026-11-18/review-download-one-command/osworld-guest-check-frames-regeneration-2026-11-18",
+    "import hashlib, json, pathlib, sys\nmanifest = json.loads(pathlib.Path(sys.argv[1]).read_text())\nroot = pathlib.Path(sys.argv[2])\nlisted = {f['path']: f for f in manifest['files']}\npresent = {p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}\nok = [p for p, f in listed.items() if p in present and (root / p).stat().st_size == f['size'] and hashlib.sha256((root / p).read_bytes()).hexdigest() == f['sha256']]\nprint(json.dumps({'manifest_files': len(listed), 'downloaded_files': len(present), 'size_and_sha256_match': len(ok), 'missing': sorted(set(listed) - present), 'not_matching': sorted(set(listed) & present - set(ok)), 'not_in_manifest': sorted(present - set(listed)), 'bytes': sum(listed[p]['size'] for p in ok)}, indent=1))\n",
+    "artifacts/osworld-guest-check-frames-regeneration-2026-11-18/rerun-output.manifest.json"
+  ],
+  "command": "sh -c 'set -e; test ! -e \"$2\"; rclone copy \"$1\" \"$2\" --checksum --stats-one-line -v; .venv/bin/python -I -c \"$3\" \"$4\" \"$2\"' sh bb:OSWorld/osworld-guest-check-frames-regeneration-2026-11-18 .cache/guest-check-regen-2026-11-18/review-download-one-command/osworld-guest-check-frames-regeneration-2026-11-18 'import hashlib, json, pathlib, sys\nmanifest = json.loads(pathlib.Path(sys.argv[1]).read_text())\nroot = pathlib.Path(sys.argv[2])\nlisted = {f['\"'\"'path'\"'\"']: f for f in manifest['\"'\"'files'\"'\"']}\npresent = {p.relative_to(root).as_posix() for p in root.rglob('\"'\"'*'\"'\"') if p.is_file()}\nok = [p for p, f in listed.items() if p in present and (root / p).stat().st_size == f['\"'\"'size'\"'\"'] and hashlib.sha256((root / p).read_bytes()).hexdigest() == f['\"'\"'sha256'\"'\"']]\nprint(json.dumps({'\"'\"'manifest_files'\"'\"': len(listed), '\"'\"'downloaded_files'\"'\"': len(present), '\"'\"'size_and_sha256_match'\"'\"': len(ok), '\"'\"'missing'\"'\"': sorted(set(listed) - present), '\"'\"'not_matching'\"'\"': sorted(set(listed) & present - set(ok)), '\"'\"'not_in_manifest'\"'\"': sorted(present - set(listed)), '\"'\"'bytes'\"'\"': sum(listed[p]['\"'\"'size'\"'\"'] for p in ok)}, indent=1))\n' artifacts/osworld-guest-check-frames-regeneration-2026-11-18/rerun-output.manifest.json",
+  "cwd": "<path-0>",
+  "duration_seconds": 1.710061,
+  "ended_at_utc": "2026-11-18T08:08:50.637870+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "2026/11/18 00:08:48 NOTICE: Config file \"<home>/.config/rclone/rclone.conf\" not found - using defaults\n2026/11/18 00:08:49 INFO  : rerun-output/run_regen.py: Copied (new)\n2026/11/18 00:08:49 INFO  : rerun-output/d4e711e/run-record.json: Copied (new)\n2026/11/18 00:08:50 INFO  : rerun-output/d4e711e/stdout.log: Copied (new)\n2026/11/18 00:08:50 INFO  : rerun-output/d4e711e/stderr.log: Copied (new)\n2026/11/18 00:08:50 INFO  : guest-bundles/vendor-form-vf-6bed55ed612d3c5a-4067dc638dbaaa8e.zip: Copied (new)\n2026/11/18 00:08:50 INFO  : rerun-output/627e09b/stdout.log: Copied (new)\n2026/11/18 00:08:50 INFO  : rerun-output/627e09b/run-record.json: Copied (new)\n2026/11/18 00:08:50 INFO  : guest-bundles/vendor-form-vf-6bed55ed612d3c5a-505a15bf40bac294.zip: Copied (new)\n2026/11/18 00:08:50 INFO  : rerun-output/627e09b/stderr.log: Copied (new)\n2026/11/18 00:08:50 INFO  : rerun-output/d4e711e/raw/real-golden-episode.json: Copied (new)\n2026/11/18 00:08:50 INFO  : rerun-output/627e09b/raw/real-golden-episode.json: Copied (new)\n2026/11/18 00:08:50 INFO  :     1.598 MiB / 1.598 MiB, 100%, 0 B/s, ETA -\n{\n \"manifest_files\": 11,\n \"downloaded_files\": 11,\n \"size_and_sha256_match\": 11,\n \"missing\": [],\n \"not_matching\": [],\n \"not_in_manifest\": [],\n \"bytes\": 1675324\n}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-11-18T08:08:48.925980+00:00"
+}

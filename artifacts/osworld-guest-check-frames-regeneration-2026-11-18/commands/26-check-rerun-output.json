@@ -1,0 +1,24 @@
+{
+  "argv": [
+    "rclone",
+    "check",
+    ".cache/guest-check-regen-2026-11-18",
+    "bb:OSWorld/osworld-guest-check-frames-regeneration-2026-11-18/rerun-output",
+    "--include",
+    "/{627e09b,d4e711e}/{run-record.json,stdout.log,stderr.log}",
+    "--include",
+    "/{627e09b,d4e711e}/raw/real-golden-episode.json",
+    "--include",
+    "/run_regen.py",
+    "--one-way"
+  ],
+  "command": "rclone check .cache/guest-check-regen-2026-11-18 bb:OSWorld/osworld-guest-check-frames-regeneration-2026-11-18/rerun-output --include '/{627e09b,d4e711e}/{run-record.json,stdout.log,stderr.log}' --include '/{627e09b,d4e711e}/raw/real-golden-episode.json' --include /run_regen.py --one-way",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.84407,
+  "ended_at_utc": "2026-11-18T07:56:26.900366+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "2026/11/17 23:56:26 NOTICE: Config file \"<home>/.config/rclone/rclone.conf\" not found - using defaults\n2026/11/17 23:56:26 NOTICE: B2 bucket OSWorld path osworld-guest-check-frames-regeneration-2026-11-18/rerun-output: 0 differences found\n2026/11/17 23:56:26 NOTICE: B2 bucket OSWorld path osworld-guest-check-frames-regeneration-2026-11-18/rerun-output: 9 matching files\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-11-18T07:56:26.052421+00:00"
+}
