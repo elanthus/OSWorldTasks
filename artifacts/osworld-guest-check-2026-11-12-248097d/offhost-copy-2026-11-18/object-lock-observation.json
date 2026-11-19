@@ -1,0 +1,931 @@
+{
+ "all_governance": true,
+ "bucket": "OSWorld",
+ "bucket_type": "allPrivate",
+ "bytes": 7312308,
+ "default_retention": {
+  "mode": null,
+  "period": null
+ },
+ "file_count": 114,
+ "files": [
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/contact-sheet.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "dd298315855d827d95cd1146d4d9dbdf16dc03ad",
+   "size": 551467
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-000.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "5b2f2f9d4383aaaa7be6de6c6695b3c62249a403",
+   "size": 53986
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-001.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "5b2f2f9d4383aaaa7be6de6c6695b3c62249a403",
+   "size": 53986
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-002.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "5bad7471520885b2a851588a3fee5a5219e98eca",
+   "size": 54189
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-003.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "be659bf6357c99f994f8da0acd9f7aea64a8ef45",
+   "size": 54455
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-004.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "a2b456bc76717608c01d8bfd50324973b979b73a",
+   "size": 54518
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-005.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "667668e8e215fdff07cd9d63f4a1e655f7f943cb",
+   "size": 54746
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-006.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "1b21cc38c365d0e2427f36c6d1d9023f85fea607",
+   "size": 54777
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-007.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "3f1aca0ea1f57fca888f30ae5ca9afa34f0a5839",
+   "size": 54857
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-008.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "ff42159ae5a5971d160db08fe9b6e77c37ba453f",
+   "size": 54909
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-009.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "ffa878db1d70c262a1ade81ed4e261b4f8a2a732",
+   "size": 55045
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-010.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "fc348f64c1648fcc2560fad62b8c29c7c69fbbb3",
+   "size": 55047
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-011.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "15f4dfd5f38cda62e5a5010437608572660b383c",
+   "size": 55219
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-012.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "a578b2176afe7397dcc9a4564633ef81a213eb67",
+   "size": 55374
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-013.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "66ca3c6bd498a5f0f3e267f4e4f53d5910b6973a",
+   "size": 55579
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-014.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "2bec41d7dc370fde8c1b035f8098989b14eeeed1",
+   "size": 55582
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-015.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "77ce218b3bf482576e4964af98dc2c2893edae5d",
+   "size": 55609
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-016.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "4bbaa9555aceabf0def7e50f35efeff969142a56",
+   "size": 55776
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-017.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "83ddb18e45f105174ef278c14c0c649f9c4bf59c",
+   "size": 55976
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-018.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "229fe52ecb47c96cea920754d095bde6315bd4cf",
+   "size": 56072
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-019.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "cf972261178d6403dafb567cde5b9650747cadb7",
+   "size": 56235
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-020.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "062ffc20ddba1ddc5b258987742601fce5c04c97",
+   "size": 56302
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-021.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "197ec774bc3130825f357493da993308e712610d",
+   "size": 56308
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-022.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "a46337c3c3ee84bce9eacfd8d87231fc4ef096e6",
+   "size": 56391
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-023.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "9c395c97029f83239df57592a69e595546ba0864",
+   "size": 56561
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-024.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "9786830656554e7fcfa5b6335c64b78e4f9e13e8",
+   "size": 56559
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-025.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "49f73898cfae0dc5e945bcec949d18a695885b87",
+   "size": 56776
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-026.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "f8806066358f380af94c30e988562ee5615de294",
+   "size": 56832
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-027.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "71fbe460c8c17adc7abd0c69c517a26da6cf6956",
+   "size": 56899
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-028.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "fcf68903aa2f8af596b8780555f32c4b47d43ee6",
+   "size": 57116
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-029.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "1aea8718f91d3b40688364da36a5533692b2a5a2",
+   "size": 57080
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-030.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "645dd8aa456ce49738c9f9c1de9400c1f4daed88",
+   "size": 57220
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-031.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "794ab62a0412eabda45fa6f0fc4b6e71c0674d5b",
+   "size": 57401
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-032.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "c6b70dd9f8b343007d2b2d8b2a476e4098d896f4",
+   "size": 57484
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-033.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "c5143faa294d3c26e46f97381bfc50009e0a45d3",
+   "size": 57651
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-034.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "713c8408d1165aed4dcb7dc0f47a07a2f364efaf",
+   "size": 57792
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-035.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "9de2d0c7a55461dae80cdfd932d3d182d7add60c",
+   "size": 57916
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-036.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "c4d3855526b4eb20ba9e4535721a98501a09b9ab",
+   "size": 57954
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-037.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "fb6b278049db3f7922ab53787fcce8ce94168c37",
+   "size": 58044
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-038.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "a7124c72b1681a1e3b73b18652cc390a80ee4625",
+   "size": 58133
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-039.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "27ec4705d152959562381a2e1b552ba99ad6d06c",
+   "size": 58203
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-040.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "cc159af89dee886d51fc74c380d64853818d47a8",
+   "size": 58423
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-041.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "6e0d9ee0c743c8460833a8e4b9f4b5b22b50f681",
+   "size": 58844
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-042.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "1847a63ad021fac1b48f79d26e7406cc71ec70fa",
+   "size": 59032
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-043.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "5a2482422692b57bcda0ac906ace3309dc1042e2",
+   "size": 59047
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-044.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "610bc67a375d0292daeacb9a114c95d1d8a12dd2",
+   "size": 59217
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-045.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "7fa581e92c2ee05cdf0075c688526c3bc5e4a464",
+   "size": 59212
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-046.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "b626cbd088a8e0efa245deafa5ba1e6d396a87fe",
+   "size": 59274
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-047.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "a4ef39423298dca5c808982c5d82e98bb946de9d",
+   "size": 59348
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-048.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "8f836959937121d888ab4c20485f1982846c63f2",
+   "size": 59501
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-049.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "71ae9b769586f4c98a119595d5280183a1c261bf",
+   "size": 59540
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-050.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "892e9eab19440058d6044eb9ffa276283535e5b3",
+   "size": 59660
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-051.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "70bac2d79606404682252d6838748c309e073a8e",
+   "size": 59786
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-052.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "d611d51de91329569eb70e9921da0f4fcaf16794",
+   "size": 59936
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-053.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "92c1dbf8ea050426f2875ee7e0063a9e5de07f99",
+   "size": 59967
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-054.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "473b6eb603a4901672b30ef0d5567bd32a9e6ef1",
+   "size": 59984
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-055.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "a47522bb84ad48b2ba889d5b3561ee0b8ae4fe75",
+   "size": 60009
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-056.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "086e6d91f50b76b5213e35d3afa83ea95fdc22bf",
+   "size": 60068
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-057.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "21878ce3846827f945e53db8b4aa21965732fbcb",
+   "size": 60112
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-058.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "386ccb796a23cd2085bf55909a0ae6a5bfd63f50",
+   "size": 60279
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-059.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "36b6ab0190b627592e1f10ca67903ba408544b2f",
+   "size": 60346
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-060.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "a6b5de2efedea1dda759a8bdd1c662f4231de211",
+   "size": 60360
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-061.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "e2c35ca9b69f908370ad1e86dabeae3bc94e3b3c",
+   "size": 60456
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-062.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "f7d0bd2aa5c7e47d6380aea23ade9415a8c95e3e",
+   "size": 60608
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-063.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "76991c8384811835d0655aaa502241da98148b8f",
+   "size": 60639
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-064.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "d2e1ac8f7ddeb830e0937e3fd92a2f52d87b9524",
+   "size": 60810
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-065.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "d7ad840338ccdda40dba2113ce9556abcf8828a8",
+   "size": 60866
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-066.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "e056011805448e0714c8ee118ad8c679d62e056c",
+   "size": 61006
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-067.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "712671201449723b395a1a251eb8fda61aa435bc",
+   "size": 61102
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-068.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "04517229c24b4f8635922bb41a2dd26f82d55073",
+   "size": 61224
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-069.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "3e169223a0294867cd76277c72dfdb4694ce9cc8",
+   "size": 61242
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-070.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "a22da73c37826776c6f24b8994574358e666f5fc",
+   "size": 61364
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-071.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "0dbaa3c0651b8ce3ea686d559a658767cd485ab4",
+   "size": 61521
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-072.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "591076e39bdcaeaa91af5604fa7d1936e5a90fa5",
+   "size": 61555
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-073.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "46f7c1c25cca6327ae38ccaae9d31c5ed51cbd78",
+   "size": 61639
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-074.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "b358d40f6bac43508266636b7194f97b427e8f91",
+   "size": 61787
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-075.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "49e05652777e5c620fc6ca0d8ff0be4b041bc65f",
+   "size": 61805
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-076.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "b8b68260e287493d36e3d7b871974bf5e69a03e3",
+   "size": 61808
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-077.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "633875ebadd08dec5b2862a79ba0860d72717220",
+   "size": 61728
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-078.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "9ffef274f46c536055cc3b41f44c12bb497b73b9",
+   "size": 61821
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-079.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "229480afd9591d19faed1d8fbd64a0b38fda09cb",
+   "size": 61906
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-080.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "78b444272002f8602afc9b7d4e43423258d8b010",
+   "size": 61906
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-081.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "cdd2b70a3c11eb0beaef9112f993d8644b8dcd89",
+   "size": 62085
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-082.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "fdd837ee9d69336844f59c2f181952228ad8c394",
+   "size": 62263
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-083.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "65af3a2d744fcd28e89f54d782fe8d1a2bb9a0bc",
+   "size": 62272
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-084.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "511335b378d3b4a253ca209ddfcf5193ec5779ea",
+   "size": 62296
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-085.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "ffdc88502930e5f8681deab1d49d2ab82f2f400e",
+   "size": 62455
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-086.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "53bcd2e6113f627c58c4b2386341c54e34c20105",
+   "size": 62643
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-087.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "6484c3759352b356df7d5f0a8699bd0beb60a969",
+   "size": 62786
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-088.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "b6697b9acca2376a1755d4b4a1608af391d2c39d",
+   "size": 62818
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-089.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "6f9a623b1d41242422145568a63ee6e8d5b237be",
+   "size": 62838
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-090.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "d27136fce8a56df62008f8b9cd7c2986bd28bd6b",
+   "size": 62963
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-091.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "49a97408af5184a6dc1a6598baf558b0d0c5720d",
+   "size": 63185
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-092.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "9022e2ef946bad8aa2d5595db680c4ed4715783b",
+   "size": 63310
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-093.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "9d18170eae066df41ff82d998eee7dd0d8788e8a",
+   "size": 63266
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-094.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "c59b0856cf4acab9bfd0bf07b550970c2320ead7",
+   "size": 63319
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-095.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "8a2abf4faaf29d9ae0bbb13750b0fad2c9ef26e5",
+   "size": 63532
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-096.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "a0afd09ef6d1e0ae3e41b27c376d3e856098f13f",
+   "size": 63785
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-097.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "c5772159d5e67c291c759aeb32df88ed83c82301",
+   "size": 63808
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-098.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "6eb149d046eabe2d145d802a10b74025aaf08d9c",
+   "size": 63986
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-099.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "8c73fb802ba693da4009c63497fb39932f5e0870",
+   "size": 64111
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-100.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "735dae5bedbc108679d6ff70d8d344544883517e",
+   "size": 64312
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-101.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "f907d1c20df104d8a9578c4dd2080e47f3c495e8",
+   "size": 64405
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-102.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "f2ea50c69bea9aa6827775d6b5d3fcb58d1d3dc4",
+   "size": 64442
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-103.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "0c6b49d20522ca1235f4d91dbe9f3e2be78860d2",
+   "size": 64528
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-104.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "4629c1cf761be4cdbcf7e0bb16c21d18d7537fc9",
+   "size": 64583
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-105.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "980da6ef56bb6a9d349f46db6bf58b9d86b03185",
+   "size": 64607
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-106.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "1943949aabbc7588acf90dbddd778f7ff98243d3",
+   "size": 64558
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-107.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "cc57802cfc082d0a3abbd186b647c30933f64e2e",
+   "size": 63850
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-108.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "3ef6adbe163ace274009c1e28f3209c378c7ea84",
+   "size": 64221
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-109.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "0b7ad94dbabe14cb580290e3ecb9760b65e18032",
+   "size": 64529
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-110.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "fb0783e378015c9853ee46beaed5f21b4c30c65f",
+   "size": 64160
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-111.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "95913e4a069a53e9dc4c3f59dd8d21cce61931f4",
+   "size": 64199
+  },
+  {
+   "large_file_sha1": null,
+   "name": "osworld-guest-check-2026-11-12-248097d/real-golden/frames/step-112.png",
+   "retain_until_ms": 1826511308770,
+   "retention_mode": "governance",
+   "sha1": "164020c049efad01d0fd21a2269109b95315aa00",
+   "size": 65429
+  }
+ ],
+ "lifecycle_rules": [],
+ "min_retain_until_ms": 1826511308770,
+ "model_calls": 0,
+ "mutations": 0,
+ "object_lock_enabled": true,
+ "schema_version": "pixelgym-d510-offhost-object-lock-observation-v1"
+}

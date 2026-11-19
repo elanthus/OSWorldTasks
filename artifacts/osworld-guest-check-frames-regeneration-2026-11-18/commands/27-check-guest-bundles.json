@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "rclone",
+    "check",
+    ".cache/osworld/pixelgym",
+    "bb:OSWorld/osworld-guest-check-frames-regeneration-2026-11-18/guest-bundles",
+    "--include",
+    "/vendor-form-vf-6bed55ed612d3c5a-4067dc638dbaaa8e.zip",
+    "--include",
+    "/vendor-form-vf-6bed55ed612d3c5a-505a15bf40bac294.zip",
+    "--one-way"
+  ],
+  "command": "rclone check .cache/osworld/pixelgym bb:OSWorld/osworld-guest-check-frames-regeneration-2026-11-18/guest-bundles --include /vendor-form-vf-6bed55ed612d3c5a-4067dc638dbaaa8e.zip --include /vendor-form-vf-6bed55ed612d3c5a-505a15bf40bac294.zip --one-way",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.600088,
+  "ended_at_utc": "2026-11-18T07:56:27.554295+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "2026/11/17 23:56:26 NOTICE: Config file \"<home>/.config/rclone/rclone.conf\" not found - using defaults\n2026/11/17 23:56:27 NOTICE: B2 bucket OSWorld path osworld-guest-check-frames-regeneration-2026-11-18/guest-bundles: 0 differences found\n2026/11/17 23:56:27 NOTICE: B2 bucket OSWorld path osworld-guest-check-frames-regeneration-2026-11-18/guest-bundles: 2 matching files\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-11-18T07:56:26.952007+00:00"
+}
