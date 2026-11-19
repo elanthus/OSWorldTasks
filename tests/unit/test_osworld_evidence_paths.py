@@ -2,7 +2,8 @@
 
 The golden replay recorder stored ``str(path)`` for each frame, so a run started with an
 absolute ``--output-dir`` wrote the operator's checkout path into its episode file. These
-tests run the writers with absolute paths and read back what was stored.
+tests run the writers with absolute paths, and with relative paths from a directory other
+than the repository root, and read back what was stored.
 """
 
 from __future__ import annotations
@@ -36,6 +37,9 @@ class _Backend(FakeBackend):
     def integration_metadata(self) -> dict[str, Any]:
         # As the real backend does: the configured path, exactly as the caller spelled it.
         return {"guest_image_path": str(self._config.guest_image_path)}
+
+    def read_guest_root_disk(self) -> dict[str, int]:
+        return {"available_bytes": 6 * 1024**3}
 
 
 def _path_fields(evidence: dict[str, Any]) -> dict[str, Any]:
@@ -75,6 +79,62 @@ def test_golden_recorder_stores_relative_paths_for_an_absolute_invocation(
     # Every stored path names a file the run wrote, read from the repository root.
     assert all((repo / path).is_file() for path in _path_fields(stored)["screenshot_paths"])
     assert (repo / stored["contact_sheet_path"]).is_file()
+
+
+def test_golden_recorder_stores_root_relative_paths_from_another_working_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Regression: relative arguments were stored as typed, so from repo/work the frames
+    # written to repo/out were recorded as ../out, which names another directory when read
+    # from the repository root.
+    repo = tmp_path / "repo"
+    (repo / "work").mkdir(parents=True)
+    shutil.copy(FIXTURE / "osworld_golden_trajectory_seed7.json", repo / "fixture.json")
+    monkeypatch.setattr(recorder, "REPO_ROOT", repo)
+    monkeypatch.setattr(recorder, "OSWorldBackend", _Backend)
+    monkeypatch.chdir(repo / "work")
+
+    recorder.record_real(
+        Path("../fixture.json"), repo / ".cache" / "guest.qcow2", Path("../out/real-golden")
+    )
+
+    text = (repo / "out" / "raw" / "real-golden-episode.json").read_text(encoding="utf-8")
+    assert str(tmp_path) not in text and ".." not in text
+    stored = json.loads(text)
+    assert stored["fixture_path"] == "fixture.json"
+    assert stored["contact_sheet_path"] == "out/real-golden/contact-sheet.png"
+    assert [step["screenshot_path"] for step in stored["trace"]] == [
+        f"out/real-golden/frames/step-{step:03d}.png" for step in range(1, 113)
+    ]
+    assert all((repo / step["screenshot_path"]).is_file() for step in stored["trace"])
+
+
+def test_smoke_reset_stores_a_root_relative_screenshot_path_from_another_working_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repo = tmp_path / "repo"
+    (repo / "work").mkdir(parents=True)
+    monkeypatch.setattr(smoke, "REPO_ROOT", repo)
+    monkeypatch.setattr(smoke, "OSWorldBackend", _Backend)
+    monkeypatch.chdir(repo / "work")
+
+    status = smoke.main(
+        [
+            "--guest-image",
+            str(repo / ".cache" / "guest.qcow2"),
+            "--screenshot",
+            "../shots/first-reset.png",
+            "--evidence",
+            "../raw/first-reset.json",
+        ]
+    )
+
+    text = (repo / "raw" / "first-reset.json").read_text(encoding="utf-8")
+    assert status == 0 and capsys.readouterr().out == text
+    assert str(tmp_path) not in text and ".." not in text
+    stored = json.loads(text)
+    assert stored["screenshot_path"] == "shots/first-reset.png"
+    assert (repo / stored["screenshot_path"]).is_file()
 
 
 def test_guest_check_results_store_relative_paths(tmp_path: Path) -> None:

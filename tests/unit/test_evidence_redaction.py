@@ -117,6 +117,30 @@ def test_a_directory_json_escapes_is_still_rewritten_in_dumped_evidence(
     }
 
 
+def test_text_after_a_placeholder_is_not_read_as_another_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Regression: sources were replaced one after another, so the "/tmp" left behind a
+    # placeholder was replaced as the system temporary directory.
+    replacements = [(Path("/srv/repo"), "<path-0>"), (Path("/tmp"), "<system-temp>")]
+    assert redact_evidence_text("/srv/repo/tmp/frame.png /tmp/frame.png", replacements) == (
+        "<path-0>/tmp/frame.png <system-temp>/frame.png"
+    )
+
+    monkeypatch.setattr("pixelgym.evidence_redaction.Path.home", lambda: Path("/home/alice"))
+    monkeypatch.setattr("pixelgym.evidence_redaction.tempfile.gettempdir", lambda: "/tmp")
+    root = Path("/srv/repo")
+    # A repository directory named like the temporary or home directory is still a
+    # repository path.
+    assert repository_relative_evidence_text("/srv/repo/tmp/frame.png", root) == "tmp/frame.png"
+    assert repository_relative_evidence_text("/srv/repo/home/alice/a.png", root) == (
+        "home/alice/a.png"
+    )
+    assert repository_relative_evidence_text("file:///srv/repo/tmp/x", root) == (
+        "file://<repo>/tmp/x"
+    )
+
+
 def test_a_url_under_the_repository_keeps_the_repository_label() -> None:
     # Dropping the root from file:///root/repo/app/x would leave file://app/x, a different URL.
     root = Path("/srv/checkout/repo")

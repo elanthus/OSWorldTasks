@@ -150,8 +150,13 @@ def record_real(fixture_path: Path, guest_image: Path, output_dir: Path) -> dict
     """Replay the fixture on the real backend and store the episode.
 
     Returns the episode as stored: paths under the repository are repository-relative,
-    whether the arguments were given relative or absolute.
+    whether the arguments were given relative or absolute, and whatever the working
+    directory is.
     """
+    # A relative argument names a location under the working directory. Stored as typed, it
+    # would be read from the repository root as a different one.
+    fixture_path = fixture_path.resolve()
+    output_dir = output_dir.resolve()
     fixture = verify_fixture(fixture_path)
     output_dir.mkdir(parents=True, exist_ok=True)
     frames_dir = output_dir / "frames"

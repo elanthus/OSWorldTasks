@@ -85,7 +85,9 @@ def main(argv: list[str] | None = None) -> int:
             {
                 "task_id": env.task_id,
                 **privileged_hashes(state),
-                "screenshot_path": str(args.screenshot),
+                # Resolved, so a relative path typed outside the repository root is not
+                # stored as if it were relative to the root.
+                "screenshot_path": str(args.screenshot.resolve()),
                 "screenshot_shape": list(observation.shape),
                 "screenshot_dtype": str(observation.dtype),
                 "reset_to_stable_frame_seconds": elapsed,

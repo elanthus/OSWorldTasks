@@ -46,11 +46,19 @@ def standard_path_replacements(paths: Iterable[Path]) -> list[PathReplacement]:
     return replacements
 
 
-def _replace_path(value: str, source: str, replacement: str) -> str:
+def _replace_paths(value: str, replacements: dict[str, str]) -> str:
+    if not replacements:
+        return value
+    # One pass over the original text, trying the longest source first at each position.
+    # Replacing source by source would read the text after an inserted placeholder as a
+    # new path: with ``/srv/repo`` and ``/tmp`` as sources, ``/srv/repo/tmp/frame.png``
+    # would become ``<path-0><system-temp>/frame.png``.
+    #
     # Do not replace a path inside a longer filename or path component. A slash
     # remains an allowed left boundary so file:///tmp still redacts /tmp.
-    pattern = re.compile(rf"(?<![A-Za-z0-9._~-]){re.escape(source)}(?![A-Za-z0-9._~-])")
-    return pattern.sub(lambda _match: replacement, value)
+    sources = "|".join(re.escape(source) for source in sorted(replacements, key=len, reverse=True))
+    pattern = re.compile(rf"(?<![A-Za-z0-9._~-])(?:{sources})(?![A-Za-z0-9._~-])")
+    return pattern.sub(lambda match: replacements[match.group(0)], value)
 
 
 def redact_evidence_text(
@@ -68,11 +76,7 @@ def redact_evidence_text(
             replacements.setdefault(str(path), replacement)
         replacements.setdefault(str(path.resolve()), replacement)
 
-    redacted = value
-    for source, replacement in sorted(
-        replacements.items(), key=lambda item: len(item[0]), reverse=True
-    ):
-        redacted = _replace_path(redacted, source, replacement)
+    redacted = _replace_paths(value, replacements)
     redacted = _PYTEST_BASETEMP_USER.sub("<user>", redacted)
     for secret in secrets:
         redacted = redacted.replace(secret, "<redacted-local-demo-secret>")
