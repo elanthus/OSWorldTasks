@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -14,7 +15,9 @@ def _record(
     command: list[str],
     *,
     environment: list[str] | None = None,
+    relative_cwd: bool = False,
 ) -> subprocess.CompletedProcess[str]:
+    # ``relative_cwd`` runs the recorder from ``tmp_path`` and spells it ``--cwd .``.
     return subprocess.run(
         [
             sys.executable,
@@ -22,14 +25,14 @@ def _record(
             "--output",
             str(tmp_path / "record.json"),
             "--cwd",
-            str(tmp_path),
+            "." if relative_cwd else str(tmp_path),
             "--redact-path",
             str(repository_root),
             *(argument for value in environment or [] for argument in ("--env", value)),
             "--",
             *command,
         ],
-        cwd=repository_root,
+        cwd=tmp_path if relative_cwd else repository_root,
         text=True,
         capture_output=True,
         check=False,
@@ -85,6 +88,53 @@ def test_redact_handles_literal_and_resolved_path_spellings(tmp_path: Path) -> N
     assert redact_evidence_text(str(resolved / "result.json"), replacements) == (
         "<path-0>/result.json"
     )
+
+
+def test_recorder_with_relative_cwd_keeps_standalone_dots(
+    repository_root: Path, tmp_path: Path
+) -> None:
+    # Regression: ``--cwd .`` made the literal ``.`` a replacement source, so records
+    # stored ``(?:\\<path-0>[0-9]+)?`` and ``at + '<path-0>' + key`` as the program text.
+    program = (
+        "import os, pathlib, re; "
+        "print(re.sub(r'(?:\\.[0-9]+)?$', '', '1.25') + '.' + 'key'); "
+        "print('(done). next'); print('.'); print(os.environ['DOTTED']); "
+        "print(pathlib.Path.cwd())"
+    )
+    command = [sys.executable, "-c", program, "."]
+    completed = _record(
+        repository_root,
+        tmp_path,
+        command,
+        environment=["DOTTED=a . b"],
+        relative_cwd=True,
+    )
+
+    assert completed.returncode == 0
+    stored = (tmp_path / "record.json").read_text()
+    record = json.loads(stored)
+    assert record["argv"][1:] == command[1:]
+    assert record["command"].endswith(shlex.join(command[1:]))
+    assert record["environment"] == {"DOTTED": "a . b"}
+    assert record["output"] == "1.key\n(done). next\n.\na . b\n<path-0>\n"
+    assert record["cwd"] == "<path-0>"
+    assert str(tmp_path) not in stored
+    assert str(tmp_path.resolve()) not in stored
+
+
+def test_redact_ignores_relative_spelling_but_redacts_its_resolved_path(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    here = Path.cwd()
+
+    for relative in (Path("."), Path("results")):
+        replacements = standard_path_replacements([relative])
+        text = "at + '.' + key; (see results). ./results/run.json"
+        assert redact_evidence_text(text, replacements) == text
+        assert redact_evidence_text(str(here / relative / "run.json"), replacements) == (
+            "<path-0>/run.json"
+        )
 
 
 def test_recorder_redacts_public_environment_values(repository_root: Path, tmp_path: Path) -> None:
