@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import signal
 import time
 import traceback
@@ -85,9 +86,9 @@ def main(argv: list[str] | None = None) -> int:
             {
                 "task_id": env.task_id,
                 **privileged_hashes(state),
-                # Resolved, so a relative path typed outside the repository root is not
-                # stored as if it were relative to the root.
-                "screenshot_path": str(args.screenshot.resolve()),
+                # Made absolute, without following symbolic links, so a relative path typed
+                # outside the repository root is not stored as if it were relative to the root.
+                "screenshot_path": os.path.abspath(args.screenshot),
                 "screenshot_shape": list(observation.shape),
                 "screenshot_dtype": str(observation.dtype),
                 "reset_to_stable_frame_seconds": elapsed,

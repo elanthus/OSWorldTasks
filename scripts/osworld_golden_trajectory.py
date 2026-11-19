@@ -11,6 +11,7 @@ import argparse
 import dataclasses
 import hashlib
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -154,9 +155,11 @@ def record_real(fixture_path: Path, guest_image: Path, output_dir: Path) -> dict
     directory is.
     """
     # A relative argument names a location under the working directory. Stored as typed, it
-    # would be read from the repository root as a different one.
-    fixture_path = fixture_path.resolve()
-    output_dir = output_dir.resolve()
+    # would be read from the repository root as a different one. The path is made absolute
+    # without following symbolic links, so an output directory linked to other storage is
+    # still stored as the repository path it was reached by.
+    fixture_path = Path(os.path.abspath(fixture_path))
+    output_dir = Path(os.path.abspath(output_dir))
     fixture = verify_fixture(fixture_path)
     output_dir.mkdir(parents=True, exist_ok=True)
     frames_dir = output_dir / "frames"

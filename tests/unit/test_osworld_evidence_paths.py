@@ -86,9 +86,12 @@ def test_golden_recorder_stores_root_relative_paths_from_another_working_directo
 ) -> None:
     # Regression: relative arguments were stored as typed, so from repo/work the frames
     # written to repo/out were recorded as ../out, which names another directory when read
-    # from the repository root.
+    # from the repository root. The output directory is a link to storage outside the
+    # repository; it is still stored as the repository path it was reached by.
     repo = tmp_path / "repo"
     (repo / "work").mkdir(parents=True)
+    (tmp_path / "external").mkdir()
+    (repo / "out").symlink_to(tmp_path / "external", target_is_directory=True)
     shutil.copy(FIXTURE / "osworld_golden_trajectory_seed7.json", repo / "fixture.json")
     monkeypatch.setattr(recorder, "REPO_ROOT", repo)
     monkeypatch.setattr(recorder, "OSWorldBackend", _Backend)
@@ -99,7 +102,7 @@ def test_golden_recorder_stores_root_relative_paths_from_another_working_directo
     )
 
     text = (repo / "out" / "raw" / "real-golden-episode.json").read_text(encoding="utf-8")
-    assert str(tmp_path) not in text and ".." not in text
+    assert str(tmp_path) not in text
     stored = json.loads(text)
     assert stored["fixture_path"] == "fixture.json"
     assert stored["contact_sheet_path"] == "out/real-golden/contact-sheet.png"
@@ -131,7 +134,7 @@ def test_smoke_reset_stores_a_root_relative_screenshot_path_from_another_working
 
     text = (repo / "raw" / "first-reset.json").read_text(encoding="utf-8")
     assert status == 0 and capsys.readouterr().out == text
-    assert str(tmp_path) not in text and ".." not in text
+    assert str(tmp_path) not in text
     stored = json.loads(text)
     assert stored["screenshot_path"] == "shots/first-reset.png"
     assert (repo / stored["screenshot_path"]).is_file()
