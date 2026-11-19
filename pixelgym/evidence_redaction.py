@@ -57,10 +57,13 @@ def redact_evidence_text(
     *,
     secrets: Sequence[str] = LOCAL_DEMO_SECRETS,
 ) -> str:
-    """Redact literal/resolved paths at boundaries and known local secrets."""
+    """Redact absolute literal and resolved paths at boundaries, and known local secrets."""
     replacements: dict[str, str] = {}
     for path, replacement in path_replacements:
-        replacements.setdefault(str(path), replacement)
+        # A relative spelling such as ``.`` is ordinary text, not a local path: as a
+        # source it would replace every standalone dot. Only its resolved form is one.
+        if path.is_absolute():
+            replacements.setdefault(str(path), replacement)
         replacements.setdefault(str(path.resolve()), replacement)
 
     redacted = value
