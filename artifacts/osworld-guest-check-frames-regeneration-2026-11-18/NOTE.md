@@ -48,7 +48,8 @@ and before that of `a0fa54d6`. Records 35 to 37 were written with the checkout a
 ([35](commands/35-git-revision-before-rerun-output-retention.json)). Records 38 and 39 were
 written with the checkout at `c6eb00cb` ([38](commands/38-git-revision-at-rate-read.json)).
 Records 40 and 41 were written with the checkout at `a293538b`
-([40](commands/40-git-revision-at-episode-comparison.json)).
+([40](commands/40-git-revision-at-episode-comparison.json)). Records 42 to 44 were written with
+the checkout at `fa51317f` ([42](commands/42-git-revision-at-repeat-with-intact-text.json)).
 
 | Compared files | Manifest | Files identical by size and SHA-256 | Raw record |
 |---|---|---|---|
@@ -187,6 +188,26 @@ the original runs.
 
 The comparison reads stored files and reruns nothing. It adds no result: the original runs'
 files remain the record of rewards.
+
+## Program text stored in records 39 and 41
+
+The recorder was given its working directory as `.`, and it redacts its working directory in
+what it stores. In records 39 and 41 it therefore also replaced each standalone `.` in the
+stored program text with `<path-0>`: the decimal point in two patterns of record 39, and the key
+separator in record 41. The recorder runs the command as given and redacts only the stored copy,
+so the stored outputs are not affected. The program text stored in those two records is not the
+text that ran.
+
+Records 43 and 44 repeat the two commands with the working directory given as an absolute path,
+which leaves the stored program text as it ran. Neither earlier record was edited.
+
+| Repeat | Stored result | Raw record |
+|---|---|---|
+| The comparison of record 41 | the same output as record 41 | [43](commands/43-rerun-episodes-vs-original-runs-intact-text.json) |
+| The pricing-page read of record 39, on 2026-11-19 | every value equal to record 39's except the time of the read, including the page's size and SHA-256 | [44](commands/44-backblaze-rate-and-storage-estimate-intact-text.json) |
+
+The command stored in record 41 equals the command in record 43 with that replacement applied,
+and the same holds for records 39 and 44.
 
 [`tests/unit/test_osworld_guest_check_frames_regeneration.py`](../../tests/unit/test_osworld_guest_check_frames_regeneration.py)
 checks these statements against the stored files.

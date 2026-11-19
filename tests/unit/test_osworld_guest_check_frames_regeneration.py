@@ -12,6 +12,8 @@ from typing import Any
 
 import pytest
 
+from pixelgym.evidence_redaction import redact_evidence_text
+
 ROOT = Path(__file__).resolve().parents[2]
 ARTIFACTS = ROOT / "artifacts"
 RECORD = ARTIFACTS / "osworld-guest-check-frames-regeneration-2026-11-18"
@@ -66,7 +68,7 @@ def _manifest(folder: str) -> dict[str, int]:
 
 def test_every_recorded_command_exited_zero_and_holds_no_local_path() -> None:
     records = sorted((RECORD / "commands").glob("*.json"))
-    assert [path.name[:2] for path in records] == [f"{index:02d}" for index in range(42)]
+    assert [path.name[:2] for path in records] == [f"{index:02d}" for index in range(45)]
     for path in records:
         record = _json(path)
         assert record["exit_status"] == 0, path.name
@@ -306,6 +308,28 @@ def test_review_records_were_written_at_the_revisions_the_note_names() -> None:
     assert _command("38")["output"].strip().startswith("c6eb00cb")
     assert _command("40")["output"].strip().startswith("a293538b")
     assert _command("40")["started_at_utc"] < _command("41")["started_at_utc"]
+    assert _command("42")["output"].strip().startswith("fa51317f")
+    assert _command("42")["started_at_utc"] < _command("43")["started_at_utc"]
+    assert _command("43")["started_at_utc"] < _command("44")["started_at_utc"]
+
+
+def test_repeats_store_the_program_text_that_redaction_changed_in_records_39_and_41() -> None:
+    # The recorder was given ``--cwd .`` and redacts its working directory, so it replaced each
+    # standalone "." in the stored program text. The repeats were given an absolute path.
+    working_directory = [(Path("."), "<path-0>")]
+    for earlier, repeat in (("41", "43"), ("39", "44")):
+        old, new = _command(earlier), _command(repeat)
+        assert "<path-0>" in old["argv"][3], earlier
+        assert "<path-" not in json.dumps(new["argv"]) and new["cwd"] == "<path-0>", repeat
+        assert old["argv"] == [
+            redact_evidence_text(argument, working_directory) for argument in new["argv"]
+        ], earlier
+    assert "at + '.' + key" in _command("43")["argv"][3]
+    assert _command("44")["argv"][3].count("(?:\\.[0-9]+)?") == 2
+    assert _command("43")["output"] == _command("41")["output"]
+    first, second = json.loads(_command("39")["output"]), json.loads(_command("44")["output"])
+    assert second["read_utc"].startswith("2026-11-19T")
+    assert {**second, "read_utc": first["read_utc"]} == first
 
 
 @pytest.mark.parametrize(
@@ -567,6 +591,11 @@ def test_note_states_the_recorded_numbers() -> None:
         "recorded Python 3.12.15 and the reruns recorded 3.12.16",
         "the only positive reward is at step 112, which is also the terminal step",
         "Record 41 compares it with the original run's files",
+        "Records 42 to 44 were written with the checkout at `fa51317f`",
+        "replaced each standalone `.` in the stored program text with `<path-0>`",
+        "Neither earlier record was edited",
+        "| the same output as record 41 |",
+        "every value equal to record 39's except the time of the read, including the page's",
         "| `627e09b` | 2026-11-18T04:22:21Z | 625.3 | 0 |",
         "| `d4e711e` | 2026-11-18T04:32:47Z | 570.9 | 0 |",
         _command("00")["output"].strip()[:8],
