@@ -31,12 +31,13 @@
   },
   "manifest_path": "artifacts/grounding-v2-manifest.json",
   "manifest_sha256": "a2ad198d57db615dd7e74455e7faf73dac0cd13ebb028b172187a6021980f7a7",
-  "model": null,
+  "model": "claude-haiku-4-5-20251001",
   "model_calls_performed": 0,
   "notes": [
     "No model has been called under protocol v2. Owner fills provider, model, prompt_version, parser_version, prediction_schema_version, parameters, and approval before the first call. The runner refuses any non-mock v2 run until approval.owner and approval.approved_utc are set, approval.pilot_approved (pilot) or approval.full_approved (full) is true, and provider/model match the run.",
     "The pilot runs only after approval and stops at its cap; the full run needs a second approval and must not exceed full_new_calls_after_pilot new calls.",
-    "V2 results are reported separately from v1 and never replace the frozen v1 result files."
+    "V2 results are reported separately from v1 and never replace the frozen v1 result files.",
+    "2026-10-26: owner chose Claude Haiku 4.5 (claude-haiku-4-5-20251001) via the Claude Code CLI because gpt-5.4-mini is no longer served by the Codex CLI. Prompt v1 (mark_id selection) and parser v1 keep the v1 paired design; the historical v3a Haiku 4.5 run used prompt v2 and scored 100/100 raw, so a ceiling result is possible. Approval block stays null until the owner approves the 20-call pilot."
   ],
   "output_paths": {
     "full_predictions": "artifacts/grounding-v2-predictions.jsonl",
@@ -44,8 +45,10 @@
     "response_cache": ".cache/grounding-v2/responses"
   },
   "paired_condition_call_count": 200,
-  "parameters": null,
-  "parser_version": null,
+  "parameters": {
+    "temperature": 0
+  },
+  "parser_version": "pixelgym-grounding-parser-v1",
   "pilot": {
     "condition_call_count": 20,
     "example_count": 10,
@@ -63,11 +66,11 @@
     ],
     "selection_rule": "For target index t in 0..9 (frozen TARGET_SPECS order) select the unique v2 example with screen_state_index = t mod 5 and task_seed = t - (t mod 5). The crossed allocation target_index = (task_seed + screen_state_index) mod 10 then yields target t, so the pilot covers all 10 targets once, every screen state exactly twice, and seeds 0 and 5 only. Selection is independent of JSONL row order."
   },
-  "prediction_schema_version": null,
-  "prompt_version": null,
+  "prediction_schema_version": "pixelgym-grounding-prediction-v1",
+  "prompt_version": "pixelgym-grounding-prompt-v1",
   "protocol_document": "artifacts/grounding-v2-protocol.md",
   "protocol_version": "pixelgym-grounding-v2",
-  "provider": null,
+  "provider": "claude-code-cli",
   "schema_version": "pixelgym-grounding-v2-freeze-draft-v1",
-  "status": "draft_awaiting_owner_freeze"
+  "status": "provider_and_model_proposed_awaiting_owner_approval"
 }
