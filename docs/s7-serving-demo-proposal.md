@@ -6,8 +6,9 @@
 - **Status:** owner approved implementation and scripted qualification on 2026-10-20 under the
   proposed caps. Exact package activation and publication remain blocked pending owner review.
 - **Current state:** the owner approved a fresh successor qualification on 2026-10-26
-  ([details](#activation-compatibility-after-review-repairs)). The rehearsal driver is implemented
-  and has not been executed ([S8 driver status](#s8-driver-status)).
+  ([details](#activation-compatibility-after-review-repairs)). Two later qualifications followed,
+  and the rehearsal was executed once on 2026-11-20 (UTC); the owner has not graded it
+  ([S8 driver status](#s8-driver-status)).
 - **Reader and decision:** the project owner, deciding whether to implement and qualify the two
   packages and rehearsal below. Exact package approval and serving approval remain separate.
 - **Inspected base:** `acaa0da8a6ec752e39510a3f05339a9f204fe1a7` (PR #249).
@@ -113,7 +114,17 @@ rehearsal, publication, and milestone decisions remain separate owner gates.
 The rehearsal below is implemented as `python -m scripts.s8_rehearsal` with `prepare`, `run`,
 `verify`, and `report` commands ([S8 rehearsal driver](s8-rehearsal.md)). The driver consumes an
 owner approval document bound to the exact sealed packages and refuses to fabricate approval or
-terms. It has not been executed; S8 remains a human-owned gate.
+terms.
+
+The owner approved two further qualifications after the 2026-10-26 successor. The first, on
+2026-10-27 at `580df9dc`, was never used: the host's Python and installed distributions changed
+before the rehearsal, so its runtime lock stopped verifying. The second, on 2026-11-19 at
+`578202a7`, declares all five earlier runs as predecessors (304 prior sends) and carries
+cumulative ceilings of **381** qualification and **415** campaign sends. The owner signed the
+approval document for its exact packages, and the rehearsal ran once from that checkout on
+2026-11-20 (UTC) with 109 of 111 campaign sends
+([evidence record](../artifacts/evidence-s8-rehearsal-20261119/README.md)). S8 remains a human-owned gate
+that the owner has not graded.
 
 ## Decisions requested
 

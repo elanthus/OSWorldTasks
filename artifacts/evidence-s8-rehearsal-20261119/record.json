@@ -1,0 +1,251 @@
+{
+  "evidence_label": "credential-free-scripted-engineering-validation",
+  "gate_policy_sha256": "1058e81e30aab88fada7de193ae0a6b6131f713fa55b8f5e21f81ed32c00c7c6",
+  "limitations": [
+    "the owner has not graded S8; this record declares no verdict",
+    "the audit actor is a string, not authenticated human identity; the approval digest is the recorded authority",
+    "real-provider requests and spending are declared constants of the fixture-only boundary, not independent network or billing measurements",
+    "the s7-20261027-s8driver qualification has a local archive only; a copy is nested in the s7-20261119-main archive as a predecessor",
+    "no Object Lock retention is set on the uploaded files, and no private LFS copy was made",
+    "the Backblaze restore drill covers the S8 state only; the S7 qualification upload was checked with rclone check but not restored",
+    "qualify, verify, and report exit statuses for s7-20261027-s8driver were partly not captured in its own logs; that run was not used for this rehearsal"
+  ],
+  "milestone_verdict": null,
+  "note": "Assembled by the operator from private stored evidence and command logs. Qualification and rehearsal content stays private; this record holds digests, counts, commands, and exit statuses only. The owner grades S8.",
+  "qualification": {
+    "campaign_allowance": 415,
+    "commands": [
+      {
+        "command": ".venv/bin/python -m scripts.s7_serving prepare --run <run>/qualification --run-id s7-20261119-main --approval <text> --expected-predecessor-sends 304 --predecessor-archive <five archives>",
+        "exit_status": 0,
+        "fake_sends": 0,
+        "finished_utc": "2026-11-20T00:27:55Z",
+        "started_utc": "2026-11-20T00:27:23Z"
+      },
+      {
+        "command": ".venv/bin/python -m scripts.s7_serving qualify --run <run>/qualification",
+        "exit_status": 0,
+        "finished_utc": "2026-11-20T00:29:38Z",
+        "started_utc": "2026-11-20T00:28:04Z",
+        "stderr_bytes": 0
+      },
+      {
+        "command": ".venv/bin/python -m scripts.s7_serving verify --run <run>/qualification",
+        "exit_status": 0,
+        "finished_utc": "2026-11-20T00:30:40Z",
+        "started_utc": "2026-11-20T00:29:51Z"
+      },
+      {
+        "command": ".venv/bin/python -m scripts.s7_serving report --run <run>/qualification",
+        "exit_status": 0,
+        "report_lines": 65,
+        "stderr_bytes": 0
+      }
+    ],
+    "ledger_sends": {
+      "qualification": 77
+    },
+    "owner_approval": "in chat on 2026-11-19; the approval text is retained in the private plan.json",
+    "packages": {
+      "A": {
+        "gate_report_sha256": "sha256:3e0aafa231d3110e6909a20a5a74c9f9c41226ac7e98686eabba30d0253d4c51",
+        "package_sha256": "sha256:90451b0c1f766b3fd2cc7006573e755964e7e47dce9716df2ca14adeef9b2ded",
+        "policy_id": "sha256:4b54be398eae9cb52b7eaa2b539ded8165f9a62474bc2ae5c0d59eda45ee2e94",
+        "stored_gate_overall_passed": true
+      },
+      "B": {
+        "gate_report_sha256": "sha256:ec1293f21a750cf1b43542a1d668e608e0d68ce621c89e4b4ac9fde4e16bd711",
+        "package_sha256": "sha256:226936d19f720b114bcf137ef23a090bf64fff18e11dfae42215578048357660",
+        "policy_id": "sha256:c10c6c1d29e595b1b1ab4ef8012c03568d7b1b68fc5d50278ac34d47402bb798",
+        "stored_gate_overall_passed": true
+      }
+    },
+    "plan_sha256": "sha256:9d3444dad11dcb150340009831dedb9c9d52036f35c300101ff090f921d29a2c",
+    "predecessor_qualification_sends": [
+      0,
+      73,
+      77,
+      77,
+      77
+    ],
+    "previous_qualification_sends": 304,
+    "qualification_allowance": 381,
+    "report_sha256": "sha256:b5d9bef64c1a38ec717ecb06834c939ca39d047c9d3b06a402a76d52e6faa7fa",
+    "run_id": "s7-20261119-main",
+    "seal_sha256": "sha256:ac3f78a8e926a9088369ed6b561d38c236adfd31d23e678e07b84bff4228105e",
+    "source_binding_sha256": "sha256:9c42055b2909785e26152991bf63e39f547dd7af7dc64b80f99512dbe54afee6",
+    "verification_sha256": "sha256:bbb678695b71981a27c6e651d341a2bd5e9bc32c7f4afe8457c5ba196af7250f"
+  },
+  "rehearsal": {
+    "approval": {
+      "activation_approved": true,
+      "actor": "owner-supplied string, withheld from this public record",
+      "actor_verification_source": "legacy_unverified",
+      "publication_approved": false
+    },
+    "approval_sha256": "sha256:a58a83f4690be913f037f200938b5364c337af95410ffb8d13e5d57001c45c3b",
+    "caller_transport": "loopback-listener:127.0.0.1:8765",
+    "campaign_cap": 111,
+    "campaign_total": 109,
+    "commands": [
+      {
+        "command": ".venv/bin/python -m scripts.s8_rehearsal prepare --qualification <qualification> --state <state> --approval <signed approval>",
+        "exit_status": 0,
+        "fake_sends": 0,
+        "finished_utc": "2026-11-20T01:11:48Z",
+        "started_utc": "2026-11-20T01:11:08Z",
+        "stderr_bytes": 0
+      },
+      {
+        "acceptance_exit_statuses": {
+          "stored_verification_replay": 0
+        },
+        "command": ".venv/bin/python -m scripts.s8_rehearsal run --state <state> --listener-port 8765",
+        "exit_status": 0,
+        "finished_utc": "2026-11-20T01:18:00Z",
+        "started_utc": "2026-11-20T01:11:54Z",
+        "stderr_bytes": 0
+      },
+      {
+        "command": ".venv/bin/python -m scripts.s8_rehearsal verify --state <state>",
+        "exit_status": 0,
+        "finished_utc": "2026-11-20T01:18:20Z",
+        "started_utc": "2026-11-20T01:18:05Z"
+      },
+      {
+        "command": ".venv/bin/python -m scripts.s8_rehearsal report --state <state>",
+        "exit_status": 0,
+        "report_lines": 429,
+        "stderr_bytes": 0
+      }
+    ],
+    "failure_record_present": false,
+    "ledger_sends": {
+      "A": 2,
+      "B": 24,
+      "qualification": 77,
+      "smoke": 6
+    },
+    "lifecycle_sha256": "sha256:87cae41c845f7c6daf79ccfc0fee04504c9acae99434916990c1a19c99c25777",
+    "plan_sha256": "sha256:074d6acc5a81a4d332032886982f0502612110d9a015617e7da13bcf0554ae7a",
+    "pre_run_check": {
+      "command": "PIXELGYM_RUN_V5_SANDBOX_TESTS=1 .venv/bin/python -m pytest tests/integration/test_s8_rehearsal_local.py -q",
+      "note": "throwaway qualification; not part of the counted campaign",
+      "result": "1 passed in 63.12s"
+    },
+    "publication_performed": false,
+    "real_provider_requests": 0,
+    "run_id": "s8-20261119-main",
+    "seal_sha256": "sha256:004ad599eabc4d5820de0657f8ab68578086b136bd5d77cc0568d31909bab644",
+    "verification_sha256": "sha256:fc4c89e8d38c8a0d8e54ea694d2976bee0526ac9619aad305e459e128223c683",
+    "worker_os_sandbox_required": true,
+    "worker_proofs": [
+      {
+        "event": "deploy A",
+        "mechanism": "darwin_sandbox_exec",
+        "os_sandbox_applied": true,
+        "profile_sha256": "sha256:807fd73f2d52b50bbf984a354c31866f04c90e04c704841f9571dcadd14ab965"
+      },
+      {
+        "event": "deploy B",
+        "mechanism": "darwin_sandbox_exec",
+        "os_sandbox_applied": true,
+        "profile_sha256": "sha256:617be8f27d4168a6b1126bbc55e4e4c9795a9fa773f41bab788556ffb3a41f56"
+      },
+      {
+        "event": "restore_active B",
+        "mechanism": "darwin_sandbox_exec",
+        "os_sandbox_applied": true,
+        "profile_sha256": "sha256:27df3c0ca0a1fc8f908a5ea5d5ef5babad67780836ee8132b4be7ab86958e5ce"
+      },
+      {
+        "event": "deploy B",
+        "mechanism": "darwin_sandbox_exec",
+        "os_sandbox_applied": true,
+        "profile_sha256": "sha256:b32af6fa1317ccd9d854768980896d8a958c60c080f36c7748f96dd51d69919a"
+      },
+      {
+        "event": "rollback A",
+        "mechanism": "darwin_sandbox_exec",
+        "os_sandbox_applied": true,
+        "profile_sha256": "sha256:ed9432b703aa4b8f10a46102605571ee32c1cc074832263a00a8a67f6f895577"
+      }
+    ]
+  },
+  "retention": {
+    "backblaze": {
+      "bucket_total_bytes_with_versions": 27669229089,
+      "bucket_total_objects_with_versions": 8573,
+      "bucket_type": "allPrivate",
+      "default_retention": null,
+      "estimated_monthly_charge_usd": 0.19,
+      "file_retention_modes_observed": [
+        null
+      ],
+      "object_lock_enabled": true,
+      "prefixes": {
+        "s7-20261119-main": {
+          "check_command": "rclone check <archive> bb:<bucket>/s7-20261119-main --one-way",
+          "check_exit_status": 0,
+          "copy_exit_status": 0,
+          "differences": 0,
+          "matching_files": 7981,
+          "observed_bytes": 1558362707,
+          "observed_file_count": 7981
+        },
+        "s8-20261119-main": {
+          "check_command": "rclone check <archive> bb:<bucket>/s8-20261119-main --one-way",
+          "check_exit_status": 0,
+          "copy_exit_status": 0,
+          "differences": 0,
+          "matching_files": 148,
+          "observed_bytes": 1825738,
+          "observed_file_count": 148,
+          "restore_drill": {
+            "download": "rclone copy bb:<bucket>/s8-20261119-main <new directory> --checksum; exit status not captured separately",
+            "finished_utc": "2026-11-20T01:36:15Z",
+            "lifecycle_sha256": "sha256:87cae41c845f7c6daf79ccfc0fee04504c9acae99434916990c1a19c99c25777",
+            "restore_archive_expected_digest": "sha256:c59dc0de15b2183fe015d66893b257a70bc64b7a11ee93976755d7050f830b1f",
+            "restored_file_count": 147,
+            "verification_sha256": "sha256:fc4c89e8d38c8a0d8e54ea694d2976bee0526ac9619aad305e459e128223c683",
+            "verify_command": ".venv/bin/python -m scripts.s8_rehearsal verify --state <restored>/state",
+            "verify_exit_status": 0
+          }
+        }
+      },
+      "rclone_version": "1.76.0",
+      "storage_rate_read_on": "2026-11-19",
+      "storage_rate_source": "https://www.backblaze.com/cloud-storage/pricing",
+      "storage_rate_usd_per_tb_month": 6.95,
+      "upload_command": "rclone copy <archive> bb:<bucket>/<prefix> --checksum --immutable"
+    },
+    "local_archives": {
+      "s7-20261027-s8driver": {
+        "bytes": 777140202,
+        "file_count": 3976,
+        "manifest_digest": "sha256:6158d75164b270c0f92ee1ed08ea131d4cd4e727de958fdd55c2442b2e15f4f1",
+        "source_fingerprint": "sha256:6d604750efa5b32419ae6381a651e240b1e0b3ac9f01b8173f5e71817f77819d"
+      },
+      "s7-20261119-main": {
+        "bytes": 1556442084,
+        "file_count": 7980,
+        "manifest_digest": "sha256:26c047116fe4fc57a6af28787534cad4ab8c5da2447dfa5185ca8da67903d5ce",
+        "source_fingerprint": "sha256:e8074fa16986396943f97bc2ced6c84ca0ad11f2171f5b875828cb7cd7e92912"
+      },
+      "s8-20261119-main": {
+        "bytes": 1794546,
+        "file_count": 147,
+        "manifest_digest": "sha256:c59dc0de15b2183fe015d66893b257a70bc64b7a11ee93976755d7050f830b1f",
+        "source_fingerprint": "sha256:cb44c86f3bdb9412f4d72e599b4ae85857409f9386b5a9b559196049a41a9b02"
+      }
+    },
+    "private_lfs_copy": "not made"
+  },
+  "runtime": {
+    "distribution_count": 450,
+    "python": "3.12.16",
+    "runtime_lock_sha256": "sha256:beb1ef0aab488045e3f11b81bee58b3037cde3617728eb83b6248d8c445a6edd"
+  },
+  "schema_version": "pixelgym-s8-rehearsal-evidence-record-v1",
+  "source_revision": "578202a798459368eaf17c16cd6c1b1a0f756af5"
+}
