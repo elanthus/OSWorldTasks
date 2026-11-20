@@ -4,7 +4,8 @@
   controls with scripted policies and fake transports. This is engineering validation; it supplies
   no model-quality result or D5.10 verdict.
 - **Status:** owner approved implementation and scripted qualification on 2026-10-20 under the
-  proposed caps. Exact package activation and publication remain blocked pending owner review.
+  proposed caps. On 2026-11-19 the owner approved activating the exact packages of the
+  `s7-20261119-main` qualification for one rehearsal. Publication remains blocked.
 - **Current state:** the owner approved a fresh successor qualification on 2026-10-26
   ([details](#activation-compatibility-after-review-repairs)). Two later qualifications followed,
   and the rehearsal was executed once on 2026-11-20 (UTC); the owner has not graded it
@@ -170,7 +171,7 @@ Reuse these components rather than introduce a second serving system:
 The following list records gaps at the inspected PR #249 base. The S7 implementation now supplies
 the gate evaluator, source-bound package builder, and guarded loader described here; see
 [current implementation status](platform-design.md#current-status). The full serving rehearsal,
-its recovery checks, and exact-package owner gates remain pending. References to absent tooling
+its recovery checks, and exact-package owner gates were pending at that base. References to absent tooling
 or the "current loader" within this initial list describe the inspected base.
 
 1. **S7 gate evaluation is absent.** S6 checks report consistency, identity bindings, and an
