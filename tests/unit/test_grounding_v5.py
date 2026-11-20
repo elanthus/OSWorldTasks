@@ -274,7 +274,7 @@ def test_v5_golden_policy_reaches_sparse_reward_once_for_every_family(seed: int)
         assert rewards[:-1] == [0.0] * (len(rewards) - 1)
         assert rewards[-1] == 1.0
         assert terminated and not truncated
-        with pytest.raises(RuntimeError, match="after the episode already ended"):
+        with pytest.raises(RuntimeError, match="the episode already ended"):
             env.step(actions[-1])
     finally:
         env.close()
@@ -539,7 +539,7 @@ def test_core_fake_backend_v5_checkpoint_restores_exact_state() -> None:
 
 
 @pytest.mark.parametrize(
-    "checkpoint", [b"[]", b'{"schema_version":"pixelgym-core-fake-checkpoint-v1"}']
+    "checkpoint", [b"[]", b'{"schema_version":"pixelgym-core-fake-checkpoint-v3"}']
 )
 def test_core_fake_backend_v5_checkpoint_rejects_malformed_shape(checkpoint: bytes) -> None:
     with pytest.raises(ValueError):

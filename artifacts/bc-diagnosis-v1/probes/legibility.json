@@ -1,0 +1,148 @@
+{
+  "command": "scripts/probe_bc_v2.py legibility",
+  "config": {
+    "classes": 102,
+    "classifier": "conv3x3(32)-conv3x3(64)-fc128, AdamW lr 1e-3, batch 256",
+    "crop_full_resolution": [
+      24,
+      16
+    ],
+    "crop_policy_resolution": [
+      12,
+      8
+    ],
+    "held_out_seeds": "standard validation seeds 256-287 (reset frames)",
+    "label": "centre character of the crop, from the renderer's font metrics",
+    "policy_preprocessing": "Rec. 601 luma, 2x2 area mean (bc.preprocess)",
+    "steps": 3000,
+    "train_seeds": "standard training seeds 0-255 (reset frames)"
+  },
+  "held_out_crops": 3449,
+  "held_out_majority_class_accuracy": 0.06494636126413453,
+  "probe": "legibility",
+  "provenance": {
+    "device": "mps",
+    "git_revision": "76092f1c657c48f7146e8f4230b527ad3c65b4be",
+    "git_status_porcelain": "",
+    "host": "Darwin 27.0.0 (arm64)",
+    "python": "3.12.15",
+    "recorded_at_unix": 1794797541,
+    "torch": "2.15.0",
+    "worktree_clean": true
+  },
+  "resolutions": {
+    "full": {
+      "by_field": {
+        "company_name": {
+          "accuracy": 1.0,
+          "crops": 776
+        },
+        "contact_email": {
+          "accuracy": 1.0,
+          "crops": 1460
+        },
+        "contact_phone": {
+          "accuracy": 1.0,
+          "crops": 480
+        },
+        "country": {
+          "accuracy": 1.0,
+          "crops": 189
+        },
+        "payment_terms": {
+          "accuracy": 1.0,
+          "crops": 160
+        },
+        "tax_id": {
+          "accuracy": 1.0,
+          "crops": 384
+        }
+      },
+      "curve": [
+        {
+          "loss": 0.00012279613292776048,
+          "step": 500
+        },
+        {
+          "loss": 7.373829703283263e-06,
+          "step": 1000
+        },
+        {
+          "loss": 1.1985825949523132e-06,
+          "step": 1500
+        },
+        {
+          "loss": 4.814924068341497e-07,
+          "step": 2000
+        },
+        {
+          "loss": 2.6216679316348745e-07,
+          "step": 2500
+        },
+        {
+          "loss": 1.150182029618918e-07,
+          "step": 3000
+        }
+      ],
+      "held_out_accuracy": 1.0
+    },
+    "low": {
+      "by_field": {
+        "company_name": {
+          "accuracy": 1.0,
+          "crops": 776
+        },
+        "contact_email": {
+          "accuracy": 1.0,
+          "crops": 1460
+        },
+        "contact_phone": {
+          "accuracy": 1.0,
+          "crops": 480
+        },
+        "country": {
+          "accuracy": 1.0,
+          "crops": 189
+        },
+        "payment_terms": {
+          "accuracy": 1.0,
+          "crops": 160
+        },
+        "tax_id": {
+          "accuracy": 1.0,
+          "crops": 384
+        }
+      },
+      "curve": [
+        {
+          "loss": 0.003184413304552436,
+          "step": 500
+        },
+        {
+          "loss": 0.0005436239880509675,
+          "step": 1000
+        },
+        {
+          "loss": 7.90311605669558e-05,
+          "step": 1500
+        },
+        {
+          "loss": 9.514137491350994e-05,
+          "step": 2000
+        },
+        {
+          "loss": 2.6674988475861028e-05,
+          "step": 2500
+        },
+        {
+          "loss": 1.2826955753553193e-05,
+          "step": 3000
+        }
+      ],
+      "held_out_accuracy": 1.0
+    }
+  },
+  "schema_version": "pixelgym-bc-probe-v1",
+  "total_seconds": 117.9,
+  "train_crops": 27748
+}

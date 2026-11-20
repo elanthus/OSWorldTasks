@@ -1,5 +1,12 @@
 # D5.9 replication stop-rule proposal
 
+- **Type:** historical decision record for stop rule v2 of the D5.9 replication.
+- **What it records:** which failures stop the campaign and which stay in the denominator while it
+  continues. Under the selected options a post-send request failure continues until three occur
+  in a row, a policy violation stops the campaign, failure streaks are counted per worker, and a
+  reported rate limit delays new dispatch by 30 to 60 seconds.
+- **Terms:** see the [glossary](glossary.md) for D-numbers.
+
 **Status: historical v2 stop-rule record.** The owner subsequently approved the
 [OAuth-recovery replacement freeze](d59-subscription-verification.md), pilot execution,
 and conditional full execution after the pilot operational gate. This follow-up implements

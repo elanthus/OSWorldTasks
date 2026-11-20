@@ -1,0 +1,20 @@
+{
+  "argv": [
+    "rclone",
+    "copy",
+    "bb:OSWorld/osworld-guest-check-frames-regeneration-2026-11-18",
+    ".cache/guest-check-regen-2026-11-18/review-download/osworld-guest-check-frames-regeneration-2026-11-18",
+    "--checksum",
+    "--stats-one-line",
+    "-v"
+  ],
+  "command": "rclone copy bb:OSWorld/osworld-guest-check-frames-regeneration-2026-11-18 .cache/guest-check-regen-2026-11-18/review-download/osworld-guest-check-frames-regeneration-2026-11-18 --checksum --stats-one-line -v",
+  "cwd": "<path-0>",
+  "duration_seconds": 1.39773,
+  "ended_at_utc": "2026-11-18T07:56:29.004789+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "2026/11/17 23:56:27 NOTICE: Config file \"<home>/.config/rclone/rclone.conf\" not found - using defaults\n2026/11/17 23:56:28 INFO  : rerun-output/run_regen.py: Copied (new)\n2026/11/17 23:56:28 INFO  : rerun-output/d4e711e/stderr.log: Copied (new)\n2026/11/17 23:56:28 INFO  : rerun-output/d4e711e/stdout.log: Copied (new)\n2026/11/17 23:56:28 INFO  : rerun-output/d4e711e/run-record.json: Copied (new)\n2026/11/17 23:56:28 INFO  : rerun-output/627e09b/stderr.log: Copied (new)\n2026/11/17 23:56:28 INFO  : rerun-output/627e09b/run-record.json: Copied (new)\n2026/11/17 23:56:28 INFO  : guest-bundles/vendor-form-vf-6bed55ed612d3c5a-4067dc638dbaaa8e.zip: Copied (new)\n2026/11/17 23:56:28 INFO  : guest-bundles/vendor-form-vf-6bed55ed612d3c5a-505a15bf40bac294.zip: Copied (new)\n2026/11/17 23:56:28 INFO  : rerun-output/627e09b/stdout.log: Copied (new)\n2026/11/17 23:56:28 INFO  : rerun-output/627e09b/raw/real-golden-episode.json: Copied (new)\n2026/11/17 23:56:29 INFO  : rerun-output/d4e711e/raw/real-golden-episode.json: Copied (new)\n2026/11/17 23:56:29 INFO  :     1.598 MiB / 1.598 MiB, 100%, 0 B/s, ETA -\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-11-18T07:56:27.604983+00:00"
+}

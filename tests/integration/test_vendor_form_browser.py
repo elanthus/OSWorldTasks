@@ -30,6 +30,7 @@ from pixelgym.tasks.vendor_form.ui import (
     DESIGN_HEIGHT,
     DESIGN_WIDTH,
     INCOMPLETE_SUBMISSION_MESSAGE,
+    LABELED_CONTROLS,
     TAB_ORDER,
     TEXT_WIDGETS,
     Layout,
@@ -166,6 +167,14 @@ def _assert_layout_matches_browser(page: Any, task: dict) -> tuple[Layout, list[
     for widget in WidgetId:
         _assert_rect_matches_browser(widget.value, browser_widgets[widget], layout.controls[widget])
 
+    # Clicking a `<label for=...>` focuses its control, and the fake models that click, so the
+    # label's block hit region is part of the geometry contract too.
+    for widget in LABELED_CONTROLS:
+        label = page.locator(f'#vendor-form label[for="{widget.value}"]')
+        _assert_rect_matches_browser(
+            f"label[for={widget.value}]", _bounding_rect(label), layout.labels[widget]
+        )
+
     payment_values = task["options"]["payment_terms"]
     assert len(browser_options) == len(payment_values) == len(layout.payment_options)
     _assert_fixed_width_controls_do_not_clip(page, payment_values)
@@ -229,6 +238,17 @@ def test_fake_layout_matches_browser_control_hit_regions() -> None:
             for index, option in enumerate(layout.payment_options):
                 assert _semantic_control_at(page, option.center) == f"payment_terms_{index}", (
                     f"payment_terms[{index}]: Layout center does not hit the browser radio"
+                )
+            for widget in LABELED_CONTROLS:
+                label_for = page.evaluate(
+                    """([x, y]) => {
+                      const label = document.elementFromPoint(x, y).closest("label");
+                      return label ? label.htmlFor : null;
+                    }""",
+                    list(layout.labels[widget].center),
+                )
+                assert label_for == widget.value, (
+                    f"label[for={widget.value}]: Layout label center does not hit the browser label"
                 )
         finally:
             browser.close()
@@ -410,7 +430,19 @@ def test_keyboard_focus_is_visible_in_pixels_on_every_control() -> None:
             browser.close()
 
 
-def test_suppressed_focus_ring_failure_names_the_invisible_widget() -> None:
+@pytest.mark.parametrize(
+    ("selector", "message"),
+    [
+        # The select draws no caret, so with its ring suppressed focusing it changes no pixels.
+        ("#country", "country: focusing the control changed no pixels"),
+        # A focused text input also draws the static caret (input contract v3), so its frame
+        # still changes; the suppressed ring is caught by the outline check instead.
+        ("#contact_email", "contact_email: outline-style is none"),
+    ],
+)
+def test_suppressed_focus_ring_failure_names_the_invisible_widget(
+    selector: str, message: str
+) -> None:
     playwright_api = pytest.importorskip("playwright.sync_api")
 
     with local_vendor_form_server() as base_url, playwright_api.sync_playwright() as playwright:
@@ -421,11 +453,9 @@ def test_suppressed_focus_ring_failure_names_the_invisible_widget() -> None:
             page = browser.new_page(viewport={"width": DESIGN_WIDTH, "height": DESIGN_HEIGHT})
             page.goto(base_url)
             page.locator(READY_SELECTOR).wait_for(state="attached")
-            page.add_style_tag(content="#contact_email:focus-visible { outline: none; }")
+            page.add_style_tag(content=f"{selector}:focus-visible {{ outline: none; }}")
 
-            with pytest.raises(
-                AssertionError, match="contact_email: focusing the control changed no pixels"
-            ):
+            with pytest.raises(AssertionError, match=message):
                 _assert_tab_focus_is_visible(page, layout_for(task, DESIGN_WIDTH, DESIGN_HEIGHT))
         finally:
             browser.close()

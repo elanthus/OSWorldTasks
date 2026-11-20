@@ -157,13 +157,13 @@ misread pre-initialization frame in PR #156, and the accounting gaps in issues #
 that a green check can validate the wrong proxy or omit a liability. Human scientific and security
 judgment is still needed to challenge the measurement, the threat model, and the interpretation.
 
-### Lessons for the next project
+### Lessons carried forward
 
 - A single manifest-driven calibration runner and a shared CLI lifecycle come first; experiment
   variants are added on top of them, with provider-specific parsing and security contracts still
   explicit (issue #111).
 - The typed boundary between policy-visible and host-only results is settled before resume and
-  diagnostics are built. Issue #98 remains open until a tested fix lands.
+  diagnostics are built. Issue #98 was open at this record's cutoff and was closed on 2026-09-07.
 - Evidence claims read a stored result that carries provenance. Report generators never execute
   the check they report, and a hard-coded boolean does not count as evidence
   ([PR #156 review](https://github.com/elanthus/OSWorldTasks/pull/156#discussion_r3943508362)).

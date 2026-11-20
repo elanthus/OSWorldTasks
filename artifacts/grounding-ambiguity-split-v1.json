@@ -1,0 +1,410 @@
+{
+  "counts": {
+    "example_count": 100,
+    "forgiving_raw_correct": 78,
+    "left_panel_other_row": 0,
+    "marks_correct": 100,
+    "other_misses": 22,
+    "raw_correct": 56,
+    "raw_misses": 44,
+    "request_card_same_row": 22
+  },
+  "forgiving": {
+    "delta_percentage_points": 22.0,
+    "example_level_bootstrap_95_ci_percentage_points": [
+      14.0,
+      30.0
+    ],
+    "target_clustered_bootstrap_95_ci_percentage_points": [
+      6.0,
+      42.0
+    ]
+  },
+  "inputs": [
+    "artifacts/grounding-results.json",
+    "artifacts/grounding-predictions.jsonl",
+    "artifacts/grounding-error-review-decisions.json"
+  ],
+  "interpretation_note": "The instruction names a field ('Click the Company name field'); the request card shows a read-only box with the same label in the same row. A point on that box is a wrong click under the frozen protocol, and it stays one here. The forgiving column only shows how much of the raw-versus-marks gap comes from that one confusable region. It is a post-hoc sensitivity analysis on the same 100 examples, not a pre-registered re-scoring, and the frozen v1 headline is unchanged.",
+  "manual_review_categories": {
+    "other_misses": {
+      "coordinate scaling error": 7,
+      "correct region but point just outside the box": 6,
+      "crowded or overlapping controls": 14,
+      "small target": 14,
+      "wrong semantic element": 9
+    },
+    "request_card_same_row": {
+      "wrong semantic element": 22
+    }
+  },
+  "other_misses_by_target": {
+    "country": 6,
+    "payment_terms_net_30": 7,
+    "payment_terms_net_45": 7,
+    "tax_id": 2
+  },
+  "request_card_same_row_by_screen_state": {
+    "initial": 9,
+    "text_field_focused": 3,
+    "validation_error": 10
+  },
+  "request_card_same_row_by_target": {
+    "company_name": 9,
+    "contact_email": 3,
+    "contact_phone": 10
+  },
+  "request_card_same_row_examples": [
+    {
+      "example_id": "vendor-form-0001-company-name",
+      "raw_point": [
+        148.0,
+        92.0
+      ],
+      "screen_state": "initial",
+      "target_bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "target_id": "company_name"
+    },
+    {
+      "example_id": "vendor-form-0003-contact-phone",
+      "raw_point": [
+        117.0,
+        218.0
+      ],
+      "screen_state": "validation_error",
+      "target_bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "target_id": "contact_phone"
+    },
+    {
+      "example_id": "vendor-form-0011-company-name",
+      "raw_point": [
+        219.0,
+        94.0
+      ],
+      "screen_state": "initial",
+      "target_bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "target_id": "company_name"
+    },
+    {
+      "example_id": "vendor-form-0012-contact-email",
+      "raw_point": [
+        253.0,
+        156.0
+      ],
+      "screen_state": "text_field_focused",
+      "target_bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "target_id": "contact_email"
+    },
+    {
+      "example_id": "vendor-form-0013-contact-phone",
+      "raw_point": [
+        255.0,
+        218.0
+      ],
+      "screen_state": "validation_error",
+      "target_bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "target_id": "contact_phone"
+    },
+    {
+      "example_id": "vendor-form-0021-company-name",
+      "raw_point": [
+        195.0,
+        94.0
+      ],
+      "screen_state": "initial",
+      "target_bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "target_id": "company_name"
+    },
+    {
+      "example_id": "vendor-form-0022-contact-email",
+      "raw_point": [
+        204.0,
+        157.0
+      ],
+      "screen_state": "text_field_focused",
+      "target_bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "target_id": "contact_email"
+    },
+    {
+      "example_id": "vendor-form-0023-contact-phone",
+      "raw_point": [
+        256.0,
+        218.0
+      ],
+      "screen_state": "validation_error",
+      "target_bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "target_id": "contact_phone"
+    },
+    {
+      "example_id": "vendor-form-0031-company-name",
+      "raw_point": [
+        131.0,
+        94.0
+      ],
+      "screen_state": "initial",
+      "target_bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "target_id": "company_name"
+    },
+    {
+      "example_id": "vendor-form-0033-contact-phone",
+      "raw_point": [
+        263.0,
+        218.0
+      ],
+      "screen_state": "validation_error",
+      "target_bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "target_id": "contact_phone"
+    },
+    {
+      "example_id": "vendor-form-0041-company-name",
+      "raw_point": [
+        120.0,
+        92.0
+      ],
+      "screen_state": "initial",
+      "target_bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "target_id": "company_name"
+    },
+    {
+      "example_id": "vendor-form-0043-contact-phone",
+      "raw_point": [
+        259.0,
+        218.0
+      ],
+      "screen_state": "validation_error",
+      "target_bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "target_id": "contact_phone"
+    },
+    {
+      "example_id": "vendor-form-0053-contact-phone",
+      "raw_point": [
+        250.0,
+        218.0
+      ],
+      "screen_state": "validation_error",
+      "target_bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "target_id": "contact_phone"
+    },
+    {
+      "example_id": "vendor-form-0061-company-name",
+      "raw_point": [
+        118.0,
+        94.0
+      ],
+      "screen_state": "initial",
+      "target_bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "target_id": "company_name"
+    },
+    {
+      "example_id": "vendor-form-0062-contact-email",
+      "raw_point": [
+        245.0,
+        157.0
+      ],
+      "screen_state": "text_field_focused",
+      "target_bbox": [
+        536,
+        141,
+        1000,
+        171
+      ],
+      "target_id": "contact_email"
+    },
+    {
+      "example_id": "vendor-form-0063-contact-phone",
+      "raw_point": [
+        244.0,
+        217.0
+      ],
+      "screen_state": "validation_error",
+      "target_bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "target_id": "contact_phone"
+    },
+    {
+      "example_id": "vendor-form-0071-company-name",
+      "raw_point": [
+        173.0,
+        94.0
+      ],
+      "screen_state": "initial",
+      "target_bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "target_id": "company_name"
+    },
+    {
+      "example_id": "vendor-form-0073-contact-phone",
+      "raw_point": [
+        253.0,
+        218.0
+      ],
+      "screen_state": "validation_error",
+      "target_bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "target_id": "contact_phone"
+    },
+    {
+      "example_id": "vendor-form-0081-company-name",
+      "raw_point": [
+        259.0,
+        94.0
+      ],
+      "screen_state": "initial",
+      "target_bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "target_id": "company_name"
+    },
+    {
+      "example_id": "vendor-form-0083-contact-phone",
+      "raw_point": [
+        115.0,
+        218.0
+      ],
+      "screen_state": "validation_error",
+      "target_bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "target_id": "contact_phone"
+    },
+    {
+      "example_id": "vendor-form-0091-company-name",
+      "raw_point": [
+        255.0,
+        94.0
+      ],
+      "screen_state": "initial",
+      "target_bbox": [
+        536,
+        79,
+        1000,
+        109
+      ],
+      "target_id": "company_name"
+    },
+    {
+      "example_id": "vendor-form-0093-contact-phone",
+      "raw_point": [
+        122.0,
+        217.0
+      ],
+      "screen_state": "validation_error",
+      "target_bbox": [
+        536,
+        203,
+        1000,
+        233
+      ],
+      "target_id": "contact_phone"
+    }
+  ],
+  "request_card_same_row_x_range": [
+    115.0,
+    263.0
+  ],
+  "rule": {
+    "forgiving_raw": "raw correct, or a request_card_same_row miss",
+    "other_miss": "every other raw miss, including unparsed responses",
+    "request_card_same_row": "raw miss whose parsed point has x < 512 (left half of the 1024-pixel screen, the read-only request card) and y0 <= y < y1 of the target's frozen box"
+  },
+  "schema_version": "pixelgym-grounding-ambiguity-split-v1",
+  "strict": {
+    "delta_percentage_points": 44.0,
+    "example_level_bootstrap_95_ci_percentage_points": [
+      35.0,
+      54.0
+    ],
+    "target_clustered_bootstrap_95_ci_percentage_points": [
+      21.0,
+      67.0
+    ]
+  }
+}

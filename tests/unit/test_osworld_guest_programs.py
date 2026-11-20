@@ -24,6 +24,11 @@ _HEREDOC_HEAD = "python3 - <<'PY'\n"
 _HEREDOC_TAIL = "PY\n"
 _SEED = 4242
 _SCREEN = (1920, 1080)
+# Programs written after the migration have no former literal to reproduce.
+_ADDED_AFTER_MIGRATION = {"input_ack"}
+# Programs deliberately changed after the migration. pointer_park no longer clicks the page: the
+# click was a trusted input the page acknowledged, which reset's fixed zero count must reject.
+_CHANGED_AFTER_MIGRATION = {"pointer_park"}
 
 
 def _old_literals() -> dict[str, str]:
@@ -102,8 +107,11 @@ def _rendered() -> dict[str, str]:
 def test_every_former_literal_is_reproduced_byte_for_byte() -> None:
     old = _old_literals()
     new = _rendered()
-    assert sorted(old) == sorted(osworld_task._GUEST_PROGRAM_NAMES)
+    assert sorted(old) == sorted(set(osworld_task._GUEST_PROGRAM_NAMES) - _ADDED_AFTER_MIGRATION)
     for name in old:
+        if name in _CHANGED_AFTER_MIGRATION:
+            assert new[name] != old[name], f"{name} is listed as changed but still matches"
+            continue
         assert new[name].encode("utf-8") == old[name].encode("utf-8"), name
 
 

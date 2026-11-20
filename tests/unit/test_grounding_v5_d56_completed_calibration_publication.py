@@ -387,10 +387,12 @@ def test_redaction_scan_rejects_payloads_paths_and_credentials() -> None:
 
 def test_readme_v5_status_links_to_generated_derivative() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    section = readme.split("### Supporting platform work and status", 1)[1].split(
-        "## Reproduction", 1
-    )[0]
-    section = " ".join(section.split())
+    (gate_paragraph,) = (
+        paragraph
+        for paragraph in readme.split("\n\n")
+        if "](artifacts/grounding-v5-d510/human-gate.json)" in paragraph
+    )
+    section = " ".join(gate_paragraph.split())
     evidence_index = (ROOT / "docs/evidence-index.md").read_text(encoding="utf-8")
 
     derivative = _load_json(ROOT / DERIVATIVE_PATH)
@@ -408,9 +410,26 @@ def test_readme_v5_status_links_to_generated_derivative() -> None:
         )
         assert expected in report
         assert f"{counts['success']}/{run['assigned_tasks']}" not in readme
-    assert "v5 confirmatory benchmark and v5 milestone gate remain incomplete" in section
-    assert "docs/v5-benchmark-design.md" in section
-    assert "docs/evidence-index.md" in section
+    # D5.10 is recorded for the environment, platform, and evidence-discipline claim only; the
+    # README must keep the Haiku result descriptive and never promote calibration counts.
+    assert "The owner closed D5.10 on 2026-10-25 at `fd54dc2`" in section
+    assert "for the environment, platform and evidence discipline" in section
+    campaigns = _load_json(ROOT / "artifacts/grounding-v5-stateless-chance-ceiling-v2.json")["v1"][
+        "campaigns"
+    ]
+    assert set(campaigns) == {"historical", "replication", "parser_sensitivity"}
+    assert all(c["history_successes"] > c["stateless_successes"] for c in campaigns.values())
+    assert len(
+        {
+            (c["history_successes"] - c["stateless_successes"]) / c["episodes_per_arm"]
+            for c in campaigns.values()
+        }
+    ) == len(campaigns)
+    assert "Claude Haiku succeeded more often with screenshot history in each campaign" in section
+    assert "with different effect sizes" in section
+    assert "descriptive" in section
+    assert "](docs/v5-benchmark-design.md)" in section
+    assert "](docs/evidence-index.md)" in readme
     assert "remains withdrawn" in evidence_index
     assert "cannot be verified from a public clone" in evidence_index
     assert DERIVATIVE_PATH.as_posix() in evidence_index

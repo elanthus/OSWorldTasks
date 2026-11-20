@@ -1,0 +1,23 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-m",
+    "scripts.retain_v5_evidence",
+    "restore",
+    "--archive",
+    "<path-1>/d59-replication-ce6776de/pilot",
+    "--destination",
+    "<path-6>/replication/pilot",
+    "--digest",
+    "sha256:ee1dd23ea69d4ef58793ff1fcb8a7f8a813e463ca3616d49b202f3d404be7c2c"
+  ],
+  "command": ".venv/bin/python -m scripts.retain_v5_evidence restore --archive <path-1>/d59-replication-ce6776de/pilot --destination <path-6>/replication/pilot --digest sha256:ee1dd23ea69d4ef58793ff1fcb8a7f8a813e463ca3616d49b202f3d404be7c2c",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.56672,
+  "ended_at_utc": "2026-10-25T23:54:26.912418+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\n  \"bytes\": 56199153,\n  \"file_count\": 10,\n  \"manifest_digest\": \"sha256:ee1dd23ea69d4ef58793ff1fcb8a7f8a813e463ca3616d49b202f3d404be7c2c\",\n  \"restored_file_count\": 10,\n  \"source_fingerprint\": \"sha256:e4170a4e5d96aca2b143bec659011851ecb96dc7e3b89d019b24c3de98f6708f\"\n}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-25T23:54:26.342418+00:00"
+}

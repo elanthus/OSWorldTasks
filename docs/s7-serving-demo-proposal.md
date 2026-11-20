@@ -1,13 +1,20 @@
 # S7 proposal: a bounded scripted serving rehearsal
 
-- **Status:** owner approved implementation and scripted qualification on 2026-10-20 under the
-  proposed caps. Exact package activation and publication remain blocked pending owner review.
-- **Reader and decision:** the project owner, deciding whether to implement and qualify the two
-  packages and rehearsal below. Exact package approval and serving approval remain separate.
-- **Inspected base:** `acaa0da8a6ec752e39510a3f05339a9f204fe1a7` (PR #249).
 - **Purpose:** demonstrate environment correctness, durable evaluation evidence, and serving
   controls with scripted policies and fake transports. This is engineering validation; it supplies
   no model-quality result or D5.10 verdict.
+- **Status:** owner approved implementation and scripted qualification on 2026-10-20 under the
+  proposed caps. Exact package activation and publication remain blocked pending owner review.
+- **Current state:** the owner approved a fresh successor qualification on 2026-10-26
+  ([details](#activation-compatibility-after-review-repairs)). The rehearsal driver is implemented
+  and has not been executed ([S8 driver status](#s8-driver-status)).
+- **Reader and decision:** the project owner, deciding whether to implement and qualify the two
+  packages and rehearsal below. Exact package approval and serving approval remain separate.
+- **Inspected base:** `acaa0da8a6ec752e39510a3f05339a9f204fe1a7` (PR #249).
+- **Terms:** S7 and S8 are stages of the v5 stateful serving extension; see the
+  [glossary](glossary.md).
+
+## Approval scope and qualification history
 
 Owner clarification: retain one local archive copy and one private LFS copy, preserving the
 original run. This supersedes the original second-volume/two-local-copy prerequisite.
@@ -81,10 +88,32 @@ The retained completed qualification and exact package/report digests bind revis
 `e6d61aea96a3b78fb0df9db65805cdc2cc8e3d03`. The current PR includes later worker-cleanup,
 review fixes, and main-branch changes. `verify_worker_binding` requires the exact bound Git
 revision and refuses those retained packages from this head or any later main checkout. It also
-requires host `pixelgym` imports to resolve under the declared source checkout. No rebinding or
-new qualification is authorized here. The owner must resolve the source/version mismatch before
-activation; the old checkout lacks these later repairs. Keep frozen evidence unchanged and use
-separately approved successor evidence if qualifying repaired source becomes necessary.
+requires host `pixelgym` imports to resolve under the declared source checkout. At the time of
+that PR, no rebinding or new qualification was authorized, and the owner still had to resolve the
+source/version mismatch before activation; the old checkout lacks these later repairs. Frozen
+evidence stays unchanged. That restriction is historical: the current approval status is the
+successor qualification recorded below.
+
+On 2026-10-26 the owner resolved that mismatch by approving a fresh successor qualification of
+the repaired source with a further 77 fake sends. The predecessor loader now accepts a completed
+sealed qualification as well as stopped ones, so the successor freeze declares all three retained
+archives (0 + 73 + 77 = 150 prior sends) and carries cumulative ceilings of **227** qualification
+and **261** campaign sends. A completed predecessor is counted from its stored bytes only: seal,
+plan, source snapshot, results-to-ledger agreement, and the presence of packages and stored
+verification, and the stored verification record's binding to those results and that source. It
+is not replayed and its packages are not loaded. The private successor freeze binds revision
+`3b2865877aa784cfcb12066fcccc3f617b657ad7`; review repairs after it move this branch past that
+revision, so its exact packages load only from that checkout, as with v3. Its local archive,
+restore drill, and verified private LFS copy are recorded in the
+[successor retention record](../artifacts/evidence-retention-s7-20261026-successor/REPORT.md). Activation, the full serving
+rehearsal, publication, and milestone decisions remain separate owner gates.
+
+## S8 driver status
+
+The rehearsal below is implemented as `python -m scripts.s8_rehearsal` with `prepare`, `run`,
+`verify`, and `report` commands ([S8 rehearsal driver](s8-rehearsal.md)). The driver consumes an
+owner approval document bound to the exact sealed packages and refuses to fabricate approval or
+terms. It has not been executed; S8 remains a human-owned gate.
 
 ## Decisions requested
 
@@ -98,7 +127,7 @@ gate-policy digest. The proposed choices are:
 | Evidence class | Existing `calibration` class and required `d56-calibration` run-kind label, with a new S7 run reference and an explicit scripted-validation disclosure |
 | Gate policy | `s7-scripted-serving-controls-v1`, with the exact rules below; no model accuracy, cost-performance, or latency-performance threshold |
 | Serving terms | `demo` tier only; A: 4 fake attempts per exact version; B: 24; one active episode at a time |
-| Bound | 77 qualification sends and 111 total per freeze; the owner-approved stopped predecessors plus final freeze have cumulative ceilings of 150/184. No automatic rerun, cap increase, package revision, or threshold adjustment; one later rehearsal remains separately gated |
+| Bound | 77 qualification sends and 111 total per freeze. The 150/184 cumulative ceilings applied to the predecessor freeze only; the 2026-10-26 successor freeze carries cumulative ceilings of 227/261. No automatic rerun, cap increase, package revision, or threshold adjustment; one later rehearsal remains separately gated |
 | Infrastructure | Existing local Python environment, filesystem put-once store, SQLite ledger, and Darwin policy sandbox; HTTP listeners on `127.0.0.1` only |
 | Recovery | Original run, one local archive copy and one private LFS copy with fresh-cache restore, subject to a fresh budget observation and GitHub's unchanged $0 stop-usage setting |
 
@@ -351,7 +380,7 @@ without constructing a policy, transport, server, backend, or network client. Re
 explicit verifier operation, never a side effect of reporting. Test this boundary by denying those
 constructors/network access during report generation. Keep all negative outcomes and missing data.
 The human S8 review receives raw evidence and unmarked acceptance criteria; agents declare no
-milestone verdict and change no public portfolio wording.
+milestone verdict and change no public wording.
 
 After quiescence, use the merged generic `capture`, `restore`, and `check-cleanup` operations to
 retain one local archive copy under a new name and verify a fresh local restore. On each fresh
@@ -422,6 +451,6 @@ exit 0; 119 passed, 4 warnings in 15.71s
 
 The warnings were existing PyYAML/Metaflow deprecations. No rehearsal, OS sandbox integration,
 budget observation, LFS transfer, or publication was performed in this preparation. The full
-suite and retention results quoted in the handoff remain historical PR #249 results, not newly
+suite and retention results remain historical PR #249 results, not newly
 executed checks. The D5.9 private journals remain missing. This successor plan cannot reconstruct
 them, and D5.10 and public claims remain human-owned.

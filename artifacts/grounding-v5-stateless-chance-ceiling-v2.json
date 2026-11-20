@@ -1,0 +1,184 @@
+{
+  "fixed_rule_pairs": {
+    "best_pair_successes_if_otherwise_perfect": 30,
+    "best_pairs": [
+      "label_first+label_middle",
+      "position_1+label_first"
+    ],
+    "best_pairs_using_a_label_rule": [
+      "label_first+label_middle",
+      "position_1+label_first"
+    ],
+    "best_position_only_successes": 26,
+    "pair_count": 36,
+    "rules_per_stage": [
+      "position_0",
+      "position_1",
+      "position_2",
+      "label_first",
+      "label_middle",
+      "label_last"
+    ],
+    "selection": "maximum over all rule pairs, selected in-sample on the 192 frozen episodes",
+    "successes_by_pair": {
+      "label_first+label_first": 24,
+      "label_first+label_last": 23,
+      "label_first+label_middle": 30,
+      "label_first+position_0": 20,
+      "label_first+position_1": 28,
+      "label_first+position_2": 29,
+      "label_last+label_first": 24,
+      "label_last+label_last": 14,
+      "label_last+label_middle": 19,
+      "label_last+position_0": 18,
+      "label_last+position_1": 16,
+      "label_last+position_2": 23,
+      "label_middle+label_first": 24,
+      "label_middle+label_last": 15,
+      "label_middle+label_middle": 19,
+      "label_middle+position_0": 18,
+      "label_middle+position_1": 16,
+      "label_middle+position_2": 24,
+      "position_0+label_first": 25,
+      "position_0+label_last": 17,
+      "position_0+label_middle": 26,
+      "position_0+position_0": 24,
+      "position_0+position_1": 19,
+      "position_0+position_2": 25,
+      "position_1+label_first": 30,
+      "position_1+label_last": 13,
+      "position_1+label_middle": 19,
+      "position_1+position_0": 14,
+      "position_1+position_1": 22,
+      "position_1+position_2": 26,
+      "position_2+label_first": 17,
+      "position_2+label_last": 22,
+      "position_2+label_middle": 23,
+      "position_2+position_0": 18,
+      "position_2+position_1": 19,
+      "position_2+position_2": 25
+    }
+  },
+  "post_hoc": true,
+  "schema_version": "pixelgym-v5-stateless-chance-ceiling-v2",
+  "supersedes_nothing": "v1 is unchanged; every v1 field below is recomputed by the v1 code and must equal it",
+  "v1": {
+    "answer_positions": {
+      "consumer_stage_5": [
+        68,
+        62,
+        62
+      ],
+      "consumer_stage_7": [
+        56,
+        60,
+        76
+      ]
+    },
+    "best_fixed_position": {
+      "positions": [
+        1,
+        2
+      ],
+      "successes_if_otherwise_perfect": 26
+    },
+    "campaigns": {
+      "historical": {
+        "binomial_cdf_at_observed_under_uniform_guess": 0.08558197432367844,
+        "episodes_per_arm": 192,
+        "first_attempts": null,
+        "history_successes": 106,
+        "source": "artifacts/grounding-v5-d59-haiku-results/report.json",
+        "stateless_classifications": {
+          "invalid_output": 19,
+          "step_limit_truncation": 158,
+          "success_termination": 15
+        },
+        "stateless_successes": 15
+      },
+      "parser_sensitivity": {
+        "binomial_cdf_at_observed_under_uniform_guess": 0.4355505870620943,
+        "episodes_per_arm": 192,
+        "first_attempts": {
+          "both_first_attempts_correct": 22,
+          "both_reached": 179,
+          "consumer_stage_5": {
+            "correct": 65,
+            "reached": 182
+          },
+          "consumer_stage_7": {
+            "correct": 53,
+            "reached": 179
+          },
+          "successes_without_both_first_attempts_correct": 0
+        },
+        "history_successes": 132,
+        "source": "artifacts/grounding-v5-d59-action-extraction-results/report.json",
+        "stateless_classifications": {
+          "invalid_output": 1,
+          "step_limit_truncation": 171,
+          "success_termination": 20
+        },
+        "stateless_successes": 20
+      },
+      "replication": {
+        "binomial_cdf_at_observed_under_uniform_guess": 0.4355505870620943,
+        "episodes_per_arm": 192,
+        "first_attempts": {
+          "both_first_attempts_correct": 26,
+          "both_reached": 166,
+          "consumer_stage_5": {
+            "correct": 68,
+            "reached": 168
+          },
+          "consumer_stage_7": {
+            "correct": 53,
+            "reached": 166
+          },
+          "successes_without_both_first_attempts_correct": 0
+        },
+        "history_successes": 62,
+        "source": "artifacts/grounding-v5-d59-replication-results/report.json",
+        "stateless_classifications": {
+          "invalid_output": 36,
+          "step_limit_truncation": 136,
+          "success_termination": 20
+        },
+        "stateless_successes": 20
+      }
+    },
+    "consumer_stage_design": {
+      "decision_stage_fact": "The source <request|verification> reference is no longer visible.",
+      "dependencies": [
+        "request_ref",
+        "verification_ref"
+      ],
+      "options_per_choice": 3
+    },
+    "episodes_per_arm": 192,
+    "inputs": [
+      "artifacts/grounding-v5-d59-freeze/task-manifest.json",
+      "artifacts/grounding-v5-d59-haiku-results/report.json",
+      "artifacts/grounding-v5-d59-replication-results/report.json",
+      "artifacts/grounding-v5-d59-action-extraction-results/report.json"
+    ],
+    "joint_answer_positions": {
+      "0,0": 24,
+      "0,1": 19,
+      "0,2": 25,
+      "1,0": 14,
+      "1,1": 22,
+      "1,2": 26,
+      "2,0": 18,
+      "2,1": 19,
+      "2,2": 25
+    },
+    "schema_version": "pixelgym-v5-stateless-chance-ceiling-v1",
+    "scope_note": "Reference levels assume a policy that is perfect everywhere except the two consumer choices. They are not proven upper bounds for every possible stateless policy. The three campaigns ran on the in-process PIL backend (pixelgym/grounding/v5/backend.py and its memory-focus subclass), not a browser or OSWorld.",
+    "uniform_guess": {
+      "expected_successes": 21.333333333333332,
+      "success_probability": "1/9"
+    }
+  },
+  "written_on": "2026-11-15"
+}

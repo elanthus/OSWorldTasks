@@ -1,0 +1,184 @@
+{
+  "schema_version": "pixelgym-d510-checklist-map-v1",
+  "gate": "D5.10",
+  "verdict": null,
+  "verdict_owner": "project owner",
+  "checklist_source": {
+    "path": "plans/grounding-v5-agent-benchmark.md",
+    "record": "commands/13-checklist-source.json",
+    "revision": "f0bcbd6f3e379f880baeca233d4b7e05528bcfc5"
+  },
+  "identity_records": {
+    "branch": "commands/12-evidence-branch.json",
+    "revision": "commands/00-git-revision.json",
+    "worktree_status": [
+      "commands/01-worktree-status.json",
+      "commands/11-worktree-status-after.json"
+    ]
+  },
+  "public_wording_inventory_record": "commands/10-public-wording-inventory.json",
+  "items": [
+    {
+      "id": "d5.10-delivery-row",
+      "kind": "delivery_row",
+      "checklist_text": "Review raw commands, outputs, evidence integrity, limitations, benchmark verdict, and any public wording",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:658",
+      "records": [
+        "commands/00-git-revision.json",
+        "commands/01-worktree-status.json",
+        "commands/02-rclone-version.json",
+        "commands/03-object-lock-readback.json",
+        "commands/04-downloaded-vs-local-extraction.json",
+        "commands/05-downloaded-vs-local-replication.json",
+        "commands/06-offhost-restore-drill-extraction.json",
+        "commands/07-offhost-restore-replication-full.json",
+        "commands/08-offhost-restore-replication-pilot.json",
+        "commands/09-replication-audit-verify-offhost.json",
+        "commands/10-public-wording-inventory.json",
+        "commands/11-worktree-status-after.json",
+        "commands/12-evidence-branch.json",
+        "commands/13-checklist-source.json",
+        "commands/14-replication-audit-verify-local-control.json"
+      ],
+      "artifacts": [
+        "artifacts/decisions/d5.10.json",
+        "artifacts/grounding-v5-d510/human-gate.json",
+        "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/REVIEW-NOTE.md",
+        "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/restore-drill.json",
+        "docs/v5-benchmark-design.md",
+        "docs/evidence-retention.md",
+        "scripts/restore_grounding_v5_d510.py",
+        "scripts/retain_v5_evidence.py",
+        "scripts/report_grounding_v5_d59_replication.py",
+        "scripts/observe_b2_object_lock.py",
+        "tests/unit/test_observe_b2_object_lock.py",
+        "artifacts/grounding-v5-d59-action-extraction-results/report.json",
+        "artifacts/grounding-v5-d59-action-extraction-results/pilot-report.json",
+        "artifacts/grounding-v5-d59-replication-results/report.json",
+        "artifacts/grounding-v5-d59-replication-results/pilot-report.json",
+        "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/REVIEW-NOTE.md",
+        "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/object-lock-observation.json",
+        "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/offhost-restore-drill.json"
+      ],
+      "linked_records": [
+        {
+          "path": "artifacts/grounding-v5-d510/human-gate.json",
+          "verbatim": "\"surface\": \"Both retained campaign copies on one local disk; no off-host recovery drilled\",\n      \"classification\": \"known limitation\""
+        },
+        {
+          "path": "docs/evidence-retention.md",
+          "lines": "17-19",
+          "verbatim": "They protect against removing a checkout; copies\non the same disk do not protect against disk loss. For that protection, place the backup on a\nseparate durable volume and protect its access appropriately."
+        }
+      ]
+    },
+    {
+      "id": "done-when-06",
+      "kind": "done_when",
+      "checklist_text": "Stateful policy reset, policy-egress isolation, pre-send attempt persistence, unknown-attempt reconciliation, bounded deadline/cancellation settlement, post-attempt and post-dispatch state reconstruction, canonical parser-input recovery, atomic candidate/checkpoint persistence, sealed parser failure, exact backend-state restore or reconnect, durable dispatch ordering, invalid output, call caps, resume, authoritative replay, credential-free policy inputs, secret exclusion, redaction binding, and evidence integrity have no-cost failure-path tests.",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:793",
+      "records": [
+        "commands/06-offhost-restore-drill-extraction.json",
+        "commands/07-offhost-restore-replication-full.json",
+        "commands/08-offhost-restore-replication-pilot.json",
+        "commands/09-replication-audit-verify-offhost.json"
+      ],
+      "artifacts": [
+        "scripts/restore_grounding_v5_d510.py",
+        "tests/unit/test_grounding_v5_d510_restore.py",
+        "pixelgym/grounding/v5/retention.py",
+        "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/offhost-restore-drill.json"
+      ],
+      "linked_records": [],
+      "source_end_line": 798
+    },
+    {
+      "id": "done-when-11",
+      "kind": "done_when",
+      "checklist_text": "The confirmatory report is generated only from sealed evidence, retains every failure, and separates primary, diagnostic, ablation, reliability, and exploratory results.",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:807",
+      "records": [
+        "commands/06-offhost-restore-drill-extraction.json",
+        "commands/09-replication-audit-verify-offhost.json",
+        "commands/14-replication-audit-verify-local-control.json"
+      ],
+      "artifacts": [
+        "artifacts/grounding-v5-d59-replication-results/report.json",
+        "artifacts/grounding-v5-d59-action-extraction-results/sensitivity-analysis.json"
+      ],
+      "linked_records": [],
+      "source_end_line": 808
+    },
+    {
+      "id": "done-when-12",
+      "kind": "done_when",
+      "checklist_text": "The agent reports raw milestone-gate commands, exit statuses, counts, runtimes, and full output without declaring the human gate passed or approving public wording.",
+      "source": "f0bcbd6:plans/grounding-v5-agent-benchmark.md:809",
+      "records": [
+        "commands/00-git-revision.json",
+        "commands/01-worktree-status.json",
+        "commands/02-rclone-version.json",
+        "commands/03-object-lock-readback.json",
+        "commands/04-downloaded-vs-local-extraction.json",
+        "commands/05-downloaded-vs-local-replication.json",
+        "commands/06-offhost-restore-drill-extraction.json",
+        "commands/07-offhost-restore-replication-full.json",
+        "commands/08-offhost-restore-replication-pilot.json",
+        "commands/09-replication-audit-verify-offhost.json",
+        "commands/10-public-wording-inventory.json",
+        "commands/11-worktree-status-after.json",
+        "commands/12-evidence-branch.json",
+        "commands/13-checklist-source.json",
+        "commands/14-replication-audit-verify-local-control.json"
+      ],
+      "artifacts": [],
+      "linked_records": [],
+      "source_end_line": 810
+    }
+  ],
+  "not_run": [
+    {
+      "item": "Replication audit (--verify) at the current checkout",
+      "reason": "Records 09 (off-host archive) and 14 (local archive control) both fail in under one second with 'source file hash mismatch': scripts/report_grounding_v5_d59_replication.py checks the campaign's bound source files against the current checkout, and those files changed after the campaign. The failure is identical for both copies and is independent of the off-host copy. The replication audit at its historical source revision is retained in the earlier c398557 package; here the replication off-host copy is established by records 05, 07 and 08 only.",
+      "records": [
+        "commands/09-replication-audit-verify-offhost.json",
+        "commands/14-replication-audit-verify-local-control.json"
+      ]
+    },
+    {
+      "item": "Off-host copy of the original D5.9 Haiku journals",
+      "reason": "Those journals were not retained (evidence index, 2026-09-30 note); nothing exists to copy. D5.9 still closes on its published projection."
+    },
+    {
+      "item": "Independent custody of the off-host copy",
+      "reason": "The bucket, its key and both local copies are controlled by the same owner account; governance-mode retention resists deletion but an account holder with bypass rights could still remove versions after the lock. No third-party escrow was used."
+    },
+    {
+      "item": "Provider usage settlement for the five unknown timeouts",
+      "reason": "Unchanged; the off-host copy adds durability, not new provider information."
+    }
+  ],
+  "placeholders": {
+    "<home>": "Recording account home.",
+    "<system-temp>": "System temporary directory.",
+    "<path-0>": "Collection checkout (absolute cwd).",
+    "<path-1>": "Fresh private directory holding the copies downloaded back from the Backblaze B2 bucket.",
+    "<path-2>": "Local private archive store (first retained copy).",
+    "<path-3>": "Local private backup store on the same disk (second retained copy).",
+    "<path-4>": "Private retained parser-sensitivity execution directory (run root).",
+    "<path-5>": "Private retained replication execution directory (run root).",
+    "<path-6>": "Fresh private restore destinations for this drill.",
+    "<path-7>": "Private receipts written by this drill."
+  },
+  "recording_notes": [
+    "This supplement records the first off-host copy of the two retained D5.9 campaign archives and a restore drill from that copy. It confers no verdict: D5.10 was declared separately in artifacts/decisions/d5.10.json against fd54dc2782ac8e7b3526f19e7fa46a0131175e5e, and that record is unchanged.",
+    "Upload: both archive trees were copied with rclone 1.75.2 (--checksum) to the private Backblaze B2 bucket named in BACKBLAZE_BUCKET_NAME. A first attempt on 2026-10-25 stopped at the account storage cap after 67 small files; rclone cancelled its partial multipart upload (zero unfinished parts observed). After the owner raised the cap, the rerun completed: 68 + 23 files, 26,085,481,886 bytes, both rclone checks reporting 0 differences. Those upload logs are retained privately and summarized here; the recorded evidence starts at the read-back and download checks.",
+    "Lock: a one-year governance-mode Object Lock retention was applied per file by a one-off owner-approved script run on 2026-10-25 after verification; record 03 is the independent read-only read-back of that state through the committed scripts/observe_b2_object_lock.py.",
+    "Credentials were read from the ignored .env file into the environment of the recorded processes and never appear in any record, argv, or output; the recorder stores only explicitly passed environment variables, and none were passed.",
+    "Records 04-05 compare the downloaded copies against the local originals. Record 06 restores the parser-sensitivity pilot and full archives from the downloaded copy and from the local backup and reproduces the published projections. Records 07-08 restore the replication archives from the downloaded copy with manifest-digest verification. Record 09 reruns the replication audit with the downloaded copy as the archive and verifies the stored projection byte for byte.",
+    "No model or authentication-probe call was made. No original, retained, downloaded or restored evidence was deleted. No cleanup authorization was issued. Both local copies remain on one disk; the off-host copy is the third copy.",
+    "Record 06's helper receipt carries off_host_restore_performed=false because scripts/restore_grounding_v5_d510.py hard-codes that field; the record's argv shows the archive side was the downloaded copy. offhost-restore-drill.json wraps the receipt with that provenance without altering it.",
+    "Record 10 was first attempted with rg, which was absent from the driver's PATH, so the recorder raised before writing a record; the stored record 10 uses grep. Record 14 was added after record 11 as a control for record 09."
+  ],
+  "withdrawn_records": []
+}

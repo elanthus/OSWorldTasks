@@ -1,5 +1,17 @@
 # D5.9 subscription identity verification
 
+- **Type:** historical incident and decision record for the D5.9 replication launch.
+- **What it records:** Claude Code's auth-status command reports a subscription tier taken from an
+  optional environment hint; it does not authenticate the tier. The runner therefore checks the
+  tier itself with one fresh read of the CLI's OAuth profile endpoint, using exactly the credential
+  passed to the CLI. Anything other than a verified Max organization type stops preparation; there
+  are no retries or cached proofs.
+- **Outcome:** the replacement pilot and full campaign completed
+  ([review package](../artifacts/grounding-v5-d59-replication-results/review-guide.md)).
+- **Terms:** see the [glossary](glossary.md) for D-numbers.
+
+## Status and approvals
+
 Status: PR #258 is merged. After the first pilot stream failures, the owner authorized the
 strict parser compatibility fix, replacement freeze, a new four-assignment pilot, and full
 execution only after operational checks pass. The original investigation
@@ -7,7 +19,8 @@ and its earlier digests below are retained as history. The active freeze is now
 `sha256:ce6776def9066d2c3b4a1b2701b25567dc182364dfa3cf694b4044d865d59159`.
 The replacement pilot and full campaign subsequently completed; their [review
 package](../artifacts/grounding-v5-d59-replication-results/review-guide.md) keeps the pilot
-separate and discloses one unresolved confirmed-stopped timeout. D5.10 remains human-owned.
+separate and discloses one unresolved confirmed-stopped timeout. D5.10 was later declared on
+2026-10-25 ([decision record](../artifacts/decisions/d5.10.json)).
 No experiment call occurred while preparing this replacement; the separate owner-authorized
 Fable code-verification call is recorded outside experiment accounting.
 

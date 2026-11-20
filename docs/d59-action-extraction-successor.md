@@ -1,5 +1,18 @@
 # D5.9 action-extraction successor: owner review
 
+- **Type:** design and decision record for a post-hoc parser-sensitivity study on previously
+  inspected tasks. It does not replace the completed replication or provide an independent
+  confirmatory result.
+- **What it records:** a successor action parser that accepts either bare JSON or exactly one
+  complete unlabeled/`json` fence with optional surrounding prose; the offline diagnostic that
+  compares it with the original parser on the retained responses (187 original terminal parse
+  failures, 185 accepted by the successor); and the approval boundary for running it.
+- **Outcome:** the approved pilot and all 432 full assignments completed
+  ([review package](../artifacts/grounding-v5-d59-action-extraction-results/review-guide.md)).
+- **Terms:** see the [glossary](glossary.md) for D-numbers.
+
+## Approval and scope
+
 The owner approved this exact candidate on 2026-10-23; the durable decision and
 phase limits are in [`owner-direction.json`](../artifacts/grounding-v5-d59-action-extraction-successor/owner-direction.json).
 Pilot execution is authorized, and full execution is authorized only after the
@@ -104,7 +117,8 @@ Only drained owner-login waits pause the active clock. Existing bounded retry an
 shared-ledger stops apply. The public candidate remains `execution_enabled: false`,
 `subscription_execution_authorized: false`, with both approved caps zero. No owner
 approval was written during preparation; the subsequent owner approval is linked above. Prior campaign approvals cannot
-validate against its new digest. D5.10 remains a human decision.
+validate against its new digest. D5.10 was later declared on 2026-10-25
+([decision record](../artifacts/decisions/d5.10.json)).
 
 To rebuild or verify **without CLI or network calls**, use the source revision in
 the prepared plan (not an arbitrary newer HEAD):

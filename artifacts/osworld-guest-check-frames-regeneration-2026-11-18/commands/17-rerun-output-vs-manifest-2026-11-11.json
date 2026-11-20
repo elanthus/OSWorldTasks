@@ -1,0 +1,19 @@
+{
+  "argv": [
+    ".venv/bin/python",
+    "-I",
+    "-c",
+    "import datetime, hashlib, json, pathlib, sys\nmanifest = json.loads(pathlib.Path(sys.argv[1]).read_text())\nroot = pathlib.Path(sys.argv[2])\nlisted = {f['path'].removeprefix('real-golden/'): f for f in manifest['files']}\npresent = {p.relative_to(root).as_posix(): p for p in root.rglob('*.png')}\nok = [n for n, f in listed.items() if n in present and present[n].stat().st_size == f['size'] and hashlib.sha256(present[n].read_bytes()).hexdigest() == f['sha256']]\ntimes = [p.stat().st_mtime for p in present.values()]\niso = lambda t: datetime.datetime.fromtimestamp(t, datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')\nprint(json.dumps({'path_rule': \"manifest path with a leading 'real-golden/' removed, under the rerun's --output-dir\", 'manifest_files': len(listed), 'png_files_present': len(present), 'size_and_sha256_match': len(ok), 'missing': sorted(set(listed) - set(present)), 'not_matching': sorted(set(listed) & set(present) - set(ok)), 'png_not_in_manifest': sorted(set(present) - set(listed)), 'bytes': sum(listed[n]['size'] for n in ok), 'earliest_modified_utc': iso(min(times)), 'latest_modified_utc': iso(max(times))}, indent=1))\n",
+    "artifacts/osworld-guest-check-2026-11-11/images.manifest.json",
+    ".cache/guest-check-regen-2026-11-18/627e09b/real-golden"
+  ],
+  "command": ".venv/bin/python -I -c 'import datetime, hashlib, json, pathlib, sys\nmanifest = json.loads(pathlib.Path(sys.argv[1]).read_text())\nroot = pathlib.Path(sys.argv[2])\nlisted = {f['\"'\"'path'\"'\"'].removeprefix('\"'\"'real-golden/'\"'\"'): f for f in manifest['\"'\"'files'\"'\"']}\npresent = {p.relative_to(root).as_posix(): p for p in root.rglob('\"'\"'*.png'\"'\"')}\nok = [n for n, f in listed.items() if n in present and present[n].stat().st_size == f['\"'\"'size'\"'\"'] and hashlib.sha256(present[n].read_bytes()).hexdigest() == f['\"'\"'sha256'\"'\"']]\ntimes = [p.stat().st_mtime for p in present.values()]\niso = lambda t: datetime.datetime.fromtimestamp(t, datetime.timezone.utc).strftime('\"'\"'%Y-%m-%dT%H:%M:%SZ'\"'\"')\nprint(json.dumps({'\"'\"'path_rule'\"'\"': \"manifest path with a leading '\"'\"'real-golden/'\"'\"' removed, under the rerun'\"'\"'s --output-dir\", '\"'\"'manifest_files'\"'\"': len(listed), '\"'\"'png_files_present'\"'\"': len(present), '\"'\"'size_and_sha256_match'\"'\"': len(ok), '\"'\"'missing'\"'\"': sorted(set(listed) - set(present)), '\"'\"'not_matching'\"'\"': sorted(set(listed) & set(present) - set(ok)), '\"'\"'png_not_in_manifest'\"'\"': sorted(set(present) - set(listed)), '\"'\"'bytes'\"'\"': sum(listed[n]['\"'\"'size'\"'\"'] for n in ok), '\"'\"'earliest_modified_utc'\"'\"': iso(min(times)), '\"'\"'latest_modified_utc'\"'\"': iso(max(times))}, indent=1))\n' artifacts/osworld-guest-check-2026-11-11/images.manifest.json .cache/guest-check-regen-2026-11-18/627e09b/real-golden",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.081767,
+  "ended_at_utc": "2026-11-18T07:55:53.301488+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": "{\n \"path_rule\": \"manifest path with a leading 'real-golden/' removed, under the rerun's --output-dir\",\n \"manifest_files\": 114,\n \"png_files_present\": 114,\n \"size_and_sha256_match\": 114,\n \"missing\": [],\n \"not_matching\": [],\n \"png_not_in_manifest\": [],\n \"bytes\": 7285563,\n \"earliest_modified_utc\": \"2026-11-18T04:26:25Z\",\n \"latest_modified_utc\": \"2026-11-18T04:32:46Z\"\n}\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-11-18T07:55:53.217728+00:00"
+}

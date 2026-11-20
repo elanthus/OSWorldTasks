@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "git",
+    "status",
+    "--short"
+  ],
+  "command": "git status --short",
+  "cwd": "<path-0>",
+  "duration_seconds": 0.029013,
+  "ended_at_utc": "2026-10-25T23:54:27.638287+00:00",
+  "environment": {},
+  "exit_status": 0,
+  "output": " M scripts/README.md\n?? artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/\n?? scripts/observe_b2_object_lock.py\n?? tests/unit/test_observe_b2_object_lock.py\n",
+  "schema_version": "pixelgym-d412-command-record-v1",
+  "started_at_utc": "2026-10-25T23:54:27.606814+00:00"
+}

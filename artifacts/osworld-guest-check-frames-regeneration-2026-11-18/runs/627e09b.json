@@ -1,0 +1,54 @@
+{
+ "schema_version": "pixelgym-guest-check-frame-regeneration-run-v1",
+ "run": {
+  "revision": "627e09b49e7d8f1ada1f7fb7a18b520a72ec5876",
+  "worktree_head": "627e09b49e7d8f1ada1f7fb7a18b520a72ec5876",
+  "worktree_status_porcelain": "",
+  "argv": [
+   "scripts/osworld_golden_trajectory.py",
+   "record",
+   "--output-dir",
+   "<regeneration-output>/627e09b/real-golden"
+  ],
+  "env": {
+   "PYTHONPATH": "."
+  },
+  "started_utc": "2026-11-18T04:22:21Z",
+  "containers_before": [],
+  "exit_status": 0,
+  "timed_out": false,
+  "seconds": 625.3,
+  "ended_utc": "2026-11-18T04:32:46Z",
+  "containers_after": []
+ },
+ "run_record_sha256_before_path_replacement": "23adc82469dc394aac40c2836336909633c51e334d4c4bb0999e0800dde61559",
+ "path_replacement": {
+  "<regeneration-output>": "absolute path of the git-ignored output folder, .cache/guest-check-regen-2026-11-18"
+ },
+ "stdout_summary": {
+  "first_positive_reward_step": 112,
+  "passed": true,
+  "positive_reward_count": 1,
+  "provider_closed": true,
+  "terminal_step": 112
+ },
+ "guest_bundle_archives_built_in_the_worktree_cache": [
+  "vendor-form-vf-6bed55ed612d3c5a-4067dc638dbaaa8e.zip"
+ ],
+ "frame_size": [
+  1024,
+  768
+ ],
+ "frames_written": 113,
+ "integration": {
+  "upstream_tag": "v2026.06.24",
+  "upstream_commit": "2b9b7b4eb73243d557bdbf2998fe18d8e18e19c6",
+  "provider": "docker-local",
+  "kvm": false,
+  "python": "3.12.16",
+  "runtime_image": "pixelgym/osworld-qemu-arm64:qemux-6.18",
+  "runtime_image_id": "sha256:60fe3501e5f5e16c5eaeb75b5b13b843c490891a1f24b86244b06c0c9d32d9f3",
+  "guest_archive_sha256": "sha256:eb737ae70b49849e24af407de6a518439a23de05a8497096a948334ce0a909aa",
+  "guest_qcow2_sha256": "sha256:3d632f031459583cf936e0c4c5bb939122df0fec85aecb0d044ef2d3e5863335"
+ }
+}

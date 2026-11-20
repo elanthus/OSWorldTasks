@@ -7,10 +7,13 @@ the stylesheet bundles -- so the fake frame is a recognizable stand-in for a
 real screenshot rather than an unrelated picture.
 
 Determinism (AGENTS.md invariant 10) comes from what is *absent* as much as
-from what is drawn: no clock, no animation, no transition, and no text caret --
-focus is shown as a static accent border, so a frame captured while a text
-field is focused is identical every time. The only inputs are the task record
-and the form state.
+from what is drawn: no clock, no animation, no transition, and no blinking.
+Focus is shown as a static accent border, and the focused text field draws a
+static, non-blinking caret immediately after the last character of its value
+(`RENDERER_VERSION` v2). The caret is what makes trailing spaces visible: a
+space has no ink, so without it "Acme" and "Acme " rendered identically and the
+frame was not a function of the form state. The only inputs are the task
+record and the form state.
 
 Scope note: this is bit-for-bit reproducible for a given Pillow build, which is
 what the fake path needs. It is *not* evidence about the real browser path --
@@ -39,6 +42,14 @@ from pixelgym.tasks.vendor_form.ui import (
     WidgetId,
 )
 
+RENDERER_VERSION = "pixelgym-vendor-form-fake-renderer-v2"
+"""Version of the fake frame content.
+
+v1 drew no caret, so a trailing space in a text field was invisible. v2 draws a static caret at
+the end of the focused text field's value. Any stored frame digest (checkpoint resume records,
+golden replays, throughput byte-identity hashes) is only comparable within one version.
+"""
+
 FONT_DIR = Path(__file__).parent / "app" / "static" / "fonts"
 REGULAR_FONT = FONT_DIR / "DejaVuSans.ttf"
 BOLD_FONT = FONT_DIR / "DejaVuSans-Bold.ttf"
@@ -53,7 +64,7 @@ TEXT_COLOR = (28, 30, 33)  # #1c1e21
 BUTTON_BG = (60, 140, 95)  # #3c8c5f
 BUTTON_BORDER = (47, 111, 79)  # #2f6f4f
 BUTTON_TEXT = (255, 255, 255)
-# Not in style.css: the fake makes focus visible without a caret.
+# Not in style.css: the fake marks the focused control with an accent border.
 FOCUS_BORDER = (47, 111, 159)
 PLACEHOLDER_TEXT = (130, 138, 150)
 
@@ -61,6 +72,8 @@ _BASE_FONT_SIZE = 14
 _HEADING_FONT_SIZE = 16
 _TEXT_INSET = 8  # design px; matches the 6px/8px control padding in style.css
 _MAX_RENDERED_CHARS = 200  # cap measurement work on absurdly long typed strings
+_CARET_WIDTH = 1  # design px, as #pixelgym-caret in style.css
+_CARET_HEIGHT = 16  # design px: the 16px content line of a 30px input with 6px padding
 
 
 @lru_cache(maxsize=32)
@@ -138,26 +151,153 @@ class _Painter:
     def label(self, rect: Rect, text: str) -> None:
         self.text_in(rect, text, font=self.bold)
 
+    def text_with_caret(self, rect: Rect, text: str) -> None:
+        """Draw a focused text input's value and a static caret right after its last character.
 
-def render(
-    task_record: Mapping[str, Any], state: FormState, layout: Layout
-) -> npt.NDArray[np.uint8]:
-    """Draw the current screen as an `(height, width, 3)` uint8 RGB array."""
+        The caret's x position is the advance width of the visible text, which counts trailing
+        spaces, so every typed character -- including a space -- moves it. Room for the caret is
+        reserved before the value is trimmed to the field, so the caret is never clipped.
+        """
+        caret_width = _scaled(_CARET_WIDTH, self.scale)
+        available = max(1, rect.width - 2 * self.inset - caret_width)
+        shown = _fit(text, self.body, available, keep_tail=True)
+        _, center_y = rect.center
+        left = rect.x + self.inset
+        if shown:
+            self.draw.text((left, center_y), shown, font=self.body, fill=TEXT_COLOR, anchor="lm")
+        caret_x = min(left + round(self.body.getlength(shown)), rect.right - 1 - caret_width)
+        caret_x = max(rect.x, caret_x)
+        height = _scaled(_CARET_HEIGHT, self.scale)
+        top = max(rect.y, center_y - height // 2)
+        bottom = min(rect.bottom - 1, top + height - 1)
+        self.draw.rectangle(
+            (caret_x, top, caret_x + caret_width - 1, max(top, bottom)), fill=TEXT_COLOR
+        )
+
+
+def render_static(task_record: Mapping[str, Any], layout: Layout) -> Image.Image | None:
+    """Draw every pixel that does not depend on form state, once per task, if that is exact.
+
+    That is the page and panel backgrounds, both headings, the whole read-only request card, the
+    form labels, and the fixed captions beside the radios and the checkbox. When none of those
+    rectangles comes within a pixel of a dynamic widget, drawing them first and the widgets
+    afterwards gives the same pixels as the single-pass order, so `render` can start each frame
+    from a copy of this image. At very small fake-backend sizes the scaled rectangles collide,
+    the order matters, and this returns `None`; `render` then draws every frame in one pass.
+    Treat the returned image as read-only.
+    """
+    if not _layers_are_disjoint(layout):
+        return None
     image = Image.new("RGB", (layout.width, layout.height), PAGE_BG)
     painter = _Painter(image, layout)
+    _render_page(painter, task_record, layout)
+    for widget in (*TEXT_WIDGETS, WidgetId.COUNTRY, WidgetId.PAYMENT_TERMS):
+        _render_label(painter, layout, widget)
+    for index in range(len(layout.payment_options)):
+        _render_radio_caption(painter, task_record, layout, index)
+    _render_checkbox_caption(painter, layout)
+    return image
 
+
+def render(
+    task_record: Mapping[str, Any],
+    state: FormState,
+    layout: Layout,
+    *,
+    static: Image.Image | None = None,
+) -> npt.NDArray[np.uint8]:
+    """Draw the current screen as an `(height, width, 3)` uint8 RGB array.
+
+    `static` is `render_static(task_record, layout)`; callers that render many frames of one
+    task compute it once and pass it in. With a static layer, each dynamic widget is redrawn from
+    an opaque fill over its own rectangle on a copy of it. Without one, the whole screen is drawn
+    in a single pass. Both paths are pinned byte-for-byte to a frozen single-pass reference by
+    `tests/unit/test_render_static.py`.
+    """
+    base = static if static is not None else render_static(task_record, layout)
+    if base is None:
+        image = Image.new("RGB", (layout.width, layout.height), PAGE_BG)
+        _render_single_pass(_Painter(image, layout), task_record, state, layout)
+    else:
+        image = base.copy()
+        _render_dynamic(_Painter(image, layout), state, layout)
+    return np.asarray(image, dtype=np.uint8)
+
+
+def _render_single_pass(
+    painter: _Painter, task_record: Mapping[str, Any], state: FormState, layout: Layout
+) -> None:
+    """Static and dynamic pieces interleaved in the original drawing order."""
+    _render_page(painter, task_record, layout)
+    for widget in TEXT_WIDGETS:
+        _render_label(painter, layout, widget)
+        _render_text_control(painter, state, layout, widget)
+    _render_label(painter, layout, WidgetId.COUNTRY)
+    _render_country(painter, state, layout)
+    _render_label(painter, layout, WidgetId.PAYMENT_TERMS)
+    for index in range(len(layout.payment_options)):
+        _render_radio(painter, state, layout, index)
+        _render_radio_caption(painter, task_record, layout, index)
+    _render_checkbox(painter, state, layout)
+    _render_checkbox_caption(painter, layout)
+    _render_submit(painter, state, layout)
+    _render_status(painter, state, layout)
+
+
+def _render_dynamic(painter: _Painter, state: FormState, layout: Layout) -> None:
+    for widget in TEXT_WIDGETS:
+        _render_text_control(painter, state, layout, widget)
+    _render_country(painter, state, layout)
+    for index in range(len(layout.payment_options)):
+        _render_radio(painter, state, layout, index)
+    _render_checkbox(painter, state, layout)
+    _render_submit(painter, state, layout)
+    _render_status(painter, state, layout)
+
+
+def _layers_are_disjoint(layout: Layout) -> bool:
+    """Whether every static draw rectangle stays at least a pixel clear of every dynamic one."""
+    probe = _Painter(Image.new("RGB", (1, 1)), layout)
+    static = [
+        layout.request_panel,
+        layout.request_heading,
+        layout.form_heading,
+        *layout.request_labels.values(),
+        *layout.request_values.values(),
+        *(layout.labels[w] for w in (*TEXT_WIDGETS, WidgetId.COUNTRY, WidgetId.PAYMENT_TERMS)),
+        # `text_in` draws captions from `rect.x + inset`, so the glyphs start one inset to the
+        # right of a caption rectangle, which itself begins at the control's right edge.
+        *(_inset(probe, _radio_caption_rect(probe, rect)) for rect in layout.payment_options),
+        _inset(probe, _checkbox_caption_rect(probe, layout)),
+    ]
+    dynamic = [
+        *(layout.controls[w] for w in (*TEXT_WIDGETS, WidgetId.COUNTRY, WidgetId.SUBMIT)),
+        *(_radio_circle_rect(probe, rect) for rect in layout.payment_options),
+        _checkbox_box(probe, layout),
+        layout.status,
+    ]
+    return not any(_near(a, b) for a in static for b in dynamic)
+
+
+def _inset(painter: _Painter, rect: Rect) -> Rect:
+    return Rect(
+        x=rect.x + painter.inset,
+        y=rect.y,
+        width=max(1, rect.width - painter.inset),
+        height=rect.height,
+    )
+
+
+def _near(a: Rect, b: Rect) -> bool:
+    return a.x - 1 < b.right and b.x - 1 < a.right and a.y - 1 < b.bottom and b.y - 1 < a.bottom
+
+
+def _render_page(painter: _Painter, task_record: Mapping[str, Any], layout: Layout) -> None:
     painter.box(layout.request_panel, fill=REQUEST_PANEL_BG, outline=SOFT_BORDER)
     painter.box(layout.form_panel, fill=FORM_PANEL_BG, outline=None)
     painter.text_in(layout.request_heading, "New Vendor Request", font=painter.heading)
     painter.text_in(layout.form_heading, "Enter Vendor Details", font=painter.heading)
-
-    _render_request_card(painter, task_record["fields"], layout)
-    _render_form(painter, state, layout)
-
-    return np.asarray(image, dtype=np.uint8)
-
-
-def _render_request_card(painter: _Painter, fields: Mapping[str, Any], layout: Layout) -> None:
+    fields = task_record["fields"]
     for field in REQUEST_CARD_FIELDS:
         painter.label(layout.request_labels[field], _LABELS[field])
         value_rect = layout.request_values[field]
@@ -169,32 +309,23 @@ def _render_request_card(painter: _Painter, fields: Mapping[str, Any], layout: L
         painter.text_in(value_rect, shown, font=painter.body)
 
 
-def _render_form(painter: _Painter, state: FormState, layout: Layout) -> None:
-    for widget in TEXT_WIDGETS:
-        painter.label(layout.labels[widget], _LABELS[widget.value])
-        rect = layout.controls[widget]
-        painter.box(rect, fill=FORM_PANEL_BG, outline=CONTROL_BORDER, focused=state.focus is widget)
+def _render_label(painter: _Painter, layout: Layout, widget: WidgetId) -> None:
+    painter.label(layout.labels[widget], _LABELS[widget.value])
+
+
+def _render_text_control(
+    painter: _Painter, state: FormState, layout: Layout, widget: WidgetId
+) -> None:
+    rect = layout.controls[widget]
+    focused = state.focus is widget
+    painter.box(rect, fill=FORM_PANEL_BG, outline=CONTROL_BORDER, focused=focused)
+    if focused:
+        painter.text_with_caret(rect, state.text[widget])
+    else:
         painter.text_in(rect, state.text[widget], font=painter.body, keep_tail=True)
-
-    _render_country(painter, state, layout)
-    _render_payment_terms(painter, state, layout)
-    _render_checkbox(painter, state, layout)
-
-    submit = layout.controls[WidgetId.SUBMIT]
-    painter.box(
-        submit,
-        fill=BUTTON_BG,
-        outline=BUTTON_BORDER,
-        focused=state.focus is WidgetId.SUBMIT,
-    )
-    painter.text_in(submit, "Submit", font=painter.body, color=BUTTON_TEXT, centered=True)
-
-    if state.status:
-        painter.text_in(layout.status, state.status, font=painter.body)
 
 
 def _render_country(painter: _Painter, state: FormState, layout: Layout) -> None:
-    painter.label(layout.labels[WidgetId.COUNTRY], _LABELS["country"])
     rect = layout.controls[WidgetId.COUNTRY]
     painter.box(
         rect,
@@ -221,46 +352,73 @@ def _render_country(painter: _Painter, state: FormState, layout: Layout) -> None
     )
 
 
-def _render_payment_terms(painter: _Painter, state: FormState, layout: Layout) -> None:
-    painter.label(layout.labels[WidgetId.PAYMENT_TERMS], _LABELS["payment_terms"])
-    focused = state.focus is WidgetId.PAYMENT_TERMS
+def _radio_geometry(painter: _Painter, rect: Rect) -> tuple[int, int, int]:
     radius = _scaled(6, painter.scale)
-    for index, rect in enumerate(layout.payment_options):
-        center_x = rect.x + painter.inset + radius
-        _, center_y = rect.center
-        circle = (
-            center_x - radius,
-            center_y - radius,
-            center_x + radius,
-            center_y + radius,
-        )
+    _, center_y = rect.center
+    return rect.x + painter.inset + radius, center_y, radius
+
+
+def _radio_circle_rect(painter: _Painter, rect: Rect) -> Rect:
+    center_x, center_y, radius = _radio_geometry(painter, rect)
+    return Rect(
+        x=center_x - radius, y=center_y - radius, width=2 * radius + 1, height=2 * radius + 1
+    )
+
+
+def _radio_caption_rect(painter: _Painter, rect: Rect) -> Rect:
+    center_x, _center_y, radius = _radio_geometry(painter, rect)
+    return Rect(
+        x=center_x + radius,
+        y=rect.y,
+        width=max(1, rect.right - (center_x + radius)),
+        height=rect.height,
+    )
+
+
+def _render_radio(painter: _Painter, state: FormState, layout: Layout, index: int) -> None:
+    # Exactly one radio holds keyboard focus, as in the browser; it can be unchecked.
+    focused = state.focus is WidgetId.PAYMENT_TERMS and index == state.payment_focus_index
+    center_x, center_y, radius = _radio_geometry(painter, layout.payment_options[index])
+    painter.draw.ellipse(
+        (center_x - radius, center_y - radius, center_x + radius, center_y + radius),
+        fill=FORM_PANEL_BG,
+        outline=FOCUS_BORDER if focused else CONTROL_BORDER,
+        width=_scaled(2, painter.scale) if focused else 1,
+    )
+    if index == state.payment_index:
+        inner = max(1, radius // 2)
         painter.draw.ellipse(
-            circle,
-            fill=FORM_PANEL_BG,
-            outline=FOCUS_BORDER if focused else CONTROL_BORDER,
-            width=_scaled(2, painter.scale) if focused else 1,
+            (center_x - inner, center_y - inner, center_x + inner, center_y + inner),
+            fill=TEXT_COLOR,
         )
-        if index == state.payment_index:
-            inner = max(1, radius // 2)
-            painter.draw.ellipse(
-                (center_x - inner, center_y - inner, center_x + inner, center_y + inner),
-                fill=TEXT_COLOR,
-            )
-        text_rect = Rect(
-            x=center_x + radius,
-            y=rect.y,
-            width=max(1, rect.right - (center_x + radius)),
-            height=rect.height,
-        )
-        painter.text_in(text_rect, state.payment_options[index], font=painter.body)
 
 
-def _render_checkbox(painter: _Painter, state: FormState, layout: Layout) -> None:
+def _render_radio_caption(
+    painter: _Painter, task_record: Mapping[str, Any], layout: Layout, index: int
+) -> None:
+    painter.text_in(
+        _radio_caption_rect(painter, layout.payment_options[index]),
+        task_record["options"]["payment_terms"][index],
+        font=painter.body,
+    )
+
+
+def _checkbox_box(painter: _Painter, layout: Layout) -> Rect:
     rect = layout.controls[WidgetId.EXPEDITED_ONBOARDING]
     side = min(_scaled(14, painter.scale), rect.height)
     _, center_y = rect.center
-    top = center_y - side // 2
-    box = Rect(x=rect.x, y=top, width=side, height=side)
+    return Rect(x=rect.x, y=center_y - side // 2, width=side, height=side)
+
+
+def _checkbox_caption_rect(painter: _Painter, layout: Layout) -> Rect:
+    rect = layout.controls[WidgetId.EXPEDITED_ONBOARDING]
+    box = _checkbox_box(painter, layout)
+    return Rect(x=box.right, y=rect.y, width=max(1, rect.right - box.right), height=rect.height)
+
+
+def _render_checkbox(painter: _Painter, state: FormState, layout: Layout) -> None:
+    box = _checkbox_box(painter, layout)
+    side = box.width
     painter.box(
         box,
         fill=FORM_PANEL_BG,
@@ -277,13 +435,28 @@ def _render_checkbox(painter: _Painter, state: FormState, layout: Layout) -> Non
             fill=TEXT_COLOR,
             width=max(1, side // 7),
         )
-    text_rect = Rect(
-        x=box.right,
-        y=rect.y,
-        width=max(1, rect.right - box.right),
-        height=rect.height,
+
+
+def _render_checkbox_caption(painter: _Painter, layout: Layout) -> None:
+    painter.text_in(
+        _checkbox_caption_rect(painter, layout), _LABELS["expedited_onboarding"], font=painter.body
     )
-    painter.text_in(text_rect, _LABELS["expedited_onboarding"], font=painter.body)
+
+
+def _render_submit(painter: _Painter, state: FormState, layout: Layout) -> None:
+    submit = layout.controls[WidgetId.SUBMIT]
+    painter.box(
+        submit,
+        fill=BUTTON_BG,
+        outline=BUTTON_BORDER,
+        focused=state.focus is WidgetId.SUBMIT,
+    )
+    painter.text_in(submit, "Submit", font=painter.body, color=BUTTON_TEXT, centered=True)
+
+
+def _render_status(painter: _Painter, state: FormState, layout: Layout) -> None:
+    if state.status:
+        painter.text_in(layout.status, state.status, font=painter.body)
 
 
 _LABELS: dict[str, str] = {

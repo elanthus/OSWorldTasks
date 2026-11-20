@@ -11,6 +11,10 @@ These local operations need no extra storage service, browser, VM, credentials, 
 subscription. Remote Git LFS transfers also require the CLI tools and GitHub authentication
 listed in the private-backup section below.
 
+[`AGENTS.md`](../AGENTS.md#7-evidence-and-reporting-standards) separately requires a copy in the
+owner's private Backblaze B2 bucket for any data a run generates that Git does not track. That
+rule applies in addition to the workflows on this page and does not change them.
+
 ## Storage and capture
 
 Choose persistent directories outside every Git checkout. The commands below use two local

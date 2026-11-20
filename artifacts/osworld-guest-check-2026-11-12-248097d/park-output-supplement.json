@@ -1,0 +1,68 @@
+{
+  "collected_utc": "2026-11-12T23:48:24Z",
+  "collection_method": "Copied byte for byte from the host setup cache after the run finished. OSWorld writes setup output to desktop-env/<task id>/; the driver at 248097d read desktop-env/ and recorded every park report as null. Each task directory holds only the last park output written for that task id; setup deletes both files before each park, so earlier resets of the same seed in the same run were overwritten.",
+  "records": [
+    {
+      "files": {
+        "pixelgym-vendor-form-pointer-park-error.txt": {
+          "bytes": 0,
+          "content": "",
+          "modified_utc": "2026-11-12T23:39:37Z",
+          "path": ".cache/osworld/pixelgym/desktop-env/vf-6bed55ed612d3c5a/pixelgym-vendor-form-pointer-park-error.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "pixelgym-vendor-form-pointer-park.json": {
+          "bytes": 22,
+          "content": "{\"parked\":[1014,758]}\n",
+          "modified_utc": "2026-11-12T23:39:37Z",
+          "path": ".cache/osworld/pixelgym/desktop-env/vf-6bed55ed612d3c5a/pixelgym-vendor-form-pointer-park.json",
+          "sha256": "71a6e8183db7d5271ff1194218945573373ac030ada8983203c5d0805ee49851"
+        }
+      },
+      "seed": 7,
+      "task_id": "vf-6bed55ed612d3c5a"
+    },
+    {
+      "files": {
+        "pixelgym-vendor-form-pointer-park-error.txt": {
+          "bytes": 0,
+          "content": "",
+          "modified_utc": "2026-11-12T22:49:27Z",
+          "path": ".cache/osworld/pixelgym/desktop-env/vf-72ce4e26e23847f3/pixelgym-vendor-form-pointer-park-error.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "pixelgym-vendor-form-pointer-park.json": {
+          "bytes": 22,
+          "content": "{\"parked\":[1014,758]}\n",
+          "modified_utc": "2026-11-12T22:49:27Z",
+          "path": ".cache/osworld/pixelgym/desktop-env/vf-72ce4e26e23847f3/pixelgym-vendor-form-pointer-park.json",
+          "sha256": "71a6e8183db7d5271ff1194218945573373ac030ada8983203c5d0805ee49851"
+        }
+      },
+      "seed": 23,
+      "task_id": "vf-72ce4e26e23847f3"
+    },
+    {
+      "files": {
+        "pixelgym-vendor-form-pointer-park-error.txt": {
+          "bytes": 0,
+          "content": "",
+          "modified_utc": "2026-11-12T22:45:45Z",
+          "path": ".cache/osworld/pixelgym/desktop-env/vf-8d9539335dbb77fd/pixelgym-vendor-form-pointer-park-error.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "pixelgym-vendor-form-pointer-park.json": {
+          "bytes": 22,
+          "content": "{\"parked\":[1014,758]}\n",
+          "modified_utc": "2026-11-12T22:45:45Z",
+          "path": ".cache/osworld/pixelgym/desktop-env/vf-8d9539335dbb77fd/pixelgym-vendor-form-pointer-park.json",
+          "sha256": "71a6e8183db7d5271ff1194218945573373ac030ada8983203c5d0805ee49851"
+        }
+      },
+      "seed": 11,
+      "task_id": "vf-8d9539335dbb77fd"
+    }
+  ],
+  "run": "results.json in this directory (run_started_utc 2026-11-12T22:38:30Z, revision 248097d)",
+  "schema_version": "pixelgym-osworld-park-output-supplement-v1"
+}

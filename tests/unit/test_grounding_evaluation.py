@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
+import os
+from functools import partial
 from pathlib import Path
 
 import pytest
 from PIL import Image
 
+from pixelgym.grounding import evaluation
 from pixelgym.grounding.evaluation import (
     MARKS_SCHEMA,
     PARSER_VERSION_V1,
@@ -335,6 +339,193 @@ def test_mock_pipeline_caches_both_conditions_and_makes_no_duplicate_calls(tmp_p
     records = [json.loads(line) for line in output.read_text().splitlines()]
     assert [record["condition"] for record in records[:4]] == ["raw", "marks", "raw", "marks"]
     assert all(record["parse_status"] == "parsed" for record in records)
+
+
+def test_cli_refuses_existing_predictions_before_any_provider_call(tmp_path, monkeypatch):
+    from scripts import run_grounding_evaluation as cli
+
+    _write_mock_inputs(tmp_path)
+    output = tmp_path / "artifacts/grounding-predictions.jsonl"
+    frozen = b'{"provider":"historical"}\n'
+    output.write_bytes(frozen)
+    provider = MockProvider()
+    monkeypatch.setattr(cli, "MockProvider", lambda: provider)
+    with pytest.raises(ValueError, match="--output"):
+        cli.main(["--provider", "mock", "--full", "--max-new-calls", "200"], tmp_path)
+    assert provider.call_count == 0
+    assert output.read_bytes() == frozen
+
+
+@pytest.fixture
+def run_one_example(tmp_path):
+    _write_mock_inputs(tmp_path, count=1)
+    return partial(
+        run_evaluation,
+        repository_root=tmp_path,
+        pilot=False,
+        max_new_calls=2,
+        cache_directory=tmp_path / "cache",
+    )
+
+
+def test_filesystem_without_hard_links_still_publishes_without_overwrite(
+    tmp_path, monkeypatch, run_one_example
+):
+    directory = tmp_path / "outputs"
+    directory.mkdir()
+    output = directory / "predictions.jsonl"
+
+    def unsupported(*args):
+        raise OSError(errno.ENOTSUP, "hard links unavailable")
+
+    monkeypatch.setattr(os, "link", unsupported)
+    run_one_example(provider=MockProvider(), output_path=output)
+    assert list(directory.iterdir()) == [output]
+    assert len(output.read_text().splitlines()) == 2
+
+
+def test_filesystem_without_hard_links_keeps_a_competing_publication(
+    tmp_path, monkeypatch, run_one_example
+):
+    output = tmp_path / "predictions.jsonl"
+    winner = b"competing predictions\n"
+
+    def unsupported(*args):
+        output.write_bytes(winner)
+        raise OSError(errno.ENOTSUP, "hard links unavailable")
+
+    monkeypatch.setattr(os, "link", unsupported)
+    with pytest.raises(FileExistsError, match="--output"):
+        run_one_example(provider=MockProvider(), output_path=output)
+    assert output.read_bytes() == winner
+    assert not list(tmp_path.glob(".pg-predictions-*"))
+
+
+def test_maximum_length_output_name_can_publish_cached_predictions(tmp_path, run_one_example):
+    original = tmp_path / "original.jsonl"
+    run_one_example(provider=MockProvider(), output_path=original)
+    name_max = os.pathconf(tmp_path, "PC_NAME_MAX") if hasattr(os, "pathconf") else 255
+    output = tmp_path / ("a" * name_max)
+    replay = MockProvider()
+    assert run_one_example(provider=replay, output_path=output)["cache_hits"] == 2
+    assert replay.call_count == 0
+    assert output.read_bytes() == original.read_bytes()
+
+
+def test_existing_directory_is_rejected_before_provider_dispatch(tmp_path, run_one_example):
+    output = tmp_path / "predictions"
+    output.mkdir()
+    provider = MockProvider()
+    with pytest.raises(ValueError, match="prediction file"):
+        run_one_example(provider=provider, output_path=output)
+    assert provider.call_count == 0
+    assert list(output.iterdir()) == []
+
+
+def test_publication_racing_another_writer_keeps_winner(tmp_path, run_one_example):
+    output = tmp_path / "predictions.jsonl"
+    winner = b"competing predictions\n"
+
+    class PublishDuringCollection(MockProvider):
+        def invoke(self, **kwargs):
+            if self.call_count == 0:
+                output.write_bytes(winner)
+            return super().invoke(**kwargs)
+
+    with pytest.raises(FileExistsError, match="--output"):
+        run_one_example(provider=PublishDuringCollection(), output_path=output)
+    assert output.read_bytes() == winner
+    assert not list(tmp_path.glob(".pg-predictions-*"))
+
+
+def test_cache_entry_lost_after_planning_never_dispatches_on_replay(
+    tmp_path, monkeypatch, run_one_example
+):
+    output = tmp_path / "predictions.jsonl"
+    run_one_example(provider=MockProvider(), output_path=output)
+    original = output.read_bytes()
+    plan = evaluation.planned_new_calls
+
+    def plan_then_evict(**kwargs):
+        result = plan(**kwargs)
+        assert result["new_calls"] == 0
+        next((tmp_path / "cache").glob("*.json")).unlink()
+        return result
+
+    monkeypatch.setattr(evaluation, "planned_new_calls", plan_then_evict)
+    replay = MockProvider()
+    with pytest.raises(RuntimeError, match="cache miss"):
+        run_one_example(provider=replay, output_path=output)
+    assert replay.call_count == 0
+    assert output.read_bytes() == original
+
+
+def test_warm_cache_replay_preserves_mismatched_output(tmp_path, run_one_example):
+    output = tmp_path / "predictions.jsonl"
+    run_one_example(provider=MockProvider(), output_path=output)
+    different = b"other predictions\r\n"
+    output.write_bytes(different)
+    replay = MockProvider()
+    with pytest.raises(ValueError, match="different immutable prediction"):
+        run_one_example(provider=replay, output_path=output)
+    assert replay.call_count == 0
+    assert output.read_bytes() == different
+
+
+def test_interrupted_publication_stays_hidden_and_retries_from_cache(
+    tmp_path, monkeypatch, run_one_example
+):
+    directory = tmp_path / "outputs"
+    directory.mkdir()
+    output = directory / "predictions.jsonl"
+
+    def interrupted(source, target):
+        assert len(Path(source).read_text().splitlines()) == 2
+        assert not output.exists()
+        raise OSError(errno.EIO, "interrupted prediction publication")
+
+    provider = MockProvider()
+    with monkeypatch.context() as patch:
+        patch.setattr(os, "link", interrupted)
+        with pytest.raises(OSError, match="interrupted prediction publication"):
+            run_one_example(provider=provider, output_path=output)
+    assert provider.call_count == 2
+    assert list(directory.iterdir()) == []
+    replay = MockProvider()
+    assert run_one_example(provider=replay, output_path=output)["cache_hits"] == 2
+    assert replay.call_count == 0
+    assert [json.loads(row)["condition"] for row in output.read_text().splitlines()] == [
+        "raw",
+        "marks",
+    ]
+
+
+def test_interrupted_collection_can_resume_from_partial_cache(tmp_path):
+    _write_mock_inputs(tmp_path)
+    output = tmp_path / "pilot.jsonl"
+
+    class StopAfterOneResponse(MockProvider):
+        def invoke(self, **kwargs):
+            if self.call_count == 1:
+                raise TimeoutError("provider interrupted")
+            return super().invoke(**kwargs)
+
+    def run(provider):
+        return run_evaluation(
+            repository_root=tmp_path,
+            provider=provider,
+            output_path=output,
+            pilot=True,
+            max_new_calls=20,
+        )
+
+    with pytest.raises(TimeoutError, match="provider interrupted"):
+        run(StopAfterOneResponse())
+    assert not output.exists()
+    provider = MockProvider()
+    assert run(provider)["cache_hits"] == 1
+    assert provider.call_count == 19
+    assert len(output.read_text().splitlines()) == 20
 
 
 def test_call_cap_blocks_provider_before_first_request(tmp_path: Path) -> None:

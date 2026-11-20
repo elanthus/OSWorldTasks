@@ -1,0 +1,579 @@
+{
+  "schema_version": "pixelgym.evidence-images-manifest.v1",
+  "set": "osworld-guest-check-2026-11-12/attempt-3",
+  "paths_relative_to": "artifacts/osworld-guest-check-2026-11-12/attempt-3",
+  "note": "Frame PNGs are not in git. Only their sizes and SHA-256 digests are; the contact sheet is checked in.",
+  "file_count": 114,
+  "files": [
+    {
+      "path": "contact-sheet.png",
+      "size": 546588,
+      "sha256": "4734a52fc1cfc16e29d4df65bc19f869ca7264bbfeed145473d1858227974d5a"
+    },
+    {
+      "path": "real-golden/frames/step-000.png",
+      "size": 53814,
+      "sha256": "80929b81b12d0b0845933b4da9772b5f906c2c4f179a02470506b4074c9cb4c4"
+    },
+    {
+      "path": "real-golden/frames/step-001.png",
+      "size": 53814,
+      "sha256": "80929b81b12d0b0845933b4da9772b5f906c2c4f179a02470506b4074c9cb4c4"
+    },
+    {
+      "path": "real-golden/frames/step-002.png",
+      "size": 53996,
+      "sha256": "8a7c60ce82ecdafd2e0cdb4d09f246ffe396a260d3312631d40efaaefd7ef3ee"
+    },
+    {
+      "path": "real-golden/frames/step-003.png",
+      "size": 54262,
+      "sha256": "50b1145fc79b3ddc78ecb8c41767ccd41dbb74ed7229e72d53fda8bf4546aed2"
+    },
+    {
+      "path": "real-golden/frames/step-004.png",
+      "size": 54321,
+      "sha256": "4d4e092e8c1c3d5dac2f1b54aec30f99af1b05c98ed0083344a44aad2499607d"
+    },
+    {
+      "path": "real-golden/frames/step-005.png",
+      "size": 54563,
+      "sha256": "0a66a4b3a1d5b1170fa2472df92a67f9ecb03ee010c7201b7e4c91a258635f37"
+    },
+    {
+      "path": "real-golden/frames/step-006.png",
+      "size": 54584,
+      "sha256": "a47e5a6a48c26843b68fe557e8f940a2691fc846fc543abebb3aba78baa9f1f0"
+    },
+    {
+      "path": "real-golden/frames/step-007.png",
+      "size": 54669,
+      "sha256": "d9071c54570a3b343d6804d2efd604d60c2af70380ebda004d5fac143fd96d10"
+    },
+    {
+      "path": "real-golden/frames/step-008.png",
+      "size": 54729,
+      "sha256": "629f02d2b88bfa49bce61c37b061a5e3713106cf5fe671d268cd29c41211633c"
+    },
+    {
+      "path": "real-golden/frames/step-009.png",
+      "size": 54849,
+      "sha256": "a5949d049b1c36fa73138e5a8cb12bd0fbad4ece5b0d22e8cd2b89eb3a1b44f2"
+    },
+    {
+      "path": "real-golden/frames/step-010.png",
+      "size": 54849,
+      "sha256": "a5949d049b1c36fa73138e5a8cb12bd0fbad4ece5b0d22e8cd2b89eb3a1b44f2"
+    },
+    {
+      "path": "real-golden/frames/step-011.png",
+      "size": 55021,
+      "sha256": "09f1ec2aa412ddab846892fa1501804bebcd08d0f88cdce66230c79844b654d4"
+    },
+    {
+      "path": "real-golden/frames/step-012.png",
+      "size": 55175,
+      "sha256": "dcb4873330323d8fbda01f656e58f8072bf404d5f0be9df8041ac7e1bfba9417"
+    },
+    {
+      "path": "real-golden/frames/step-013.png",
+      "size": 55382,
+      "sha256": "afb406ff8b26c7adb0f0e714223f6e40be7c8ae8b336d2d2803aefd773a321ee"
+    },
+    {
+      "path": "real-golden/frames/step-014.png",
+      "size": 55382,
+      "sha256": "afb406ff8b26c7adb0f0e714223f6e40be7c8ae8b336d2d2803aefd773a321ee"
+    },
+    {
+      "path": "real-golden/frames/step-015.png",
+      "size": 55412,
+      "sha256": "7fbdf60f8a56fb9b1cf12aad9028ef0b5f24886f757ffa21f178409a50080bdf"
+    },
+    {
+      "path": "real-golden/frames/step-016.png",
+      "size": 55578,
+      "sha256": "f6087e8389af4da03a75ba22d611b9f8139370638951b9be2fccecdd22456cca"
+    },
+    {
+      "path": "real-golden/frames/step-017.png",
+      "size": 55773,
+      "sha256": "09320b04707f0aafdcce1fffad8060e6cccab3d5661af1585a0b969ae8232a9a"
+    },
+    {
+      "path": "real-golden/frames/step-018.png",
+      "size": 55881,
+      "sha256": "61b815c585f1eaebf4cb70b5e61e379373c3fa7659304059deb1275d72577d90"
+    },
+    {
+      "path": "real-golden/frames/step-019.png",
+      "size": 56044,
+      "sha256": "7bb41635b19eca21f28be014ee1c87fa31bb0f9f7092751bfd7811dce7555024"
+    },
+    {
+      "path": "real-golden/frames/step-020.png",
+      "size": 56113,
+      "sha256": "2431dd60d27c4f0d8fdca97db4f909910f041062f1e61ea8dd366493de1aa52d"
+    },
+    {
+      "path": "real-golden/frames/step-021.png",
+      "size": 56111,
+      "sha256": "05ae0e6857a97b17689bed22c923f494115da4a04df8cddefaa52dd820ee281c"
+    },
+    {
+      "path": "real-golden/frames/step-022.png",
+      "size": 56188,
+      "sha256": "35cf8de629b45f5a1a52d4b6379e1431b67c42c456a8d19f86f5a787a844229b"
+    },
+    {
+      "path": "real-golden/frames/step-023.png",
+      "size": 56358,
+      "sha256": "7df09ee425c78a512e20425704ea79cf7802844160104798a972c6a6089d361a"
+    },
+    {
+      "path": "real-golden/frames/step-024.png",
+      "size": 56358,
+      "sha256": "7df09ee425c78a512e20425704ea79cf7802844160104798a972c6a6089d361a"
+    },
+    {
+      "path": "real-golden/frames/step-025.png",
+      "size": 56446,
+      "sha256": "f1469af6dabc94c9e4c1df444de562246803c10d5de38d2df30234fa97f96562"
+    },
+    {
+      "path": "real-golden/frames/step-026.png",
+      "size": 56503,
+      "sha256": "cd0c3318baba59492c9246a80151994d852d186eaae2d330cc04aa4c30ce654a"
+    },
+    {
+      "path": "real-golden/frames/step-027.png",
+      "size": 56711,
+      "sha256": "accb22538523eb62ba5f6fdd8ae33a4b16a26349881f58d65dfb0267ab524e63"
+    },
+    {
+      "path": "real-golden/frames/step-028.png",
+      "size": 56920,
+      "sha256": "4554087e5c3a312fdb18fbc267a1a72719672a8a59fe7e5979ac8e12090599b1"
+    },
+    {
+      "path": "real-golden/frames/step-029.png",
+      "size": 56882,
+      "sha256": "df31480268b2efcbb9ec5a6698e0cbcaf5f0988f1d0164e204e0c0017bab9da7"
+    },
+    {
+      "path": "real-golden/frames/step-030.png",
+      "size": 57022,
+      "sha256": "19484dcb173ed1688ad83ca08a0e426aaca688b082d9740d893d010dab76f29f"
+    },
+    {
+      "path": "real-golden/frames/step-031.png",
+      "size": 57205,
+      "sha256": "69f465ad5b9ac30d4f817e296deb22495da24badfd282e065413c4b80aedacef"
+    },
+    {
+      "path": "real-golden/frames/step-032.png",
+      "size": 57263,
+      "sha256": "f2bba5046842fc1530d6e08ce170bc908fa80753c7ef6d6f57ef20982d13cdba"
+    },
+    {
+      "path": "real-golden/frames/step-033.png",
+      "size": 57452,
+      "sha256": "111dd47f9d6bf8602ce8f983356b4a36ba98683d54bcc7f0782764f6a0bd0c44"
+    },
+    {
+      "path": "real-golden/frames/step-034.png",
+      "size": 57602,
+      "sha256": "76f79c53c59c6d6ea5014578eecb13baaa742e2234d615670f406bdc58d89d0c"
+    },
+    {
+      "path": "real-golden/frames/step-035.png",
+      "size": 57729,
+      "sha256": "2b34e9f94ac8fb9155952898c7f492ce04747e514e11782d8eaf7e4ff9904de6"
+    },
+    {
+      "path": "real-golden/frames/step-036.png",
+      "size": 57769,
+      "sha256": "c70302f22e41d3480b4d85406df4cf8875d79ff623822dd2454208a23a02470f"
+    },
+    {
+      "path": "real-golden/frames/step-037.png",
+      "size": 57846,
+      "sha256": "d81f67d3061b35577c7e8fae52fcdcb5200f86fcc880b775a054a13c3766968a"
+    },
+    {
+      "path": "real-golden/frames/step-038.png",
+      "size": 57943,
+      "sha256": "8ba479cf6c3b1ac5e29788e4c589607aea5c1717a9848e43aeea274d8f5abae5"
+    },
+    {
+      "path": "real-golden/frames/step-039.png",
+      "size": 58015,
+      "sha256": "cef97650a3ee05a5ad9956a0294a44f9af49ebf39e51c1615bdaf5f7443f12e7"
+    },
+    {
+      "path": "real-golden/frames/step-040.png",
+      "size": 58234,
+      "sha256": "b66377782cca5f62df0afc3f427bf0c1e6404d91df2336d906e52f48452052f5"
+    },
+    {
+      "path": "real-golden/frames/step-041.png",
+      "size": 58647,
+      "sha256": "68f29c0ed01bbc300afe4ae33c6ab7e75055ccd522a01a72be408814273fe9e2"
+    },
+    {
+      "path": "real-golden/frames/step-042.png",
+      "size": 58838,
+      "sha256": "35176aeb244d31ab39d4cf440933b42540cbbade9b369e59dfca10308c2d6e7d"
+    },
+    {
+      "path": "real-golden/frames/step-043.png",
+      "size": 58848,
+      "sha256": "fe2f028f60182403a1851d64a2f3395fb45c1f7061b4fe8f5807a1616cf06237"
+    },
+    {
+      "path": "real-golden/frames/step-044.png",
+      "size": 59025,
+      "sha256": "eaf730bf6dbac37a91390066a68872bcf6cbbf21477b6908a03e97e3ddfc8196"
+    },
+    {
+      "path": "real-golden/frames/step-045.png",
+      "size": 59011,
+      "sha256": "1a3b6326692294cb1d11d935663e9d3c14cfd7cee5a1dd321a57044943011f69"
+    },
+    {
+      "path": "real-golden/frames/step-046.png",
+      "size": 59082,
+      "sha256": "28f7817c0adcd4acc348d64a93546762cadc4afbd97f68e05d46c0040d8ec6cd"
+    },
+    {
+      "path": "real-golden/frames/step-047.png",
+      "size": 59163,
+      "sha256": "bbb8f85b9ef25808157b2336ee8aa45114c67670a1cee95fe2e1f241b856eacb"
+    },
+    {
+      "path": "real-golden/frames/step-048.png",
+      "size": 59303,
+      "sha256": "16cfd6e7d0fb93fc839395bb03acf99adf45ccd33f64b6598a694dcd0d670f47"
+    },
+    {
+      "path": "real-golden/frames/step-049.png",
+      "size": 59339,
+      "sha256": "ab28d380ebb2911f239f0e3d9e74db14aa5b3be5f1740f76867d47cff53491dc"
+    },
+    {
+      "path": "real-golden/frames/step-050.png",
+      "size": 59466,
+      "sha256": "0a7e5f6b07eaae11daa8f3a7aed70fc451d793fcd8040a3ad7817781ebd91add"
+    },
+    {
+      "path": "real-golden/frames/step-051.png",
+      "size": 59598,
+      "sha256": "f6244ac0002a35b4f5f5a45074dd1472185b0cd49050b532e9bb90d6a26b6868"
+    },
+    {
+      "path": "real-golden/frames/step-052.png",
+      "size": 59743,
+      "sha256": "e76aa0ed1fc778960a6dbac343dd42566495cf08db8534bb6d92a56c2b42650c"
+    },
+    {
+      "path": "real-golden/frames/step-053.png",
+      "size": 59766,
+      "sha256": "740a87e2d9b229eb4253e926e3b3033a0804935497e5ee5d46d74fa983f19ef0"
+    },
+    {
+      "path": "real-golden/frames/step-054.png",
+      "size": 59791,
+      "sha256": "864b0a9fe9ccbadcf5b329b76e43d442db1a64c0acc442bef357b8974cf50d83"
+    },
+    {
+      "path": "real-golden/frames/step-055.png",
+      "size": 59813,
+      "sha256": "4cec88580a49b40cd3840b8beefb2882aa7299ca0f139711ae7ec438452a0790"
+    },
+    {
+      "path": "real-golden/frames/step-056.png",
+      "size": 59870,
+      "sha256": "16dcd824e528a0e0d157d140e272e39b5f14e7b401e9211da73e5bdc4932c4b2"
+    },
+    {
+      "path": "real-golden/frames/step-057.png",
+      "size": 59919,
+      "sha256": "15aa80ea257192d4688b6c942bac36945df2111badcc7a631b6616d9698a4c6f"
+    },
+    {
+      "path": "real-golden/frames/step-058.png",
+      "size": 60083,
+      "sha256": "6b1cdead1b8fb44ba0838a52292e8d585b894ee8cc2a9f89863716b8af9d04c3"
+    },
+    {
+      "path": "real-golden/frames/step-059.png",
+      "size": 60148,
+      "sha256": "f12f31c9f728ba72e66ca380389861a8e8e02373ba8f242b895c17352c2e5b29"
+    },
+    {
+      "path": "real-golden/frames/step-060.png",
+      "size": 60171,
+      "sha256": "40e14daa7cf1116e13bedfb75813ecf4963fae4eee8cdd293732ffe0598b31b6"
+    },
+    {
+      "path": "real-golden/frames/step-061.png",
+      "size": 60254,
+      "sha256": "4cb4cb15b2ea1725ddb12bbbffc5d4249890e3c83f2660405a7c6f59cc5952cb"
+    },
+    {
+      "path": "real-golden/frames/step-062.png",
+      "size": 60407,
+      "sha256": "4bee472c0d34da2ab56bd68988d91093cfc2fd0478d8d118211b8506e010a09c"
+    },
+    {
+      "path": "real-golden/frames/step-063.png",
+      "size": 60427,
+      "sha256": "e36f66c7e6f661a8aeb36140e31ef39e744094ba19f3a886d3e6f5ac464536dc"
+    },
+    {
+      "path": "real-golden/frames/step-064.png",
+      "size": 60616,
+      "sha256": "9d2a1828ad0c04ffbabc4f59c37023cd49f4381e1c1ee629ae1cfaf360644a57"
+    },
+    {
+      "path": "real-golden/frames/step-065.png",
+      "size": 60670,
+      "sha256": "7c0eefd9e8bd74091419d9d6dac06e1f6f46333081fc8c2b90d0fc68cf0e867d"
+    },
+    {
+      "path": "real-golden/frames/step-066.png",
+      "size": 60814,
+      "sha256": "91f930cf38b6090725e07416939ca568263e1ffbd6a2a5af83dda3f2fe85abd2"
+    },
+    {
+      "path": "real-golden/frames/step-067.png",
+      "size": 60913,
+      "sha256": "a050c9004d1742bbe78821a0b34a3b983cf3b8e189bbe63274377e40ba00e08d"
+    },
+    {
+      "path": "real-golden/frames/step-068.png",
+      "size": 61055,
+      "sha256": "d975236be50bdf5fee81000356d9be197d736eaa4414d97b7c11041eba09455e"
+    },
+    {
+      "path": "real-golden/frames/step-069.png",
+      "size": 61077,
+      "sha256": "14aadff1e7d0ffad15789823342991c464cef259ad6e8fdc44bb56600d63db8d"
+    },
+    {
+      "path": "real-golden/frames/step-070.png",
+      "size": 61214,
+      "sha256": "b2eef9ccdead05e1398aada64f9f9c372e8b2ec3f5040ecf4f0956981388f767"
+    },
+    {
+      "path": "real-golden/frames/step-071.png",
+      "size": 61369,
+      "sha256": "ef6c6ee4a4219f6218fbeb71b34647c3294b2924feb9ad3a011f9978b5b8736d"
+    },
+    {
+      "path": "real-golden/frames/step-072.png",
+      "size": 61403,
+      "sha256": "1b4cacc87159fbf1691acc12735292a4e01a90394617fa83b567364cc01cffe5"
+    },
+    {
+      "path": "real-golden/frames/step-073.png",
+      "size": 61478,
+      "sha256": "43a5489a794c9bee2a3a8d704f615e564129cddebfce9eeb9c296a8dc7091cec"
+    },
+    {
+      "path": "real-golden/frames/step-074.png",
+      "size": 61599,
+      "sha256": "4e180221cec2bc5ce838c4e9815dbc9e25b82d40f64f211d36f51e6123750ec2"
+    },
+    {
+      "path": "real-golden/frames/step-075.png",
+      "size": 61622,
+      "sha256": "60c86b88f137581328d7465f9b13bf7a7e83b0e0c84ec9e149ab50ff8b69bb2c"
+    },
+    {
+      "path": "real-golden/frames/step-076.png",
+      "size": 61610,
+      "sha256": "58adc822f70acdd4eda11a5a96501c436625d620b0997526d117f8162a486ff8"
+    },
+    {
+      "path": "real-golden/frames/step-077.png",
+      "size": 61534,
+      "sha256": "a0761de2543934f666d4dff86c8948bb3875647fe4b3dd6afabd1a7c2b0ddbf3"
+    },
+    {
+      "path": "real-golden/frames/step-078.png",
+      "size": 61625,
+      "sha256": "ac7646f8a4576df9e22d2a55e7a7ca4c59ae2ccc3a78760bc6b25c96916a611d"
+    },
+    {
+      "path": "real-golden/frames/step-079.png",
+      "size": 61708,
+      "sha256": "6669120e79350fcd96acd6503cabeee5e1948841304268bfaffde709882277a5"
+    },
+    {
+      "path": "real-golden/frames/step-080.png",
+      "size": 61709,
+      "sha256": "4d5e8699f6ac0157b8f70df2199b2e1a83d1fce8d6d9e3903736e74b6379cdea"
+    },
+    {
+      "path": "real-golden/frames/step-081.png",
+      "size": 61889,
+      "sha256": "375a21052459987f69a0a608a23abffd1904b1265d88a338943a1583891cf99b"
+    },
+    {
+      "path": "real-golden/frames/step-082.png",
+      "size": 62066,
+      "sha256": "07105669595cd3f878a293725785bf1b6895f90f59293bd3946f5531f6d30352"
+    },
+    {
+      "path": "real-golden/frames/step-083.png",
+      "size": 62069,
+      "sha256": "275743d77f37fc66fcaabeb90c4ae3ac88b39c3e7ca196e4d5a6a942bd1a5f2c"
+    },
+    {
+      "path": "real-golden/frames/step-084.png",
+      "size": 62104,
+      "sha256": "8de9d7e4294439395de604aea26b32f25a6d811da28e76ccf1c3b0e2881af566"
+    },
+    {
+      "path": "real-golden/frames/step-085.png",
+      "size": 62258,
+      "sha256": "295bfd2d28a5a60ae19ef46456d33777472a2b27c9bbb38b41f0935756ed40b4"
+    },
+    {
+      "path": "real-golden/frames/step-086.png",
+      "size": 62447,
+      "sha256": "e80cbda860e878267c1872ab7902d2a6b6d872044f47cd5e708bc7c15e49aa4e"
+    },
+    {
+      "path": "real-golden/frames/step-087.png",
+      "size": 62592,
+      "sha256": "b6606562fdbcc4a493e398ea99c3429820db5b2c11c6fea8633bab8fa35495b7"
+    },
+    {
+      "path": "real-golden/frames/step-088.png",
+      "size": 62612,
+      "sha256": "bf74cd68c1205747a273848785ae7395de146ee7c29fb621578f910f3a236c78"
+    },
+    {
+      "path": "real-golden/frames/step-089.png",
+      "size": 62640,
+      "sha256": "6d686c5a44f9a40b116b9101d05486cb25b5cc371520237499227968df3caad0"
+    },
+    {
+      "path": "real-golden/frames/step-090.png",
+      "size": 62764,
+      "sha256": "e880024ae188ff6b3ac64aa1b31ff1122ba7076cd505cbd8d93e5ecf43f9eeb0"
+    },
+    {
+      "path": "real-golden/frames/step-091.png",
+      "size": 62988,
+      "sha256": "d079386a4c421daf1138107322c22f5ecf260e95ed4adcba1bf8fd870432f829"
+    },
+    {
+      "path": "real-golden/frames/step-092.png",
+      "size": 63108,
+      "sha256": "d35a8048027e850f6eddf85fc6eaa1ecc569c46e04df81c9379884894b86e152"
+    },
+    {
+      "path": "real-golden/frames/step-093.png",
+      "size": 63075,
+      "sha256": "1964ee5327db1079c156fa8c7d692cd064311e10c32976baa3c19f75e679fe3c"
+    },
+    {
+      "path": "real-golden/frames/step-094.png",
+      "size": 63120,
+      "sha256": "dc701c99bda630d7d326977b76736ba8342d6d37b8e44510e5f8dcd110f1317e"
+    },
+    {
+      "path": "real-golden/frames/step-095.png",
+      "size": 63345,
+      "sha256": "169d11f1af314d0f268d5424914073b271e4cc5f268f1750bf31d357e930ec1b"
+    },
+    {
+      "path": "real-golden/frames/step-096.png",
+      "size": 63592,
+      "sha256": "1fd1307b56a2e702ed505e0a69aacdbf0b37621a50caaeaa915eb4ddf6c70e1b"
+    },
+    {
+      "path": "real-golden/frames/step-097.png",
+      "size": 63611,
+      "sha256": "64b39a8491104750570429c18d057c90e02d2129ee3777cbcde248dca53ab93c"
+    },
+    {
+      "path": "real-golden/frames/step-098.png",
+      "size": 63792,
+      "sha256": "a739e86341f5a6e688e85285dec408a6f1b25c71652b0a0b386f80400eee2938"
+    },
+    {
+      "path": "real-golden/frames/step-099.png",
+      "size": 63916,
+      "sha256": "d6e7781d8bd4f3a95fa2ed5081ff88cf293ddfd840f00f5c1b1a5d20913d3142"
+    },
+    {
+      "path": "real-golden/frames/step-100.png",
+      "size": 64121,
+      "sha256": "fa29dbfb0cef941679f01718343175ea1826213f0bd23f3217d6e2bd02d4dc3b"
+    },
+    {
+      "path": "real-golden/frames/step-101.png",
+      "size": 64212,
+      "sha256": "41176a1617143ee889d707f8b3413abdd1e0fd19e04d9750c441c61df3707406"
+    },
+    {
+      "path": "real-golden/frames/step-102.png",
+      "size": 64249,
+      "sha256": "136e2ce686c667eb70a1a6a71698093c331ad67a63961bff14293356016aa107"
+    },
+    {
+      "path": "real-golden/frames/step-103.png",
+      "size": 64341,
+      "sha256": "62301cbeff6c8cf538976978214d730dea851c3b79298414467a2ea8812bac60"
+    },
+    {
+      "path": "real-golden/frames/step-104.png",
+      "size": 64402,
+      "sha256": "aec1c9c4f45cc426a45f3b5465a40185ede8fb9c8f5eb659a96e5f14581c0a15"
+    },
+    {
+      "path": "real-golden/frames/step-105.png",
+      "size": 64416,
+      "sha256": "5b80fbca9d9f2532aacf8c5e59bfb2110ad0d7e54d71795319b220360c38ec9e"
+    },
+    {
+      "path": "real-golden/frames/step-106.png",
+      "size": 64387,
+      "sha256": "744644e203b4b764a1b6962cccdd130cd18822ba99b5b7f92bd71272279d6d31"
+    },
+    {
+      "path": "real-golden/frames/step-107.png",
+      "size": 63680,
+      "sha256": "d24ea7b3ac8fd2317adeb93197dd9f43367542b7f6ee0f814dddfd66fc729b98"
+    },
+    {
+      "path": "real-golden/frames/step-108.png",
+      "size": 64049,
+      "sha256": "ba20536ddd031d9e328f38b2a9a9982e34da774839f5d139eb2295b6d276c22b"
+    },
+    {
+      "path": "real-golden/frames/step-109.png",
+      "size": 64357,
+      "sha256": "2176ce0f0aa71f5e9577f93c912d85bb9f1cbd0ae7ac77832684dcb3ccb5525f"
+    },
+    {
+      "path": "real-golden/frames/step-110.png",
+      "size": 63989,
+      "sha256": "36a36c2b6a954074465eea74e5eec428a62c58def76b19cdafa84eea614ee08c"
+    },
+    {
+      "path": "real-golden/frames/step-111.png",
+      "size": 64029,
+      "sha256": "ec32c8415db0a7c327b82aa9a16611ae7100b6e938299bdfd8a1d6294c51ee3b"
+    },
+    {
+      "path": "real-golden/frames/step-112.png",
+      "size": 65259,
+      "sha256": "a943905ce9b1530f1e42a0a37409c09a7c97ebc9d8920e2d1c489bde784f010b"
+    }
+  ]
+}

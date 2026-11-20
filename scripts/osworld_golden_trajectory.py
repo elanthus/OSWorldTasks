@@ -11,6 +11,7 @@ import argparse
 import dataclasses
 import hashlib
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -21,9 +22,11 @@ from pixelgym.backends.fake import FakeBackend
 from pixelgym.backends.osworld import OSWorldBackend, OSWorldBackendConfig
 from pixelgym.env import PixelGuiEnv
 from pixelgym.evaluator import evaluate
+from pixelgym.evidence_redaction import repository_relative_evidence_text
 from pixelgym.task_spec import TaskSpec
 from pixelgym.tasks.vendor_form import generator
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_FIXTURE = Path("tests/integration/fixtures/osworld_golden_trajectory_seed7.json")
 DEFAULT_OUTPUT_DIR = Path("artifacts/day-2/real-golden")
 _KEY_INDEX = {value: index for index, value in enumerate(KEY_ALLOWLIST)}
@@ -145,6 +148,18 @@ def _contact_sheet(paths: list[Path], output: Path) -> None:
 
 
 def record_real(fixture_path: Path, guest_image: Path, output_dir: Path) -> dict[str, Any]:
+    """Replay the fixture on the real backend and store the episode.
+
+    Returns the episode as stored: paths under the repository are repository-relative,
+    whether the arguments were given relative or absolute, and whatever the working
+    directory is.
+    """
+    # A relative argument names a location under the working directory. Stored as typed, it
+    # would be read from the repository root as a different one. The path is made absolute
+    # without following symbolic links, so an output directory linked to other storage is
+    # still stored as the repository path it was reached by.
+    fixture_path = Path(os.path.abspath(fixture_path))
+    output_dir = Path(os.path.abspath(output_dir))
     fixture = verify_fixture(fixture_path)
     output_dir.mkdir(parents=True, exist_ok=True)
     frames_dir = output_dir / "frames"
@@ -245,8 +260,13 @@ def record_real(fixture_path: Path, guest_image: Path, output_dir: Path) -> dict
     }
     evidence_path = output_dir.parent / "raw" / "real-golden-episode.json"
     evidence_path.parent.mkdir(parents=True, exist_ok=True)
-    evidence_path.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n")
-    return evidence
+    stored = repository_relative_evidence_text(
+        json.dumps(evidence, indent=2, sort_keys=True) + "\n", REPO_ROOT
+    )
+    evidence_path.write_text(stored)
+    # Return what was stored, so a caller that embeds the episode records the same paths.
+    result: dict[str, Any] = json.loads(stored)
+    return result
 
 
 def main(argv: list[str] | None = None) -> int:

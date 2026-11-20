@@ -33,8 +33,12 @@ The core environment, OSWorld adapter, validation suite, frozen grounding experi
 local-first platform components are implemented. The project owner recorded D4.12 `PASS` on 2026-09-09 against revision
 `4c4a7fb2fcb983e81084542365abc0ec2d7df538` in `artifacts/platform/human-gate.json`.
 That decision covers the reviewed scripted-provider governance and orchestration evidence; it is
-not a model-quality or production-readiness claim and does not grade later changes. The v5 agent
-benchmark and v5 serving work remain unfinished; agents must not infer a new milestone verdict.
+not a model-quality or production-readiness claim and does not grade later changes. The owner
+recorded D5.10 `PASS` on 2026-10-25 against revision `fd54dc2782ac8e7b3526f19e7fa46a0131175e5e`
+in `artifacts/grounding-v5-d510/human-gate.json` for the environment, platform, and
+evidence-discipline claim; the Haiku result is descriptive only, and later dated amendments to that
+record are the owner's. The v5 stateful serving rehearsal (S8) remains unfinished; agents must not
+infer a new milestone verdict.
 
 Current repository layout includes the following core paths:
 
@@ -73,7 +77,7 @@ Some decisions belong to a person, not an agent. An agent prepares work up to th
 
 - **Scope changes.** If a feature does not improve the Gym contract, evaluator correctness, validation evidence, or the grounding experiment, defer it. Do not add it and ask later.
 - **Milestone gates:** the Sprint 1, Sprint 2, and Sprint 3 acceptance gates (D1.8, D2.11, D3.11), the Milestone 4 platform gate (D4.12), and the v5 benchmark verdict (D5.10). Agents run the documented checks and report **raw results only**: command, exit status, counts, full output. Do not summarize a gate as passing, do not offer a provisional PASS/FAIL, and do not tick checklist boxes. A person reads the raw evidence and declares the verdict.
-- **Provider choice and cloud spend,** including the 90-minute infrastructure stop-loss.
+- **Provider choice and cloud spend,** including the 90-minute infrastructure stop-loss. The Backblaze backup of generated data required by §7 is the one standing exception.
 - **Any paid model call.** Each provider, model, policy package, phase, and call cap needs explicit approval. Run a pilot only after approval, stop at its cap, and do not continue to a full run without a second approval.
 - **Public claims:** README wording, demo media, and any published summary of results.
 
@@ -98,7 +102,7 @@ Some decisions belong to a person, not an agent. An agent prepares work up to th
 
 ## 7. Evidence and reporting standards
 
-The portfolio claim lives or dies on honesty here.
+The project's claim lives or dies on honesty here.
 
 - Reports are **generated from stored structured evidence**. The report generator must not rerun or reinterpret tests.
 - Distinguish **semantic/state determinism**, **bitwise visual determinism**, and **perceptual visual stability**. Never label a perceptual similarity score as bitwise determinism.
@@ -106,8 +110,14 @@ The portfolio claim lives or dies on honesty here.
 - Report set-of-marks **proposal coverage separately** from conditional mark-selection accuracy.
 - Keep invalid/unparseable model outputs in the results. No hidden retries, no discarding a wrong answer.
 - A null or negative set-of-marks result is a fine outcome. Do not shape the analysis toward an improvement.
-- Every number in the README or a resume bullet must trace to a checked-in artifact. Leave a placeholder rather than inventing a metric.
+- Every number in the README or any published summary must trace to a checked-in artifact. Leave a placeholder rather than inventing a metric.
 - Classify every reward-hacking surface as **blocked**, **tested**, **mitigated**, or **known limitation**, with evidence, and state residual risks plainly.
+- **Back up generated data to Backblaze.** Any data a run generates that is not tracked in git (frames, journals, archives, raw run output, anything whose digests or manifest are checked in without the bytes) must be copied to the owner's private Backblaze B2 bucket before its manifest is committed and before the task is reported complete.
+  - Write run output to a git-ignored path inside the repository, never to a temp directory.
+  - Upload with `rclone copy --checksum --immutable` under a prefix named after the evidence folder. Credentials come from the ignored `.env` (`BACKBLAZE_KEY_ID`, `BACKBLAZE_APPLICATION_KEY`, `BACKBLAZE_BUCKET_NAME`) and are never printed or recorded.
+  - Read the copy back with `rclone check` and `scripts/observe_b2_object_lock.py`, and say so in the report.
+  - List in the report the bucket's total stored bytes (`rclone size`, with `--b2-versions`) and the estimated monthly storage charge, with the rate used and the date it was read from Backblaze's pricing page.
+  - This is the owner's standing instruction (2026-11-17) and covers the storage spend of the backup itself. Applying or changing Object Lock retention, deleting bucket files, and changing bucket settings still need approval.
 
 ## 8. Definition of done for an agent task
 

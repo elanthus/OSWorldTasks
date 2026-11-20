@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
 import math
+import os
+import tempfile
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, TextIO
 
 from pixelgym.grounding.protocols import (
     V1_PROTOCOL,
@@ -272,6 +277,7 @@ def evaluate_one(
     parser_version: str = PARSER_VERSION_V1,
     prediction_schema_version: str = PREDICTION_SCHEMA_VERSION,
     protocol_version: str = PROTOCOL_VERSION,
+    allow_new_call: bool = True,
 ) -> tuple[dict[str, Any], bool]:
     validate_evaluation_versions(
         prompt_version=prompt_version,
@@ -301,6 +307,8 @@ def evaluate_one(
     response = cache.get(key)
     cache_hit = response is not None
     if response is None:
+        if not allow_new_call:
+            raise RuntimeError("cache miss during replay or after reaching the new-call cap")
         response = provider.invoke(image_path=image_path, prompt=prompt, schema=schema)
         cache.put(key, response)
     if response.request_failure is not None:
@@ -452,6 +460,56 @@ def planned_new_calls(
     return {"total_condition_records": total, "cached_calls": cached, "new_calls": total - cached}
 
 
+# errno values meaning the filesystem cannot create hard links at all.
+_NO_HARD_LINKS = frozenset({errno.EPERM, errno.ENOTSUP, errno.EOPNOTSUPP})
+
+
+@contextmanager
+def _prediction_output(path: Path, new_calls: int) -> Iterator[TextIO | None]:
+    """Refuse an existing output before any calls, or verify an existing file from cache.
+
+    A fresh output is written to a uniquely named temporary file beside it and published only
+    once complete, without replacing a file that appeared in the meantime.
+    """
+    if path.is_file():
+        if new_calls:
+            raise ValueError(f"predictions already exist at {path}; choose a fresh --output")
+        yield None
+        return
+    if path.exists() or path.is_symlink():
+        raise ValueError(f"expected a prediction file at {path}; choose a fresh --output")
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, name = tempfile.mkstemp(prefix=".pg-predictions-", suffix=".tmp", dir=path.parent)
+    pending = Path(name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as writer:
+            yield writer
+        _publish_without_overwrite(pending, path)
+    finally:
+        pending.unlink(missing_ok=True)
+
+
+def _publish_without_overwrite(pending: Path, path: Path) -> None:
+    try:
+        os.link(pending, path)
+    except FileExistsError:
+        raise FileExistsError(
+            f"predictions already exist at {path}; choose a fresh --output"
+        ) from None
+    except OSError as exc:
+        if exc.errno not in _NO_HARD_LINKS:
+            raise
+        # Without hard links, an exclusive create still refuses to replace another file.
+        try:
+            with path.open("xb") as target:
+                target.write(pending.read_bytes())
+        except FileExistsError:
+            raise FileExistsError(
+                f"predictions already exist at {path}; choose a fresh --output"
+            ) from None
+
+
 def run_evaluation(
     *,
     repository_root: Path,
@@ -493,30 +551,33 @@ def run_evaluation(
     if pilot:
         selected = set(pilot_example_ids(examples, protocol=protocol))
         examples = [row for row in examples if row["example_id"] in selected]
-    records = []
-    cache_hits = 0
-    for example in examples:
-        overlay = overlays[example["example_id"]]
-        for condition in ("raw", "marks"):
-            record, cache_hit = evaluate_one(
-                repository_root=repository_root,
-                example=example,
-                overlay=overlay,
-                condition=condition,
-                provider=provider,
-                cache=cache,
-                prompt_version=prompt_version,
-                parser_version=parser_version,
-                prediction_schema_version=prediction_schema_version,
-                protocol_version=protocol.protocol_version,
-            )
-            records.append(record)
-            cache_hits += cache_hit
-    encoded = "".join(canonical_json_text(row) + "\n" for row in records)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    if output_path.is_file() and output_path.read_text() != encoded:
-        raise ValueError("refusing to overwrite a different immutable prediction file")
-    output_path.write_text(encoded)
+    with _prediction_output(output_path, plan["new_calls"]) as writer:
+        records: list[dict[str, Any]] = []
+        cache_hits = 0
+        for example in examples:
+            overlay = overlays[example["example_id"]]
+            for condition in ("raw", "marks"):
+                record, cache_hit = evaluate_one(
+                    repository_root=repository_root,
+                    example=example,
+                    overlay=overlay,
+                    condition=condition,
+                    provider=provider,
+                    cache=cache,
+                    prompt_version=prompt_version,
+                    parser_version=parser_version,
+                    prediction_schema_version=prediction_schema_version,
+                    protocol_version=protocol.protocol_version,
+                    allow_new_call=writer is not None and len(records) - cache_hits < max_new_calls,
+                )
+                records.append(record)
+                cache_hits += cache_hit
+        encoded = "".join(canonical_json_text(row) + "\n" for row in records)
+        if writer is None:
+            if output_path.read_text(encoding="utf-8") != encoded:
+                raise ValueError("refusing to overwrite a different immutable prediction file")
+        else:
+            writer.write(encoded)
     return {
         "protocol_version": protocol.protocol_version,
         "prompt_version": prompt_version,

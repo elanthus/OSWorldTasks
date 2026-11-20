@@ -14,7 +14,7 @@ from pixelgym.validation import reward as reward_validation
 from pixelgym.validation.reward import validate_reward_timing
 from pixelgym.validation.spaces import validate_space_integrity
 
-GOLDEN = Path(__file__).parent / "fixtures" / "golden_trajectory_seed7.json"
+GOLDEN = Path(__file__).parent / "fixtures" / "golden_trajectory_seed7_v2.json"
 
 
 def _first_frame_only_renderer() -> Any:
@@ -27,9 +27,9 @@ def _first_frame_only_renderer() -> Any:
     real_render = fake_backend_module.render.render
     cache: list[Any] = []
 
-    def render(record: Any, form: Any, layout: Any) -> Any:
+    def render(record: Any, form: Any, layout: Any, **kwargs: Any) -> Any:
         if not cache:
-            cache.append(real_render(record, form, layout))
+            cache.append(real_render(record, form, layout, **kwargs))
         return cache[0]
 
     return render

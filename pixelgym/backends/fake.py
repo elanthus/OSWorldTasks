@@ -18,17 +18,19 @@ a privileged test hook. Widget geometry and interaction semantics live in
 
 Fidelity to the real app, where it matters:
 
-- At 1024x768, every form-control and payment-option hit rectangle is pinned
-  to Chromium `getBoundingClientRect()` output by an opt-in build-time test.
-  The country select remains focused and closed after a click in both models;
-  transferable selection is one allowlisted initial-letter keystroke followed
-  by Enter. Distinct initial-letter keys are handled independently; Chromium's
-  timed multi-key type-ahead buffer is outside the equivalence contract.
-- Enter and Tab follow the task app's tested form semantics: Enter submits only
-  from text inputs, the checkbox, and Submit, while Tab from Submit leaves the
-  form with no modeled focus. The browser check proves that exit in headless
-  Chromium only; Tab-based re-entry is outside the contract, and the fake
-  requires a control click to re-enter.
+- At 1024x768, every form-control, payment-option, and focusing-label hit
+  rectangle is pinned to Chromium `getBoundingClientRect()` output by an opt-in
+  build-time test.
+- Keyboard and mouse semantics follow the shared input contract
+  (`ui.INPUT_CONTRACT_VERSION`, described in `pixelgym.tasks.vendor_form.ui`).
+  The task app enforces the parts native Chromium would leave to platform,
+  timers, or hidden state (caret, Tab order, select keys), and an opt-in
+  randomized differential test drives both implementations with the same
+  action sequences and compares form values, focus, status, and submissions.
+- Every `click`/`key` call returns only after any submission it caused is
+  recorded, so the evaluator read in the same `PixelGuiEnv.step` sees it. The
+  in-process model is synchronous, so this holds trivially here; the OSWorld
+  backend needs an explicit acknowledgement barrier for the same guarantee.
 - The submission record is built exactly as `POST /api/submit` builds it --
   same field names, same `submitted_at_step` numbering, same whitespace
   normalization (shared via `pixelgym.tasks.vendor_form.normalization`).
@@ -71,6 +73,16 @@ DEFAULT_HEIGHT = ui.DESIGN_HEIGHT
 
 _NO_TASK = "FakeBackend has no active task; call reset(seed) first."
 
+CHECKPOINT_SCHEMA_VERSION = "pixelgym-core-fake-checkpoint-v3"
+"""v2 added `payment_focus_index` and required `tab_exited_form` (input contract v2). v3 has the
+same fields but is sealed under input contract v3 and renderer v2 (static caret), so the frame a
+restored checkpoint shows differs from the one a v2 checkpoint was sealed with."""
+
+RESUME_IDENTITY_VERSION = "v3"
+"""Suffix of the fake backend's resume identity. Resume records bind a screenshot digest, which
+changed with renderer v2, so records sealed under the -v2 identity are rejected, not
+reinterpreted."""
+
 
 class FakeBackend:
     """Minimal in-process implementation of `pixelgym.backends.base.Backend`."""
@@ -83,6 +95,10 @@ class FakeBackend:
         self._form: ui.FormState | None = None
         self._submissions: list[Submission] = []
         self._frame: Frame | None = None
+        # render.render_static for the active task, built on the first screenshot after reset.
+        # It can legitimately be None (single-pass layouts), so a flag tracks whether it is built.
+        self._static: Any = None
+        self._static_built = False
         self.click_calls: list[tuple[int, int]] = []
         self.key_calls: list[str] = []
         self.noop_calls = 0
@@ -116,6 +132,8 @@ class FakeBackend:
         self.key_calls = []
         self.noop_calls = 0
         self._frame = None
+        self._static = None
+        self._static_built = False
         return record
 
     def screenshot(self) -> Frame:
@@ -127,7 +145,10 @@ class FakeBackend:
         """
         record, layout, form = self._require_task()
         if self._frame is None:
-            self._frame = render.render(record, form, layout)
+            if not self._static_built:
+                self._static = render.render_static(record, layout)
+                self._static_built = True
+            self._frame = render.render(record, form, layout, static=self._static)
         return self._frame.copy()
 
     def noop(self) -> None:
@@ -179,7 +200,7 @@ class FakeBackend:
         record, _layout, form = self._require_task()
         return canonical_json_bytes(
             {
-                "schema_version": "pixelgym-core-fake-checkpoint-v1",
+                "schema_version": CHECKPOINT_SCHEMA_VERSION,
                 "width": self.width,
                 "height": self.height,
                 "seed": record["seed"],
@@ -189,6 +210,7 @@ class FakeBackend:
                 "payment_index": form.payment_index,
                 "expedited": form.expedited,
                 "focus": None if form.focus is None else form.focus.value,
+                "payment_focus_index": form.payment_focus_index,
                 "tab_exited_form": form.tab_exited_form,
                 "country_open": form.country_open,
                 "status": form.status,
@@ -217,7 +239,10 @@ class FakeBackend:
             raise ValueError(  # noqa: TRY004 - malformed serialized checkpoint value
                 "core fake-backend checkpoint must be an object"
             )
-        if value.get("schema_version") != "pixelgym-core-fake-checkpoint-v1":
+        if value.get("schema_version") != CHECKPOINT_SCHEMA_VERSION:
+            # v1 checkpoints were sealed under the pre-v2 input contract (no radio focus, no label
+            # clicks); v2 checkpoints under input contract v2 and renderer v1 (no caret, Enter
+            # live on the select). Both are rejected rather than reinterpreted.
             raise ValueError("unsupported core fake-backend checkpoint schema")
         required = {
             "width",
@@ -229,6 +254,8 @@ class FakeBackend:
             "payment_index",
             "expedited",
             "focus",
+            "payment_focus_index",
+            "tab_exited_form",
             "country_open",
             "status",
             "submissions",
@@ -242,17 +269,38 @@ class FakeBackend:
             raise ValueError("fake-backend checkpoint screen mismatch")
         if value["country_open"] is not False:
             raise ValueError("fake-backend checkpoint contains unsupported country popup state")
-        self.closed = False
-        record = self.reset(value["seed"])
-        if record["task_id"] != value["task_id"]:
+        # Validate the v2 interaction fields before the live state is replaced, so a malformed
+        # checkpoint cannot leave a half-restored form or a value the event handlers would trip on.
+        seed = value["seed"]
+        if type(seed) is not int:
+            raise ValueError("fake-backend checkpoint seed must be an int")
+        expected_record = generator.generate_task(seed)
+        if expected_record["task_id"] != value["task_id"]:
             raise ValueError("fake-backend checkpoint task mismatch")
+        try:
+            focus = None if value["focus"] is None else ui.WidgetId(value["focus"])
+        except ValueError as exc:
+            raise ValueError("fake-backend checkpoint focus is not a form widget") from exc
+        payment_focus_index = value["payment_focus_index"]
+        option_count = len(expected_record["options"]["payment_terms"])
+        if payment_focus_index is not None and (
+            type(payment_focus_index) is not int or not 0 <= payment_focus_index < option_count
+        ):
+            raise ValueError("fake-backend checkpoint radio focus index is out of range")
+        if (focus is ui.WidgetId.PAYMENT_TERMS) != (payment_focus_index is not None):
+            raise ValueError("fake-backend checkpoint radio focus is inconsistent with focus")
+        if type(value["tab_exited_form"]) is not bool:
+            raise ValueError("fake-backend checkpoint tab_exited_form must be a bool")
+        self.closed = False
+        self.reset(seed)
         _record, _layout, form = self._require_task()
         form.text = {ui.WidgetId(name): text for name, text in value["text"].items()}
         form.country_index = value["country_index"]
         form.payment_index = value["payment_index"]
         form.expedited = value["expedited"]
-        form.focus = None if value["focus"] is None else ui.WidgetId(value["focus"])
-        form.tab_exited_form = value.get("tab_exited_form", False)
+        form.focus = focus
+        form.payment_focus_index = payment_focus_index
+        form.tab_exited_form = value["tab_exited_form"]
         form.status = value["status"]
         self._submissions = [Submission.from_record(row) for row in value["submissions"]]
         self.click_calls = [tuple(call) for call in value["click_calls"]]
@@ -265,7 +313,7 @@ class FakeBackend:
         checkpoint = self.checkpoint()
         return EnvironmentResumeRecord(
             task_id=record["task_id"],
-            backend_identity=f"pixelgym-core-fake-{self.width}x{self.height}-v1",
+            backend_identity=f"pixelgym-core-fake-{self.width}x{self.height}-{RESUME_IDENTITY_VERSION}",
             step_count=step_count,
             screenshot_digest="sha256:" + sha256_bytes(self.screenshot().tobytes()),
             application_state_digest=content_digest(json.loads(checkpoint)),
@@ -323,6 +371,12 @@ class FakeBackend:
         """The live form state, for asserting on focus/typed values in tests."""
         _record, _layout, form = self._require_task()
         return form
+
+    @property
+    def task_record(self) -> Mapping[str, Any]:
+        """The active generated task record (privileged; tests and evidence scripts only)."""
+        record, _layout, _form = self._require_task()
+        return record
 
     @property
     def layout(self) -> ui.Layout:

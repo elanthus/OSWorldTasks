@@ -114,7 +114,8 @@
       "surface": "Both retained campaign copies on one local disk; no off-host recovery drilled",
       "classification": "known limitation",
       "evidence": "artifacts/grounding-v5-d510/168598c243df24ba4f773cbc5696a1572532f532/restore-drill.json",
-      "residual_risk": "Disk loss would remove both copies; an off-host copy and drill are prepared as a follow-up and are not part of this record."
+      "residual_risk": "Disk loss would remove both copies; an off-host copy and drill are prepared as a follow-up and are not part of this record.",
+      "amended_2026_10_26": "Reclassified as tested; see amendments[0]. The surface and original classification above are retained verbatim as declared."
     },
     {
       "surface": "Single Darwin arm64 host for all fresh integration observations",
@@ -159,5 +160,23 @@
     "a model ranking",
     "cleanup or deletion of any retained evidence",
     "the v5 serving gate (S8), which remains separate and human-owned"
+  ],
+  "amendments": [
+    {
+      "date": "2026-10-26",
+      "limitation_surface": "Both retained campaign copies on one local disk; no off-host recovery drilled",
+      "classification_before": "known limitation",
+      "classification_after": "tested",
+      "evidence": [
+        "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/REVIEW-NOTE.md",
+        "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/REPORT.md",
+        "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/object-lock-observation.json",
+        "artifacts/grounding-v5-d510/290d3b626cd5f67e5ede1dd2eed086d06dd18b2f/offhost-restore-drill.json"
+      ],
+      "basis": "Both retained campaign archives were copied to a private Backblaze B2 bucket (91 files, 26,085,481,886 bytes) under one-year governance-mode Object Lock; a fresh download matched both local originals with 0 differences; the parser-sensitivity pilot and full archives restored from the downloaded copy reproduced the published projections; the replication archives restored from it with manifest digests verified.",
+      "residual_risk": "The bucket, its key and both local copies are under the same owner account; governance-mode retention resists deletion for one year but an account holder with bypass rights could remove versions. The replication audit cannot be rerun at the current checkout because its bound source changed; its off-host copy rests on digest-verified restores. The lost original D5.9 journals and the five unknown timeout usages are unchanged.",
+      "verdict_unchanged": true,
+      "recorded_by": "agent, from the owner's written instruction of 2026-10-26; merging the pull request that adds this amendment is the owner's confirmation"
+    }
   ]
 }

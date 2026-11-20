@@ -4,19 +4,29 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import signal
 import time
 import traceback
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from PIL import Image
 
 from pixelgym.backends.osworld import OSWorldBackend, OSWorldBackendConfig
 from pixelgym.env import PixelGuiEnv
+from pixelgym.evidence_redaction import repository_relative_evidence_text
 from pixelgym.validation.metrics import privileged_hashes
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
 _MINIMUM_FREE_ROOT_BYTES = 5 * 1024**3
+
+
+def evidence_text(evidence: dict[str, Any]) -> str:
+    """The evidence as stored and printed: paths under the repository are relative to it."""
+    text = json.dumps(evidence, indent=2, sort_keys=True) + "\n"
+    return repository_relative_evidence_text(text, REPO_ROOT)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -76,7 +86,9 @@ def main(argv: list[str] | None = None) -> int:
             {
                 "task_id": env.task_id,
                 **privileged_hashes(state),
-                "screenshot_path": str(args.screenshot),
+                # Made absolute, without following symbolic links, so a relative path typed
+                # outside the repository root is not stored as if it were relative to the root.
+                "screenshot_path": os.path.abspath(args.screenshot),
                 "screenshot_shape": list(observation.shape),
                 "screenshot_dtype": str(observation.dtype),
                 "reset_to_stable_frame_seconds": elapsed,
@@ -130,8 +142,9 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     args.evidence.parent.mkdir(parents=True, exist_ok=True)
-    args.evidence.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n")
-    print(json.dumps(evidence, indent=2, sort_keys=True))
+    stored = evidence_text(evidence)
+    args.evidence.write_text(stored)
+    print(stored, end="")
     return 0 if evidence["summary"]["passed"] else 1
 
 

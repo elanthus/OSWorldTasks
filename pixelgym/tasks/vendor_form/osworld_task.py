@@ -48,6 +48,15 @@ GUEST_SERVER_LOG = Path("/tmp/pixelgym-vendor-form-server.log")
 GUEST_CHROME_LOG = Path("/tmp/pixelgym-vendor-form-chrome.log")
 _PAGE_READY_ERROR_MARKER = "body[data-pixelgym-ready-error]"
 
+SETUP_ACKNOWLEDGED_INPUTS = 0
+"""Inputs the task page acknowledges during guest setup: a fixed number, known in advance.
+
+Setup sends the page no click or key (the pointer is parked with a move only), so the freshly
+loaded page must report exactly this many acknowledgements when `OSWorldBackend.reset` returns.
+The host never adopts whatever count the page reports: a page that acknowledged input it should
+not have is rejected at reset.
+"""
+
 _APP_DIR = Path(__file__).parent / "app"
 _BUNDLE_FILES = (
     Path("guest_server.py"),
@@ -69,6 +78,7 @@ _GUEST_PROGRAM_NAMES = (
     "browser_window_state",
     "desktop_ready",
     "display_size",
+    "input_ack",
     "page_ready",
     "pointer_park",
     "privileged_state",
@@ -398,21 +408,53 @@ class _VendorFormTaskSupport:
             quiet=True,
             timeout=15,
         )
+        self._park_pointer(setup_controller)
+
+    def _park_pointer(self, setup_controller: Any) -> None:
+        """Move the pointer off the form without clicking, and fail setup if it did not move.
+
+        Before this, the park program clicked at (100, 150) on the request card and then moved
+        away, with its exit status and output discarded. In Chromium that click is a trusted
+        primary mouseup that the page acknowledges, so a page that received it could never pass
+        reset's zero-acknowledgement check. The click had no recorded purpose, keyboard-first
+        sequences worked on the guest without it, and the stored guest run passed eight resets,
+        which means no park click was ever acknowledged there. It is removed, so setup dispatches
+        no acknowledged input (`SETUP_ACKNOWLEDGED_INPUTS`).
+
+        The program runs under ``python``, the interpreter OSWorld's own controller uses for its
+        pyautogui actions, and its reported pointer position is checked, so a missing module, an
+        unreachable display, or a pyautogui fail-safe stops setup instead of passing silently.
+        """
+
+        park_x = setup_controller.screen_width - 10
+        park_y = setup_controller.screen_height - 10
+        park_name = "pixelgym-vendor-form-pointer-park.json"
+        park_path = Path(setup_controller.cache_dir) / park_name
+        park_path.unlink(missing_ok=True)
+        park_error_name = "pixelgym-vendor-form-pointer-park-error.txt"
+        park_error_path = Path(setup_controller.cache_dir) / park_error_name
+        park_error_path.unlink(missing_ok=True)
         setup_controller.execute(
-            [
-                "python3",
-                "-c",
-                (
-                    _guest_program(
-                        "pointer_park",
-                        PARK_X=setup_controller.screen_width - 10,
-                        PARK_Y=setup_controller.screen_height - 10,
-                    )
-                ),
-            ],
+            ["python", "-c", _guest_program("pointer_park", PARK_X=park_x, PARK_Y=park_y)],
+            stdout=park_name,
+            stderr=park_error_name,
             quiet=True,
             timeout=15,
         )
+        try:
+            parked = json.loads(park_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            parked = None
+        if parked != {"parked": [park_x, park_y]}:
+            park_error = (
+                park_error_path.read_text(encoding="utf-8").strip()
+                if park_error_path.is_file()
+                else "missing"
+            )
+            raise OSWorldTaskError(
+                f"guest pointer park did not report the pointer at ({park_x}, {park_y}); "
+                f"got {parked!r}; probe_error={park_error[-2000:]!r}"
+            )
 
     def read_privileged_state(self, env: Any) -> dict[str, Any]:
         script = "python3 - <<'PY'\n" + _guest_program("privileged_state", APP_URL=APP_URL) + "PY\n"
@@ -445,6 +487,26 @@ class _VendorFormTaskSupport:
         if not isinstance(value, dict):
             raise OSWorldTaskError("browser window-state query returned a non-object")
         return cast(dict[str, Any], value)
+
+    def read_input_acknowledgements(self, env: Any) -> int:
+        """Return how many agent inputs the page has acknowledged since reset (privileged).
+
+        See the input acknowledgement barrier in ``app/static/app.js``. The count is a host-side
+        synchronization signal only; it never enters an observation or ``info``.
+        """
+
+        script = "python3 - <<'PY'\n" + _guest_program("input_ack", APP_URL=APP_URL) + "PY\n"
+        result = env.controller.run_bash_script(script, timeout=15)
+        if not isinstance(result, dict) or result.get("returncode") != 0:
+            raise OSWorldTaskError(f"input acknowledgement query failed: {result!r}")
+        try:
+            value = json.loads(result.get("output", "").strip())
+        except json.JSONDecodeError as exc:
+            raise OSWorldTaskError("input acknowledgement query returned invalid JSON") from exc
+        count = value.get("acknowledged") if isinstance(value, dict) else None
+        if type(count) is not int or count < 0:
+            raise OSWorldTaskError(f"input acknowledgement count is malformed: {value!r}")
+        return count
 
     def read_submissions(self, env: Any) -> list[Submission]:
         state = self.read_privileged_state(env)

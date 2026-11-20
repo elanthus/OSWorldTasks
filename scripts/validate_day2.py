@@ -25,7 +25,7 @@ from pixelgym.validation.spaces import validate_space_integrity
 
 DEFAULT_RAW_DIR = Path("artifacts/day-2/raw")
 DEFAULT_REPORT_JSON = Path("artifacts/validation-report.json")
-DEFAULT_GOLDEN = Path("tests/unit/fixtures/golden_trajectory_seed7.json")
+DEFAULT_GOLDEN = Path("tests/unit/fixtures/golden_trajectory_seed7_v2.json")
 DEFAULT_PREPARATION = Path(".cache/osworld/preparation.json")
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 
