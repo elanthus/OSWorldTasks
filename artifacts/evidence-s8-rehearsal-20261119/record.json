@@ -1,4 +1,37 @@
 {
+  "acceptance_regression": {
+    "note": "run after the rehearsal at the rehearsal revision; the two skipped tests need PIXELGYM_RUN_V5_CLI_SANDBOX_TESTS=1 and the Claude CLI and were not run; the driver's own acceptance-checks.json holds only the stored_verification_replay command",
+    "steps": [
+      {
+        "command": ".venv/bin/python -m pytest -q -p no:cacheprovider tests/unit/platform/test_stateful_contracts.py tests/unit/platform/test_serving_episode_host.py tests/unit/platform/test_stateful_service.py tests/unit/platform/test_policy_subprocess.py tests/unit/platform/test_stateful_control_plane.py tests/unit/platform/test_serving_journal_sequence.py",
+        "exit_status": 0,
+        "finished_utc": "2026-11-20T22:12:55Z",
+        "name": "unit-serving-stack",
+        "revision": "578202a798459368eaf17c16cd6c1b1a0f756af5",
+        "started_utc": "2026-11-20T22:12:35Z",
+        "summary_line": "130 passed, 4 warnings in 18.57s"
+      },
+      {
+        "command": ".venv/bin/python -m pytest -q -p no:cacheprovider tests/unit/platform/test_s7_serving.py tests/unit/platform/test_s7_review_boundaries.py tests/unit/platform/test_s8_rehearsal.py",
+        "exit_status": 0,
+        "finished_utc": "2026-11-20T22:14:37Z",
+        "name": "unit-s7-s8",
+        "revision": "578202a798459368eaf17c16cd6c1b1a0f756af5",
+        "started_utc": "2026-11-20T22:12:55Z",
+        "summary_line": "133 passed in 101.62s (0:01:41)"
+      },
+      {
+        "command": "env PIXELGYM_RUN_V5_SANDBOX_TESTS=1 .venv/bin/python -m pytest -q -p no:cacheprovider -rs tests/integration/test_stateful_serving_sandbox.py tests/integration/test_grounding_v5_sandbox.py tests/integration/test_grounding_v5_cli_sandbox.py tests/integration/test_s8_rehearsal_local.py",
+        "exit_status": 0,
+        "finished_utc": "2026-11-20T22:15:49Z",
+        "name": "darwin-sandbox-integration",
+        "revision": "578202a798459368eaf17c16cd6c1b1a0f756af5",
+        "started_utc": "2026-11-20T22:14:38Z",
+        "summary_line": "4 passed, 2 skipped in 71.21s (0:01:11)"
+      }
+    ],
+    "steps_file": "acceptance-regression-steps.jsonl"
+  },
   "evidence_label": "credential-free-scripted-engineering-validation",
   "gate_policy_sha256": "1058e81e30aab88fada7de193ae0a6b6131f713fa55b8f5e21f81ed32c00c7c6",
   "limitations": [
@@ -8,7 +41,10 @@
     "the s7-20261027-s8driver qualification has a local archive only; a copy is nested in the s7-20261119-main archive as a predecessor",
     "no Object Lock retention is set on the uploaded files, and no private LFS copy was made",
     "the Backblaze restore drill covers the S8 state only; the S7 qualification upload was checked with rclone check but not restored",
-    "qualify, verify, and report exit statuses for s7-20261027-s8driver were partly not captured in its own logs; that run was not used for this rehearsal"
+    "qualify, verify, and report exit statuses for s7-20261027-s8driver were partly not captured in its own logs; that run was not used for this rehearsal",
+    "the recovery check is incomplete against the S7 proposal's wording (no private LFS restore)",
+    "worker sandbox proofs are self-reported by the launcher and their profile text was not retained",
+    "the rollback-to-B probe shows the lineage rule, not exhaustion; stale-deployment refusals were observed only for ended episodes"
   ],
   "milestone_verdict": null,
   "note": "Assembled by the operator from private stored evidence and command logs. Qualification and rehearsal content stays private; this record holds digests, counts, commands, and exit statuses only. The owner grades S8.",
@@ -75,6 +111,29 @@
     "seal_sha256": "sha256:ac3f78a8e926a9088369ed6b561d38c236adfd31d23e678e07b84bff4228105e",
     "source_binding_sha256": "sha256:9c42055b2909785e26152991bf63e39f547dd7af7dc64b80f99512dbe54afee6",
     "verification_sha256": "sha256:bbb678695b71981a27c6e651d341a2bd5e9bc32c7f4afe8457c5ba196af7250f"
+  },
+  "recovery_checks": {
+    "checkout_revision": "578202a798459368eaf17c16cd6c1b1a0f756af5",
+    "limits": [
+      "each restored S8 state still names the original qualification directory in its plan, so its verify reads the original qualification, not a restored one",
+      "restores ran on the same host and checkout as the rehearsal",
+      "the earlier 2026-11-20T01:36Z Backblaze restore did not capture the download exit status; the s8-b2-download step here does"
+    ],
+    "nonzero_exit_statuses": [],
+    "report_sha256": {
+      "note": "first 16 hex characters of the SHA-256 of each rendered report",
+      "s7_backblaze_restore": "f911d7647db483ed",
+      "s7_local_restore": "f911d7647db483ed",
+      "s7_original": "f911d7647db483ed",
+      "s8_backblaze_restore": "d3a1d99b28cea8fd",
+      "s8_local_restore": "d3a1d99b28cea8fd",
+      "s8_original": "d3a1d99b28cea8fd"
+    },
+    "run_on_utc": "2026-11-20",
+    "status_against_proposal": "incomplete as written: the S7 proposal requires one local-archive restore and one fresh-cache private LFS restore; no private LFS copy or restore was made, and the proposal has not been amended to name Backblaze as the recovery path",
+    "step_count": 14,
+    "steps_file": "recovery-check-steps.jsonl",
+    "verify_digests_match_original": true
   },
   "rehearsal": {
     "approval": {
@@ -191,7 +250,8 @@
           "differences": 0,
           "matching_files": 7981,
           "observed_bytes": 1558362707,
-          "observed_file_count": 7981
+          "observed_file_count": 7981,
+          "restore_drill": "see recovery_checks"
         },
         "s8-20261119-main": {
           "check_command": "rclone check <archive> bb:<bucket>/s8-20261119-main --one-way",
@@ -241,6 +301,43 @@
     },
     "private_lfs_copy": "not made"
   },
+  "review_findings": [
+    {
+      "finding": "recovery check not done as the proposal words it",
+      "id": 1,
+      "status": "partly addressed: local-archive and Backblaze restores of both runs now recorded with exit statuses; private LFS restore still absent; no Object Lock retention"
+    },
+    {
+      "finding": "the observation labelled rollback_to_exhausted_B was refused by the rollback lineage rule (TransitionError, candidate_id null), not by an exhaustion check; exhaustion is shown only by redeploy_exhausted_B (StatefulLoadError)",
+      "id": 2,
+      "status": "confirmed in lifecycle.json; sealed evidence is unchanged; disclosed here"
+    },
+    {
+      "finding": "both 409 deployment_changed probes used episodes that had already ended; no live episode from an old deployment was refused in the rehearsal",
+      "id": 3,
+      "status": "confirmed; that case rests on unit tests only (tests/unit/platform/test_stateful_control_plane.py)"
+    },
+    {
+      "finding": "acceptance-checks.json holds one command; regression-backed rows had no raw command at the rehearsal revision; record.json has no generator or test",
+      "id": 4,
+      "status": "partly addressed: regression and opt-in Darwin sandbox commands recorded in acceptance-regression-steps.jsonl; record.json is still operator-assembled"
+    },
+    {
+      "finding": "sandbox enforcement is the launcher's own report; the five profile digests cannot be checked because no profile text is retained in the S8 state",
+      "id": 5,
+      "status": "confirmed; not fixable for this run"
+    },
+    {
+      "finding": "pixelgym/platform/s8_rehearsal.py compares B's attempt count with a literal 24 in step 6 instead of the plan's cap",
+      "id": 6,
+      "status": "confirmed; not changed"
+    },
+    {
+      "finding": "approved_on in the approval document reads 11.19.26; the run state lives outside the repository because the driver refuses an in-checkout path while AGENTS.md section 7 asks for a git-ignored path inside it; the 2026-10-27 qualification (77 sends) was never used",
+      "id": 7,
+      "status": "confirmed; disclosed"
+    }
+  ],
   "runtime": {
     "distribution_count": 450,
     "python": "3.12.16",

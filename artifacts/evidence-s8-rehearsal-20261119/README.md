@@ -42,18 +42,57 @@ at current `main` on 2026-11-19 and then signed the approval document for its ex
 - `s7-20261119-main` and `s8-20261119-main` were copied to the owner's private Backblaze B2 bucket
   with `rclone copy --checksum --immutable`. `rclone check --one-way` reported 0 differences
   for both (7,981 and 148 files), and `scripts/observe_b2_object_lock.py` listed the same counts.
-- The S8 copy was downloaded again, restored against its manifest digest, and re-verified with
-  `scripts.s8_rehearsal verify` (exit status 0, same verification and lifecycle digests).
+- Both runs were later restored from the local archive and from Backblaze and re-verified; see
+  finding 1 below. This is not the private LFS restore the proposal requires.
 - The bucket held 27,669,229,089 bytes including versions after the upload. At $6.95 per TB per
   month, read from Backblaze's pricing page on 2026-11-19, that is about $0.19 per month.
+
+## Review findings
+
+An owner-side review of this evidence raised the points below. Each was checked against the
+code and the stored evidence. The sealed rehearsal state is unchanged.
+
+1. **The recovery check is incomplete as the proposal words it.** The
+   [S7 proposal](../../docs/s7-serving-demo-proposal.md) requires one local-archive restore and one
+   fresh-cache private LFS restore. No private LFS copy was made, and the proposal has not been
+   amended to name Backblaze as the recovery path. What exists instead is in
+   [`recovery-check-steps.jsonl`](recovery-check-steps.jsonl): on 2026-11-20 both runs were
+   restored from the local archive and from Backblaze into new directories, verified, and their
+   reports re-rendered. All 14 steps exited 0, the verify digests equal the originals, and each
+   re-rendered report has the same SHA-256 as the original. Each restored S8 state still reads the
+   original qualification directory, and the restores ran on the same host.
+2. **The `rollback_to_exhausted_B` observation does not show exhaustion.** It was refused with
+   `TransitionError: there is no eligible known-good deployment to roll back to` and
+   `candidate_id: null`. That is the rollback lineage rule, which would refuse the same way if B
+   had capacity left. Exhaustion is shown only by `redeploy_exhausted_B` (`StatefulLoadError`,
+   smoke sends 5 to 6).
+3. **No live episode from an old deployment was refused.** Both `409 deployment_changed` probes
+   used episodes that had already ended. The live case rests on unit tests only.
+4. **The driver's acceptance record holds one command**, the stored-verification replay. The
+   regression-backed rows had no raw command at the rehearsal revision.
+   [`acceptance-regression-steps.jsonl`](acceptance-regression-steps.jsonl) now records three
+   commands run at `578202a7` after the rehearsal: the serving-stack unit tests (130 passed), the
+   S7 and S8 unit tests (133 passed), and the opt-in Darwin sandbox tests (4 passed, 2 skipped;
+   the skipped two need the Claude CLI). These are regression runs, not graded checks.
+5. **Sandbox enforcement is the launcher's own report.** The five worker proofs give a mechanism
+   and five different profile digests. No profile text is retained in the S8 state, so the digests
+   cannot be checked against content.
+6. **Step 6 of the driver compares B's attempt count with a literal 24** instead of the plan's
+   cap. The code is unchanged here.
 
 ## Limits
 
 - The owner has not graded S8.
-- The audit actor is a string, not an authenticated identity. The approval digest is the recorded
-  authority. The actor string is withheld from this public record.
+- `record.json` is assembled by the operator. No generator script or test binds it.
+- The audit actor is a string recorded as `legacy_unverified`, not an authenticated identity. The
+  approval digest is the only authority. The actor string is withheld from this public record.
+- `approved_on` in the approval document reads `11.19.26`.
+- The owner's approval of the fresh qualification, and of ceilings 381 and 415, is recorded as
+  given in chat. Three qualifications followed the original bound; the 2026-10-27 one (77 sends)
+  was never used.
+- The run state lives outside the repository because the driver refuses an in-checkout path, while
+  `AGENTS.md` section 7 asks for a git-ignored path inside it.
 - No Object Lock retention is set on the uploaded files, and no private LFS copy was made.
-- The Backblaze restore drill covers the S8 state only. The S7 upload was checked but not restored.
 - `s7-20261027-s8driver` has a local archive only; a copy is nested inside the
   `s7-20261119-main` archive as a predecessor.
 - The results measure serving controls with a scripted policy. They do not measure a model,
