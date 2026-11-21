@@ -142,7 +142,8 @@ only an approved policy digest is insufficient. The optional S7 preparer verifie
 qualified package, source bytes, and runtime binding before starting a worker. Candidate approval,
 demo serving terms, and the full serving rehearsal remain separate owner decisions. The
 [S8 rehearsal driver](s8-rehearsal.md) consumes an owner approval document and a sealed
-qualification; it has not been executed.
+qualification; it was executed once on 2026-11-20 (UTC) and awaits the owner's grade
+([evidence record](../artifacts/evidence-s8-rehearsal-20261119/README.md)).
 
 ## Analysis and evidence
 
@@ -171,7 +172,7 @@ latency, cost, and redaction, and a second approval before any full run.
 | S5: credential-free policy subprocess with local egress-denial proof | Delivered (`pixelgym/platform/policy_subprocess.py`) |
 | S6: control-plane wiring and kind-aware runtime | Delivered (`pixelgym/platform/stateful_control.py`, `pixelgym/platform/stateful_runtime.py`) |
 | S7: scripted gate policy, package qualification, and evidence tooling | Implemented; exact-package activation remains owner-gated |
-| S8: full serving rehearsal and human gate | Driver implemented (`pixelgym/platform/s8_rehearsal.py`, `scripts/s8_rehearsal.py`, [design](s8-rehearsal.md)); rehearsal not executed; human-owned |
+| S8: full serving rehearsal and human gate | Driver implemented (`pixelgym/platform/s8_rehearsal.py`, `scripts/s8_rehearsal.py`, [design](s8-rehearsal.md)); rehearsal executed once on 2026-11-20 (UTC) at `578202a7` ([evidence record](../artifacts/evidence-s8-rehearsal-20261119/README.md)); human gate not graded |
 
 Known limitations: single-user local control plane; provider aliases can drift; write-once
 retention protects versions but not availability; one synthetic form cannot establish general

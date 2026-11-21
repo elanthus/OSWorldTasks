@@ -1,7 +1,8 @@
 # S8 rehearsal driver
 
-- **Status:** driver implemented; the rehearsal is **not executed**. S8 remains a human-owned
-  gate. No approval, archive, LFS transfer, or milestone verdict is recorded here.
+- **Status:** driver implemented; the rehearsal was executed once on 2026-11-20 (UTC) from
+  revision `578202a7` ([evidence record](../artifacts/evidence-s8-rehearsal-20261119/README.md)). S8 remains a
+  human-owned gate that the owner has not graded. No milestone verdict is recorded here.
 - **Specification:** the seven ordered lifecycle steps, the recovery rules, and the acceptance
   table in the [S7 proposal](s7-serving-demo-proposal.md#phase-caps-and-proposed-rehearsal).
 - **Code:** `pixelgym/platform/s8_rehearsal.py` and `scripts/s8_rehearsal.py`.
@@ -112,11 +113,13 @@ PASS/FAIL verdict.
 - `tests/integration/test_s8_rehearsal_local.py` (opt-in: `PIXELGYM_RUN_V5_SANDBOX_TESTS=1` on
   Darwin outside a parent sandbox) qualifies a throwaway run from the clean checkout with the
   real Darwin sandbox and executes the rehearsal through a real `127.0.0.1` listener.
-- The private successor qualification binds revision `3b28658`. Its packages load only from a
-  checkout at that revision, where this driver does not exist. Executing S8 against that
-  qualification therefore needs either a fresh owner-approved qualification at a revision that
-  contains the driver, or the owner's decision to run from a separate checkout. Neither is made
-  here.
+- A qualification is usable only while the checkout and the installed runtime still match it.
+  The 2026-10-26 successor binds revision `3b28658`, where this driver does not exist. The
+  2026-10-27 qualification at `580df9dc` binds Python 3.12.15 and 447 distributions and stopped
+  verifying once the host moved to Python 3.12.16. The executed rehearsal therefore used a fresh
+  owner-approved qualification at `578202a7`, run on the same day from the same checkout.
 - Local put-once storage does not establish WORM retention; the loopback listener does not
-  establish availability; archive capture, local restore, and private LFS transfer remain the
-  separately documented retention operations and are not run by this driver.
+  establish availability; archive capture, local restore, and the off-host copy remain
+  separately documented retention operations and are not run by this driver. Since the
+  [2026-11-20 amendment](s7-serving-demo-proposal.md#amendment-2026-11-20-backblaze-b2-replaces-the-private-lfs-copy)
+  the off-host copy is Backblaze B2 rather than private LFS.

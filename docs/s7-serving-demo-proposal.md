@@ -4,10 +4,12 @@
   controls with scripted policies and fake transports. This is engineering validation; it supplies
   no model-quality result or D5.10 verdict.
 - **Status:** owner approved implementation and scripted qualification on 2026-10-20 under the
-  proposed caps. Exact package activation and publication remain blocked pending owner review.
+  proposed caps. On 2026-11-19 the owner approved activating the exact packages of the
+  `s7-20261119-main` qualification for one rehearsal. Publication remains blocked.
 - **Current state:** the owner approved a fresh successor qualification on 2026-10-26
-  ([details](#activation-compatibility-after-review-repairs)). The rehearsal driver is implemented
-  and has not been executed ([S8 driver status](#s8-driver-status)).
+  ([details](#activation-compatibility-after-review-repairs)). Two later qualifications followed,
+  and the rehearsal was executed once on 2026-11-20 (UTC); the owner has not graded it
+  ([S8 driver status](#s8-driver-status)).
 - **Reader and decision:** the project owner, deciding whether to implement and qualify the two
   packages and rehearsal below. Exact package approval and serving approval remain separate.
 - **Inspected base:** `acaa0da8a6ec752e39510a3f05339a9f204fe1a7` (PR #249).
@@ -15,6 +17,9 @@
   [glossary](glossary.md).
 
 ## Approval scope and qualification history
+
+The [2026-11-20 amendment](#amendment-2026-11-20-backblaze-b2-replaces-the-private-lfs-copy) replaces the private LFS copy below with a Backblaze B2 copy for runs from
+`s7-20261119-main` onward.
 
 Owner clarification: retain one local archive copy and one private LFS copy, preserving the
 original run. This supersedes the original second-volume/two-local-copy prerequisite.
@@ -113,7 +118,17 @@ rehearsal, publication, and milestone decisions remain separate owner gates.
 The rehearsal below is implemented as `python -m scripts.s8_rehearsal` with `prepare`, `run`,
 `verify`, and `report` commands ([S8 rehearsal driver](s8-rehearsal.md)). The driver consumes an
 owner approval document bound to the exact sealed packages and refuses to fabricate approval or
-terms. It has not been executed; S8 remains a human-owned gate.
+terms.
+
+The owner approved two further qualifications after the 2026-10-26 successor. The first, on
+2026-10-27 at `580df9dc`, was never used: the host's Python and installed distributions changed
+before the rehearsal, so its runtime lock stopped verifying. The second, on 2026-11-19 at
+`578202a7`, declares all five earlier runs as predecessors (304 prior sends) and carries
+cumulative ceilings of **381** qualification and **415** campaign sends. The owner signed the
+approval document for its exact packages, and the rehearsal ran once from that checkout on
+2026-11-20 (UTC) with 109 of 111 campaign sends
+([evidence record](../artifacts/evidence-s8-rehearsal-20261119/README.md)). S8 remains a human-owned gate
+that the owner has not graded.
 
 ## Decisions requested
 
@@ -129,7 +144,7 @@ gate-policy digest. The proposed choices are:
 | Serving terms | `demo` tier only; A: 4 fake attempts per exact version; B: 24; one active episode at a time |
 | Bound | 77 qualification sends and 111 total per freeze. The 150/184 cumulative ceilings applied to the predecessor freeze only; the 2026-10-26 successor freeze carries cumulative ceilings of 227/261. No automatic rerun, cap increase, package revision, or threshold adjustment; one later rehearsal remains separately gated |
 | Infrastructure | Existing local Python environment, filesystem put-once store, SQLite ledger, and Darwin policy sandbox; HTTP listeners on `127.0.0.1` only |
-| Recovery | Original run, one local archive copy and one private LFS copy with fresh-cache restore, subject to a fresh budget observation and GitHub's unchanged $0 stop-usage setting |
+| Recovery | Original run, one local archive copy and one private LFS copy with fresh-cache restore, subject to a fresh budget observation and GitHub's unchanged $0 stop-usage setting. Amended: Backblaze B2 replaces the LFS copy ([2026-11-20 amendment](#amendment-2026-11-20-backblaze-b2-replaces-the-private-lfs-copy)) |
 
 The evidence-class choice is a compatibility convention imposed by the existing schema, not an
 assertion that this is historical D5.6 evidence. Every plan, summary, and report must identify it
@@ -159,7 +174,7 @@ Reuse these components rather than introduce a second serving system:
 The following list records gaps at the inspected PR #249 base. The S7 implementation now supplies
 the gate evaluator, source-bound package builder, and guarded loader described here; see
 [current implementation status](platform-design.md#current-status). The full serving rehearsal,
-its recovery checks, and exact-package owner gates remain pending. References to absent tooling
+its recovery checks, and exact-package owner gates were pending at that base. References to absent tooling
 or the "current loader" within this initial list describe the inspected base.
 
 1. **S7 gate evaluation is absent.** S6 checks report consistency, identity bindings, and an
@@ -414,6 +429,53 @@ copy provides the independent recovery path. Archive locations and approval reco
 operator access controls. Neither the rehearsal nor a cleanup receipt authorizes deleting the
 source, archives, historical evidence, or a checkout.
 
+### Amendment 2026-11-20: Backblaze B2 replaces the private LFS copy
+
+The owner decided on 2026-11-20 that the independent recovery copy for the S7 qualification and
+the S8 rehearsal is the owner's private Backblaze B2 bucket. It replaces the private LFS copy for
+runs from `s7-20261119-main` onward. Earlier runs keep their recorded LFS copies. The decision was
+given in chat in answer to the question of whether to prepare the LFS restore or amend this
+proposal.
+
+Reasons:
+
+- The `s7-20261119-main` archive is 1,556,442,084 bytes because it nests five predecessor runs.
+  That exceeds the 512 MiB per-archive guard in the [retention workflow](evidence-retention.md).
+- [AGENTS.md section 7](../AGENTS.md#7-evidence-and-reporting-standards) has required a Backblaze
+  copy of generated data since 2026-11-17.
+
+The recovery check under this amendment is:
+
+1. Capture one local archive under a new name and record its manifest digest.
+2. Copy the archive to the bucket with `rclone copy --checksum --immutable` under a prefix named
+   after the run, then run `rclone check --one-way` and `scripts/observe_b2_object_lock.py`.
+3. Restore once from the local archive and once from a fresh Backblaze download, each into a new
+   directory and against the recorded manifest digest.
+4. On each restored copy, run the run's stored-evidence verifier and re-render its report. The
+   verification digests and the report bytes must equal the original's.
+5. Record every command with its exit status.
+
+The LFS budget observation, pinned-commit, and fresh-cache steps above do not apply to a Backblaze
+copy. Everything else in this section still applies: retain local evidence if remote recovery
+cannot complete and report the check as incomplete, and treat neither the rehearsal nor a receipt
+as permission to delete anything.
+
+What this amendment does not settle:
+
+- **Retention.** The bucket has Object Lock enabled but no default retention, and the uploaded
+  files carry none. Applying retention needs the owner's approval.
+- **Verifier isolation.** The text above asks for the verifier to run in an isolated
+  credential-free interpreter against the bundle's own source snapshot. The recorded restores of
+  `s7-20261119-main` and `s8-20261119-main` ran the verifier from the working checkout at the
+  bound revision instead.
+- **Qualification path.** A restored S8 state still names the original qualification directory,
+  so its verifier reads the original qualification.
+- **Same host.** The recorded restores ran on the host that produced the evidence.
+
+The recorded steps for `s7-20261119-main` and `s8-20261119-main` are in the
+[S8 evidence record](../artifacts/evidence-s8-rehearsal-20261119/README.md). The owner grades
+whether they meet this check.
+
 ## Acceptance evidence and implementation boundary
 
 The following are proposed requirements, not completed checks:
@@ -428,7 +490,7 @@ The following are proposed requirements, not completed checks:
 | Environment and API boundaries | Valid actions only, evaluator-owned reward timeline, caller dispatch evidence independently replayed, final result acknowledged once, stale-deployment requests refused |
 | Caps and rollback | Exactly 24 B attempts, no send after exhaustion, count survives restart/redeploy, rollback to approved A succeeds, exhausted B cannot return, failed transition preserves pointer and appends audit evidence |
 | Isolation and cleanup | Existing real Darwin sandbox check plus recorded rehearsal enforcement; credential-free worker; loopback listeners only; all providers/workers stopped on success, failure, or interruption |
-| Report and restore | Reports read stored results only; one local archive restore and one fresh-cache private LFS restore reproduce evidence/report digests; corruption, missing objects, unsafe paths, stale budget observation, privacy mismatch, and changed source are refused |
+| Report and restore | Reports read stored results only; one local archive restore and one fresh-cache private LFS restore reproduce evidence/report digests (amended: a Backblaze B2 restore replaces the LFS restore, [2026-11-20 amendment](#amendment-2026-11-20-backblaze-b2-replaces-the-private-lfs-copy)); corruption, missing objects, unsafe paths, stale budget observation, privacy mismatch, and changed source are refused |
 | Evidence honesty | Raw negative outcomes retained, golden privilege and client trust disclosed, no model quality or availability claim, no historical reconstruction, no S8/D5.10 decision |
 
 Expected implementation is a narrow S7 policy/evaluator plus a versioned package builder and
