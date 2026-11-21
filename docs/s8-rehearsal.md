@@ -119,5 +119,7 @@ PASS/FAIL verdict.
   verifying once the host moved to Python 3.12.16. The executed rehearsal therefore used a fresh
   owner-approved qualification at `578202a7`, run on the same day from the same checkout.
 - Local put-once storage does not establish WORM retention; the loopback listener does not
-  establish availability; archive capture, local restore, and private LFS transfer remain the
-  separately documented retention operations and are not run by this driver.
+  establish availability; archive capture, local restore, and the off-host copy remain
+  separately documented retention operations and are not run by this driver. Since the
+  [2026-11-20 amendment](s7-serving-demo-proposal.md#amendment-2026-11-20-backblaze-b2-replaces-the-private-lfs-copy)
+  the off-host copy is Backblaze B2 rather than private LFS.
