@@ -42,9 +42,9 @@
     "no Object Lock retention is set on the uploaded files, and no private LFS copy was made",
     "the Backblaze restore drill covers the S8 state only; the S7 qualification upload was checked with rclone check but not restored",
     "qualify, verify, and report exit statuses for s7-20261027-s8driver were partly not captured in its own logs; that run was not used for this rehearsal",
-    "the recovery check is incomplete against the S7 proposal's wording (no private LFS restore)",
     "worker sandbox proofs are self-reported by the launcher and their profile text was not retained",
-    "the rollback-to-B probe shows the lineage rule, not exhaustion; stale-deployment refusals were observed only for ended episodes"
+    "the rollback-to-B probe shows the lineage rule, not exhaustion; stale-deployment refusals were observed only for ended episodes",
+    "the recovery check follows the 2026-11-20 amendment (Backblaze), which was written after the restores ran; the verifier was not run in an isolated interpreter"
   ],
   "milestone_verdict": null,
   "note": "Assembled by the operator from private stored evidence and command logs. Qualification and rehearsal content stays private; this record holds digests, counts, commands, and exit statuses only. The owner grades S8.",
@@ -117,9 +117,16 @@
     "limits": [
       "each restored S8 state still names the original qualification directory in its plan, so its verify reads the original qualification, not a restored one",
       "restores ran on the same host and checkout as the rehearsal",
-      "the earlier 2026-11-20T01:36Z Backblaze restore did not capture the download exit status; the s8-b2-download step here does"
+      "the earlier 2026-11-20T01:36Z Backblaze restore did not capture the download exit status; the s8-b2-download step here does",
+      "the verifier ran from the working checkout at the bound revision, not in an isolated credential-free interpreter against the bundle's source snapshot"
     ],
     "nonzero_exit_statuses": [],
+    "proposal_amendment": {
+      "decided_by": "owner, in chat",
+      "decided_on": "2026-11-20",
+      "recorded_after_the_restores": true,
+      "section": "docs/s7-serving-demo-proposal.md#amendment-2026-11-20-backblaze-b2-replaces-the-private-lfs-copy"
+    },
     "report_sha256": {
       "note": "first 16 hex characters of the SHA-256 of each rendered report",
       "s7_backblaze_restore": "f911d7647db483ed",
@@ -130,7 +137,7 @@
       "s8_original": "d3a1d99b28cea8fd"
     },
     "run_on_utc": "2026-11-20",
-    "status_against_proposal": "incomplete as written: the S7 proposal requires one local-archive restore and one fresh-cache private LFS restore; no private LFS copy or restore was made, and the proposal has not been amended to name Backblaze as the recovery path",
+    "status_against_proposal": "the S7 proposal as first written requires a fresh-cache private LFS restore, which was not made; the owner amended the proposal on 2026-11-20 to make a Backblaze B2 restore the recovery copy; the recorded steps follow the amended check except that the verifier ran from the working checkout rather than an isolated interpreter against the bundled source; the owner grades whether the check is met",
     "step_count": 14,
     "steps_file": "recovery-check-steps.jsonl",
     "verify_digests_match_original": true
@@ -305,7 +312,7 @@
     {
       "finding": "recovery check not done as the proposal words it",
       "id": 1,
-      "status": "partly addressed: local-archive and Backblaze restores of both runs now recorded with exit statuses; private LFS restore still absent; no Object Lock retention"
+      "status": "addressed by restores from the local archive and Backblaze with exit statuses and by the owner's 2026-11-20 amendment naming Backblaze as the recovery copy; no private LFS restore; no Object Lock retention; verifier isolation not as specified"
     },
     {
       "finding": "the observation labelled rollback_to_exhausted_B was refused by the rollback lineage rule (TransitionError, candidate_id null), not by an exhaustion check; exhaustion is shown only by redeploy_exhausted_B (StatefulLoadError)",

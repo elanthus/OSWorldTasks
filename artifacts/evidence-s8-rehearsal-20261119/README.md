@@ -43,7 +43,7 @@ at current `main` on 2026-11-19 and then signed the approval document for its ex
   with `rclone copy --checksum --immutable`. `rclone check --one-way` reported 0 differences
   for both (7,981 and 148 files), and `scripts/observe_b2_object_lock.py` listed the same counts.
 - Both runs were later restored from the local archive and from Backblaze and re-verified; see
-  finding 1 below. This is not the private LFS restore the proposal requires.
+  finding 1 below. The proposal's 2026-11-20 amendment names Backblaze as the recovery copy.
 - The bucket held 27,669,229,089 bytes including versions after the upload. At $6.95 per TB per
   month, read from Backblaze's pricing page on 2026-11-19, that is about $0.19 per month.
 
@@ -52,15 +52,19 @@ at current `main` on 2026-11-19 and then signed the approval document for its ex
 An owner-side review of this evidence raised the points below. Each was checked against the
 code and the stored evidence. The sealed rehearsal state is unchanged.
 
-1. **The recovery check is incomplete as the proposal words it.** The
-   [S7 proposal](../../docs/s7-serving-demo-proposal.md) requires one local-archive restore and one
-   fresh-cache private LFS restore. No private LFS copy was made, and the proposal has not been
-   amended to name Backblaze as the recovery path. What exists instead is in
-   [`recovery-check-steps.jsonl`](recovery-check-steps.jsonl): on 2026-11-20 both runs were
-   restored from the local archive and from Backblaze into new directories, verified, and their
-   reports re-rendered. All 14 steps exited 0, the verify digests equal the originals, and each
-   re-rendered report has the same SHA-256 as the original. Each restored S8 state still reads the
-   original qualification directory, and the restores ran on the same host.
+1. **The recovery check did not follow the proposal as first written.** The
+   [S7 proposal](../../docs/s7-serving-demo-proposal.md) required one local-archive restore and one
+   fresh-cache private LFS restore. No private LFS copy was made. On 2026-11-20 the owner amended
+   the proposal to make a Backblaze B2 restore the recovery copy
+   ([amendment](../../docs/s7-serving-demo-proposal.md#amendment-2026-11-20-backblaze-b2-replaces-the-private-lfs-copy)).
+   The amendment was written after the restores below had run.
+   [`recovery-check-steps.jsonl`](recovery-check-steps.jsonl) records them: on 2026-11-20 both
+   runs were restored from the local archive and from Backblaze into new directories, verified,
+   and their reports re-rendered. All 14 steps exited 0, the verify digests equal the originals,
+   and each re-rendered report has the same SHA-256 as the original. Three limits apply: the
+   verifier ran from the working checkout, not in an isolated interpreter against the bundled
+   source; each restored S8 state still reads the original qualification directory; and the
+   restores ran on the same host. The owner grades whether the amended check is met.
 2. **The `rollback_to_exhausted_B` observation does not show exhaustion.** It was refused with
    `TransitionError: there is no eligible known-good deployment to roll back to` and
    `candidate_id: null`. That is the rollback lineage rule, which would refuse the same way if B
